@@ -9,11 +9,11 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             Controller = new Controller
             {
-                Robot = new Robot(),
-                DynamicObstacle = new DynamicObstacle(),
-                StaticObstacle = new StaticObstacle()
+                Robot = new Robot()
             };
-        }
 
+            DynObstacle = new DynamicObstacle();
+            StatObstacle = new StaticObstacle();
+        }
     }
 }

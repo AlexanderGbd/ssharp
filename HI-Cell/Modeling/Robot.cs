@@ -13,6 +13,10 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 		///   The fault that prevents the robot from moving.
 		/// </summary>
 		public readonly Fault SuppressMoving = new PermanentFault();
+        /// <summary>
+		///   The fault that causes the robot to collide with an obstacle.
+		/// </summary>
+        public readonly Fault SuppressIsObstacle = new TransientFault();
 
         /// <summary>
         ///   Moves the robot.
