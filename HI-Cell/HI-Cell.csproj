@@ -36,6 +36,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <HintPath>..\Dependencies\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="SafetySharp.Modeling, Version=1.2.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\Dependencies\ISSE.SafetySharp.1.2.3\lib\net45\SafetySharp.Modeling.dll</HintPath>
       <Private>True</Private>
