@@ -6,9 +6,17 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
     {
         //private int xCoord;
         //private int yCoord;
-        private int[] Position = new int[2]; 
+        private int[] Position = new int[2];
 
+        public int GetXCoord()
+        {
+            return Position[0];
+        }
 
+        public int GetYCoord()
+        {
+            return Position[1];
+        }
 
     }
 }

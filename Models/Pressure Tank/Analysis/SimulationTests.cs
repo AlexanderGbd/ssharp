@@ -62,6 +62,7 @@ namespace SafetySharp.CaseStudies.PressureTank.Analysis
 			var simulator = new SafetySharpSimulator(model);
 			model = (Model)simulator.Model;
 			simulator.FastForward(steps: 120);
+            
 
 			model.Tank.IsRuptured.Should().BeFalse();
 		}

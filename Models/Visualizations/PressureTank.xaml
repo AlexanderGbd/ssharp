@@ -68,7 +68,13 @@
                 </EasingDoubleKeyFrame>
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
+        <Storyboard x:Key="Storyboard1"/>
     </UserControl.Resources>
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+            <BeginStoryboard Storyboard="{StaticResource Storyboard1}"/>
+        </EventTrigger>
+    </UserControl.Triggers>
     <DockPanel LastChildFill="true">
         <infrastructure:SimulationControls x:Name="SimulationControls" DockPanel.Dock="Top" />
 
@@ -193,6 +199,7 @@
                     <TextBlock x:Name="ControllerScreen" TextWrapping="Wrap" TextAlignment="Center" Text="Stopped by Timer"
                                Foreground="White" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </DockPanel>
+                <Rectangle x:Name="hallo" Height="60.048" Canvas.Left="201.401" Canvas.Top="10" Width="88.599" Fill="#FFFF1F1F"/>
             </Canvas>
         </Viewbox>
     </DockPanel>

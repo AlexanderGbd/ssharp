@@ -110,6 +110,8 @@ namespace SafetySharp.CaseStudies.Visualizations
 			if (_model.Timer.HasElapsed)
 				_timerAlertStoryboard.Begin();
 
+            hallo.Visibility = (_model.Timer.RemainingTime > 30).ToVisibility();
+
 			// Tank
 			var pressureLevel = Math.Round(_model.Tank.PressureLevel / (double)Model.PressureLimit * 100);
 			_pressureLevelStoryboard.Seek(TimeSpan.FromMilliseconds(Math.Max(0, 10 * pressureLevel)));

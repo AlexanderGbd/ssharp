@@ -7,13 +7,13 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
     {
         public Model()
         {
-            Controller = new Controller
+            Controller  c = new Controller
             {
                 Robot = new Robot()
             };
 
-            DynObstacle = new DynamicObstacle();
-            StatObstacle = new StaticObstacle();
+            var DynObstacle = new DynamicObstacle();
+            var StatObstacle = new StaticObstacle();
         }
     }
 }
