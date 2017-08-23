@@ -10,16 +10,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
     class Controller : Component
     {
         public enum State {
-   //         /// <summary>
-   //         ///   Indicates that the robots' sensors are active
-   //         /// </summary>
-   //         ActiveSensors,
-
-   //         /// <summary>
-   //         ///     Indicates that thsensors aren't active
-   //         /// </summary>
-   //         InactiveSensors,
-
             /// <summary>
             ///     Indicates that the robot hit an obstacle, instead of reaching its target
             /// </summary>
@@ -75,20 +65,20 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                 .Transition(
                     from: State.IsMoving,
                     to: State.NotMoving,
-                    guard: Robot.NotObstPosition,
-                    action: Robot.Stop())
+                    guard: !Robot.IsMoving,
+                    action: Robot.Stop)
                 .Transition(
                     from: State.IsMoving,
                     to: State.Collision,
-                    guard: Robot.ObstPosition,
-                    action: Robot.Stop())
+                    guard: Robot.SamePositionAsObst,
+                    action: Robot.Stop)
                 .Transition(
                     from: new[] { State.NotMoving },
                     to: State.IsMoving,
-                    guard: Robot.NotObstPosition,
+                    guard: Robot.SamePositionAsTarg,
                     action: () =>
                     {
-                        Robot.Move();
+                        Robot.Move(1, 0);
                     });
         }
 

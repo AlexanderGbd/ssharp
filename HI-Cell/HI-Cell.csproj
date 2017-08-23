@@ -54,6 +54,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analysis\HazardProbabilityTests.cs" />
+    <Compile Include="Analysis\ModelCheckingTests.cs" />
+    <Compile Include="Analysis\SimulationTests.cs" />
     <Compile Include="Modeling\Controller.cs" />
     <Compile Include="Modeling\DynamicObstacle.cs" />
     <Compile Include="Modeling\Model.cs" />
@@ -66,9 +69,7 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Analysis\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Analyzer Include="..\Dependencies\ISSE.SafetySharp.1.2.3\analyzers\dotnet\cs\SafetySharp.Compiler.dll" />
     <Analyzer Include="..\Dependencies\ISSE.SafetySharp.1.2.3\analyzers\dotnet\cs\SafetySharp.Modeling.dll" />
