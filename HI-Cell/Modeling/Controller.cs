@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
     using SafetySharp.Modeling;
-    class Controller : Component
+
+    public class Controller : Component
     {
         public enum State {
             /// <summary>
@@ -46,20 +47,20 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         ///   A dynamic obstacle in the robot's environment
         /// </summary>
         [Hidden, Subcomponent]
-        public DynamicObstacle DynObstacle;
+        public DynamicObstacle DynamicObstacle;
 
         /// <summary>
         ///   A static obstacle in the robot's environment
         /// </summary>
         [Hidden, Subcomponent]
-        public StaticObstacle StatObstacle;
+        public StaticObstacle StaticObstacle;
 
         /// <summary>
 		///   Updates the state of the component.
 		/// </summary>
 		public override void Update()
         {
-            Update(Robot, DynObstacle, StatObstacle);
+            Update(Robot, DynamicObstacle, StaticObstacle);
 
             StateMachine
                 .Transition(

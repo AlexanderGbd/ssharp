@@ -15,21 +15,25 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             Controller = new Controller
             {
-                 Robot = new Robot()
+                Robot = new Robot(),
+                DynamicObstacle = new DynamicObstacle(),
+                StaticObstacle = new StaticObstacle()
             };
 
             /*var DynObstacle = new DynamicObstacle();
             var StatObstacle = new StaticObstacle();*/
 
 
-            /*Bind(nameof(Robot.DynObstaclePosition), nameof(DynObstacle.GetPosition));
-			Bind(nameof(Robot.StatObstaclePosition), nameof(StatObstacle.GetPosition));*/
+            Bind(nameof(Robot.DynObstaclePosition), nameof(DynamicObstacle.GetPosition));
+			Bind(nameof(Robot.StatObstaclePosition), nameof(StaticObstacle.GetPosition));
         }
 
         [Root(RootKind.Controller)]
         public Controller Controller { get; }
 
         public Robot Robot => Controller.Robot;
+        public DynamicObstacle DynamicObstacle => Controller.DynamicObstacle;
+        public StaticObstacle StaticObstacle => Controller.StaticObstacle;
 
 
 
