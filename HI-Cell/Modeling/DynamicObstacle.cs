@@ -19,5 +19,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public double[] GetPosition() {
             return Position; 
         }
+
     }
 }
