@@ -69,7 +69,12 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Source\SafetySharp\SafetySharp.csproj">
+      <Project>{9B6C1FB4-3F1B-43AC-A0E0-EAED4088BF37}</Project>
+      <Name>SafetySharp</Name>
+    </ProjectReference>
+  </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\Dependencies\ISSE.SafetySharp.1.2.3\analyzers\dotnet\cs\SafetySharp.Compiler.dll" />
     <Analyzer Include="..\Dependencies\ISSE.SafetySharp.1.2.3\analyzers\dotnet\cs\SafetySharp.Modeling.dll" />
