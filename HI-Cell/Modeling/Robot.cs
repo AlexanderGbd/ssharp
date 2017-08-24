@@ -8,6 +8,8 @@
         private double[] Position = new double[] {0, 0};
         public bool IsMoving { get; private set; }
         public bool ObstDetected { get; private set; }
+        public bool IsDetecting { get; private set; } = true;
+        public bool HasStopped => !IsMoving;
 
         /// <summary>
         ///   The positions of the obstacles and the target
@@ -72,12 +74,14 @@
             double PosX = GetXCoord();
             double PosY = GetYCoord();
             bool IncreaseX = false;
+            bool WasInIfClause = false;
 
             if (x > 0 && PosX < 5)
             {
                 Position[0]++;
                 IncreaseX = true;
                 ObstDetected = ScanForObstaclesInNextStep(1, 0);
+                WasInIfClause = true;
             }
             if (y > 0 && Position[1] < 5) {
                 Position[1]++;
@@ -85,8 +89,12 @@
                     ObstDetected = ScanForObstaclesInNextStep(1, 1);
                 else
                     ObstDetected = ScanForObstaclesInNextStep(0, 1);
+                WasInIfClause = true;
             }
-            ObstDetected = false;
+            if (!WasInIfClause)
+                ObstDetected = false;
+            if (!IsDetecting)
+                ObstDetected = false;
             IsMoving = true;
             //Console.WriteLine("Current x-coordinate: " + GetXCoord() + "Current y-Coordinate: " + GetYCoord());
         }
