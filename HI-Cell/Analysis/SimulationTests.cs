@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace SafetySharp.CaseStudies.HI_Cell.Analysis
 {
-    /*using FluentAssertions;
+    using FluentAssertions;
     using Modeling;
     using NUnit.Framework;
     using SafetySharp.Analysis;
-    using SafetySharp.Modeling;*/
+    using SafetySharp.Modeling;
     class SimulationTests
     {
         [Test]
@@ -26,7 +26,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
             model = (Model)simulator.Model;
             simulator.FastForward(steps: 5);
 
-            //model.Robot.SamePositionAsTarg.Should().BeTrue();
+            model.Robot.SamePositionAsTarg.Should().BeTrue();
         }
 
         //Example:

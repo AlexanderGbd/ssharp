@@ -1,6 +1,7 @@
 ﻿namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
     using SafetySharp.Modeling;
+    using System;
     public class Robot : Component
     {
 
@@ -56,9 +57,9 @@
         /// </summary>
         public virtual void Move(double x, double y)
         {
-            if (x > 0)
+            if (x > 0 && Position[0] < 5)
                 Position[0]++;
-            if (y >0)
+            if (y >0 && Position[1] < 5)
                 Position[1]++;
             IsMoving = true;
         }

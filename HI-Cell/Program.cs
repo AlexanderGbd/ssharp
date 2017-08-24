@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HI_Cell
+namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
     class Program
     {

@@ -20,10 +20,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                 StaticObstacle = new StaticObstacle()
             };
 
-            /*var DynObstacle = new DynamicObstacle();
-            var StatObstacle = new StaticObstacle();*/
-
-
             Bind(nameof(Robot.DynObstaclePosition), nameof(DynamicObstacle.GetPosition));
 			Bind(nameof(Robot.StatObstaclePosition), nameof(StaticObstacle.GetPosition));
         }
@@ -34,8 +30,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public Robot Robot => Controller.Robot;
         public DynamicObstacle DynamicObstacle => Controller.DynamicObstacle;
         public StaticObstacle StaticObstacle => Controller.StaticObstacle;
-
-
 
     }
 }
