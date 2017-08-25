@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
-    class Camera
+    using SafetySharp.Modeling;
+    class Camera : Component
     {
+
     }
 }
