@@ -1,5 +1,4 @@
-﻿
-namespace SafetySharp.CaseStudies.HI_Cell.Modeling
+﻿namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
     using SafetySharp.Modeling;
 
@@ -8,8 +7,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
 		///   The target's position
 		/// </summary>
-		public const double XTarget = 5;
-        public const double YTarget = 0;
+		public const float XTarget = 5;
+        public const float YTarget = 0;
 
         public Model()
         {

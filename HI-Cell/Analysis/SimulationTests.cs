@@ -80,6 +80,5 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
             model.Robot.ObstDetected.Should().BeFalse();
         }
 
-
-        }
+    }
 }

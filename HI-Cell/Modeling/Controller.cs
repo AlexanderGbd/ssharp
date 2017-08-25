@@ -72,13 +72,16 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                     from: State.IsMoving,
                     to: State.Collision,
                     guard: Robot.SamePositionAsObst,
-                    action: Robot.Stop)
+                    action: () => {
+                        Robot.Stop();
+                        DynamicObstacle.Stop(); })
                 .Transition(
                     from: new[] { State.NotMoving },
                     to: State.IsMoving,
-                    guard: Robot.SamePositionAsTarg,
+                    guard: !Robot.ObstDetected,
                     action: () =>
                     {
+                        DynamicObstacle.Move();
                         Robot.Move(1, 0);
                     });
         }

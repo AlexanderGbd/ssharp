@@ -1,22 +1,23 @@
-﻿
+﻿using UnityEngine;
 namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
     using SafetySharp.Modeling;
+
     public class StaticObstacle : Component
     {
-        private double[] Position = new double[]{4, 3};
+        private Vector2 Position = new Vector2(4, 3);
 
         public double GetXCoord()
         {
-            return Position[0];
+            return Position.x;
         }
 
         public double GetYCoord()
         {
-            return Position[1];
+            return Position.y;
         }
 
-        public double[] GetPosition()
+        public Vector2 GetPosition()
         {
             return Position;
         }

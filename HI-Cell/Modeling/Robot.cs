@@ -1,32 +1,37 @@
-﻿namespace SafetySharp.CaseStudies.HI_Cell.Modeling
+﻿using UnityEngine;
+
+namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
     using SafetySharp.Modeling;
     using System;
+    
+
     public class Robot : Component
     {
 
-        private double[] Position = new double[] {0, 0};
+        private Vector2 Position = new Vector2(0, 0);
         public bool IsMoving { get; private set; }
         public bool ObstDetected { get; private set; }
         public bool IsDetecting { get; private set; } = true;
         public bool HasStopped => !IsMoving;
+        public bool IsCollided => SamePositionAsObst;
 
         /// <summary>
         ///   The positions of the obstacles and the target
         /// </summary>
-        private double[] StatObstPosition => new double[] { StatObstaclePosition[0], StatObstaclePosition[1] };
-        private double[] DynObstPosition => new double[] { DynObstaclePosition[0], DynObstaclePosition[1] };
-        private double[] TargetPosition => new double[] {Model.XTarget, Model.YTarget};
+        private Vector2 StatObstPosition => new Vector2(StatObstaclePosition.x, StatObstaclePosition.y);
+        private Vector2 DynObstPosition => new Vector2(DynObstaclePosition.x, DynObstaclePosition.y);
+        private Vector2 TargetPosition => new Vector2(Model.XTarget, Model.YTarget);
 
         /// <summary>
         ///   Gets the position of the dynamic obstacle
         /// </summary>
-        public extern double[] DynObstaclePosition { get; }
+        public extern Vector2 DynObstaclePosition { get; }
 
         /// <summary>
         ///   Gets the position of the static obstacle
         /// </summary>
-        public extern double[] StatObstaclePosition { get; }
+        public extern Vector2 StatObstaclePosition { get; }
 
         /// <summary>
 		///   Gets the value indicating, that the robot has the same position as an obstacle
@@ -76,14 +81,14 @@
             bool IncreaseX = false;
             bool WasInIfClause = false;
 
-            if (x > 0 && PosX < 5)
+            if (x > 0 && PosX < 5 && !SamePositionAsObst)
             {
                 Position[0]++;
                 IncreaseX = true;
                 ObstDetected = ScanForObstaclesInNextStep(1, 0);
                 WasInIfClause = true;
             }
-            if (y > 0 && Position[1] < 5) {
+            if (y > 0 && Position[1] < 5 && !SamePositionAsObst) {
                 Position[1]++;
                 if (IncreaseX)
                     ObstDetected = ScanForObstaclesInNextStep(1, 1);
@@ -91,12 +96,8 @@
                     ObstDetected = ScanForObstaclesInNextStep(0, 1);
                 WasInIfClause = true;
             }
-            if (!WasInIfClause)
+            if (!WasInIfClause || !IsDetecting)
                 ObstDetected = false;
-            if (!IsDetecting)
-                ObstDetected = false;
-            IsMoving = true;
-            //Console.WriteLine("Current x-coordinate: " + GetXCoord() + "Current y-Coordinate: " + GetYCoord());
         }
 
         /// <summary>
@@ -159,12 +160,12 @@
         }
 
         public double GetXCoord() {
-            return Position[0];
+            return Position.x;
         }
 
         public double GetYCoord()
         {
-            return Position[1];
+            return Position.y;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         }
 
         /// <summary>
-        ///   Checks that the robot is always detecting and is alway reaching its target when no faults occur
+        ///   Checks that the robot is always detecting and is always reaching its target when no faults occur
         /// </summary>
         [Test]
         public void RobotReachesTargetWhenNoFaultsOccurModel()
@@ -45,7 +45,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         }
 
         /// <summary>
-        ///   Checks a formula over the case study, the x coordinate of our robot never exceeds 5, and the y coordinate always stays 0 (for now)
+        ///   Checks a formula over the case study, the x coordinate of our robot (for now) never exceeds 5, and the y coordinate always stays 0 
         /// </summary>
         [Test]
         public void StateGraphAllStates()
@@ -54,9 +54,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
 
             var result = ModelChecker.CheckInvariant(model, model.Robot.GetXCoord() < 6);
             var result1 = ModelChecker.CheckInvariant(model, model.Robot.GetYCoord() == 0);
-
-            Console.WriteLine("\nX: " + model.Robot.GetXCoord() + "Y: " + model.Robot.GetYCoord() + "Bool statement: " + (model.Robot.GetXCoord() < 6));
-           
+                       
             result.FormulaHolds.Should().BeTrue();
         }
 
@@ -83,7 +81,22 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
             var model = new Model();
             model.Faults.SuppressActivations();
 
-            //To be continued
+            var result = ModelChecker.CheckInvariant(model, model.Robot.IsCollided);
+            result.FormulaHolds.Should().BeFalse();
+        }
+
+        /// <summary>
+        ///   Checks that the robot can collide when its 'detecting' fault occurs
+        /// </summary>
+        [Test]
+        public void RobotCollidesWhenSensorDoesntDetectObstacles()
+        {
+            var model = new Model();
+            model.Faults.SuppressActivations();
+            model.Robot.SuppressDetecting.Activation = Activation.Forced;
+
+            var result = ModelChecker.CheckInvariant(model, model.Robot.IsCollided && !model.Robot.ObstDetected);
+            result.FormulaHolds.Should().BeFalse();
         }
     }
 }

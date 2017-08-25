@@ -60,15 +60,21 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Dependencies\UnityEngine5.5.5.0\lib\net35\UnityEngine.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Analysis\HazardProbabilityTests.cs" />
     <Compile Include="Analysis\ModelCheckingTests.cs" />
     <Compile Include="Analysis\SimulationTests.cs" />
+    <Compile Include="Modeling\Camera.cs" />
     <Compile Include="Modeling\Controller.cs" />
     <Compile Include="Modeling\DynamicObstacle.cs" />
     <Compile Include="Modeling\Model.cs" />
     <Compile Include="Modeling\Robot.cs" />
+    <Compile Include="Modeling\Sensor.cs" />
     <Compile Include="Modeling\StaticObstacle.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -78,6 +84,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Source\SafetyChecking\SafetyChecking.csproj">
+      <Project>{A91CB8AF-8A4C-4F69-848E-B3962F9A94F9}</Project>
+      <Name>SafetyChecking</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Source\SafetySharp\SafetySharp.csproj">
       <Project>{9B6C1FB4-3F1B-43AC-A0E0-EAED4088BF37}</Project>
       <Name>SafetySharp</Name>
