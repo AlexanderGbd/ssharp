@@ -9,7 +9,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
     using SafetySharp.Modeling;
 
-    class Sensor : Component
+    public class Sensor : Component
     {
         /// <summary>
         ///   The fault that doesn't recognise an obstacle, thus causes the robot to collide with an obstacle.
@@ -18,14 +18,17 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         /// <summary>
         ///   The positions of the robot, the obstacles and the target
+        ///   Note: ew Vector2(DynObstaclePosition.x, DynObstaclePosition.y)
+        ///   
         /// </summary>
-        private Vector2 RobPosition => new Vector2(RobotPosition.x, RobotPosition.y);
-        private Vector2 StatObstPosition => new Vector2(StatObstaclePosition.x, StatObstaclePosition.y);
-        private Vector2 DynObstPosition => new Vector2(DynObstaclePosition.x, DynObstaclePosition.y);
+        private Vector2 RobPosition => RobotPosition;
+        private Vector2 StatObstPosition => StatObstaclePosition;
+        private Vector2 DynObstPosition => DynObstaclePosition;
         private Vector2 TargetPosition => new Vector2(Model.XTarget, Model.YTarget);
 
         public bool ObstDetected { get; private set; }
         public bool IsDetecting { get; private set; } = true;
+        public bool ObstInEnvironment { get; private set; } = false;
 
         /// <summary>
         ///   Gets the robot's position
@@ -53,17 +56,14 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public bool ScanForObstaclesInNextStep(double x, double y)
         {
-            return (((DynObstPosition[0] == RobotPosition.x + x) && (DynObstPosition[1] == RobotPosition.y + y)) ||
-                    ((StatObstPosition[0] == RobotPosition.x + x) && (StatObstPosition[1] == RobotPosition.y + y)));
+            return (((DynObstPosition.x == RobotPosition.x + x) && (DynObstPosition.y == RobotPosition.y + y)) ||
+                    ((StatObstPosition.x == RobotPosition.x + x) && (StatObstPosition.y == RobotPosition.y + y)));
         }
-        /// <summary>
-        ///   Gets the value indicating, that the robot has the same position as an obstacle
-        /// </summary>
-        public bool SamePositionAsObst => ComparePositions();
+
         /// <summary>
 		///   Gets the value indicating, that the robot has the same position as its target
 		/// </summary>
-        public bool SamePositionAsTarg => ((TargetPosition[0] == RobotPosition.x) && (TargetPosition[1] == RobotPosition.y)) ? true : false;
+        public bool SamePositionAsTarg => ((TargetPosition.x == RobotPosition.x) && (TargetPosition.y == RobotPosition.y)) ? true : false;
 
         /// <summary>
         ///   Gets the distance between the robot and the dynamic obstacle
@@ -74,6 +74,17 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// </summary>
         public Vector2 DistanceToStatObstacle => new Vector2(Math.Abs(RobPosition.x - StatObstPosition.x), Math.Abs(RobPosition.y - StatObstPosition.y));
 
+        /// <summary>
+        ///   Calculates if the robot is at the same position as an obstacle
+        /// </summary>
+        public bool IsSamePositionAsObst() {
+            return ComparePositions();
+        }
+
+        public bool IsSamePositionAsTarg() {
+            return ((TargetPosition[0] == RobPosition.x) && (TargetPosition[1] == RobPosition.y)) ? true : false;
+        }
+
         [FaultEffect(Fault = nameof(SuppressDetecting))]
         public class SuppressDetectingEffect : Sensor
         {
@@ -82,6 +93,17 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                 ObstDetected = false;
                 IsDetecting = false;
             }
+        }
+
+        /// <summary>
+        /// Updates the sensor's state
+        /// Note: ScanForObstaclesInNextStep(0, 1) || ScanForObstaclesInNextStep(1, 1) ||
+        /// </summary>
+        public override void Update()
+        {
+            ObstDetected = (ScanForObstaclesInNextStep(1, 0) || ComparePositions());
+            ObstInEnvironment = (ScanForObstaclesInNextStep(1, 0) || ScanForObstaclesInNextStep(0, 1) || ScanForObstaclesInNextStep(1, 1)
+                                || ScanForObstaclesInNextStep(0, -1) || ComparePositions());
         }
     }
 }

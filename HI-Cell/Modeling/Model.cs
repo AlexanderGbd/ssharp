@@ -21,10 +21,13 @@
                 StaticObstacle = new StaticObstacle()
             };
 
-            Bind(nameof(Robot.DynObstaclePosition), nameof(DynamicObstacle.GetPosition));
-			Bind(nameof(Robot.StatObstaclePosition), nameof(StaticObstacle.GetPosition));
             Bind(nameof(Sensor.DynObstaclePosition), nameof(DynamicObstacle.GetPosition));
             Bind(nameof(Sensor.StatObstaclePosition), nameof(StaticObstacle.GetPosition));
+            Bind(nameof(Sensor.RobotPosition), nameof(Robot.GetPosition));
+            Bind(nameof(Robot.IsSamePositionAsObst), nameof(Sensor.IsSamePositionAsObst));
+            Bind(nameof(Robot.IsSamePositionAsTarg), nameof(Sensor.IsSamePositionAsTarg));
+            Bind(nameof(Robot.ObstacleDetected), nameof(Sensor.ObstDetected));
+
         }
 
         [Root(RootKind.Controller)]

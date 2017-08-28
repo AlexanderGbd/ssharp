@@ -71,14 +71,46 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         public void RobotDoesntDetectObstacleWhenItShouldDo() {
             var model = new Model();
             model.Faults.SuppressActivations();
-            model.Robot.SuppressDetecting.ForceActivation();
+            model.Sensor.SuppressDetecting.ForceActivation();
 
             var simulator = new Simulator(model);
             model = (Model)simulator.Model;
             simulator.FastForward(steps: 120);
 
-            model.Robot.ObstDetected.Should().BeFalse();
+            model.Sensor.ObstDetected.Should().BeFalse();
         }
 
+        /// <summary>
+        ///   Checks that the robot stops when it would hit an obstacle in the next step
+        /// </summary>
+        [Test]
+        public void RobotStopsWhenItWouldHitAnObstacleInTheNextStep()
+        {
+            var model = new Model();
+            model.Faults.SuppressActivations();
+
+            var simulator = new Simulator(model);
+            model = (Model)simulator.Model;
+            simulator.FastForward(steps: 120);
+
+            if (model.Sensor.ObstDetected)
+                Assert.IsFalse(model.Robot.IsMoving);
+        }
+
+        /// <summary>
+        /// The robot's camera does in fact not record when its 'recording' fault occurs
+        /// </summary>
+        [Test]
+        public void CameraDoesntRecordWhenItShouldDo() {
+            var model = new Model();
+            model.Faults.SuppressActivations();
+            model.Camera.SuppressRecording.ForceActivation();
+
+            var simulator = new Simulator(model);
+            model = (Model)simulator.Model;
+            simulator.FastForward(steps: 120);
+
+            model.Camera.IsRecording.Should().BeFalse();
+        }
     }
 }

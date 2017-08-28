@@ -56,18 +56,33 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public StaticObstacle StaticObstacle;
 
         /// <summary>
+        ///   The robot's sensor
+        /// </summary>
+        [Hidden, Subcomponent]
+        public Sensor Sensor;
+
+        /// <summary>
+        ///   The robot's camera
+        /// </summary>
+        [Hidden, Subcomponent]
+        public Camera Camera;
+
+        /// <summary>
 		///   Updates the state of the component.
 		/// </summary>
 		public override void Update()
         {
-            Update(Robot, DynamicObstacle, StaticObstacle);
+            Update(Robot, DynamicObstacle, StaticObstacle, Sensor, Camera);
 
             StateMachine
                 .Transition(
                     from: State.IsMoving,
                     to: State.NotMoving,
                     guard: !Robot.IsMoving,
-                    action: Robot.Stop)
+                    action: () => {
+                        Robot.Stop();
+                        DynamicObstacle.Stop();
+                    })
                 .Transition(
                     from: State.IsMoving,
                     to: State.Collision,
@@ -78,7 +93,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                 .Transition(
                     from: new[] { State.NotMoving },
                     to: State.IsMoving,
-                    guard: !Robot.ObstDetected,
+                    guard: !Sensor.ObstDetected,
                     action: () =>
                     {
                         DynamicObstacle.Move();
