@@ -42,6 +42,7 @@
       <HintPath>..\..\Dependencies\MahApps.Metro.1.1.3-ALPHA028\lib\net45\MahApps.Metro.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.Expression.Drawing, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="Microsoft.CSharp" />
@@ -68,6 +69,9 @@
     <Compile Include="..\..\Source\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="HI-Cell.xaml.cs">
+      <DependentUpon>HI-Cell.xaml</DependentUpon>
+    </Compile>
     <Compile Include="RailroadCrossing.xaml.cs">
       <DependentUpon>RailroadCrossing.xaml</DependentUpon>
     </Compile>
@@ -87,6 +91,10 @@
     <Page Include="HeightControlSystem.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="HI-Cell.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Infrastructure\IconButton.xaml">
       <SubType>Designer</SubType>
