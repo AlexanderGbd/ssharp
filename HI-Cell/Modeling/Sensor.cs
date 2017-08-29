@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
+    using ISSE.SafetyChecking.Modeling;
     using SafetySharp.Modeling;
 
     public class Sensor : Component

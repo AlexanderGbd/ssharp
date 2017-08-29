@@ -84,6 +84,7 @@ namespace SafetySharp.CaseStudies.Visualizations
 
             _model.Robot.SuppressMoving.Activation = SuppressMoving.IsChecked.ToOccurenceKind();
             _model.Sensor.SuppressDetecting.Activation = SuppressDetecting.IsChecked.ToOccurenceKind();
+            _model.Camera.SuppressRecording.Activation = SuppressRecording.IsChecked.ToOccurenceKind();
         }
 
         private void UpdateModelState() {

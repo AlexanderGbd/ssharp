@@ -2,6 +2,7 @@
 
 namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
+    using ISSE.SafetyChecking.Modeling;
     using SafetySharp.Modeling;
     using System;
     
