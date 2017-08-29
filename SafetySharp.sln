@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
+# Blend for Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Compiler", "Source\Compiler\Compiler.csproj", "{8823091C-387F-4F4D-ABCD-8F71D1528CBB}"
@@ -31,6 +31,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LtsMin", "Source\LtsMin\Lts
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visualizations", "Models\Visualizations\Visualizations.csproj", "{C0ED19A4-1362-49E4-9721-AAFCF012710A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{ABE98F0D-A9F8-432D-A2B3-B027BD32DC5D} = {ABE98F0D-A9F8-432D-A2B3-B027BD32DC5D}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Railroad Crossing", "Models\Railroad Crossing\Railroad Crossing.csproj", "{84C1F882-31D9-4A71-95A9-E1586740954A}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -72,6 +75,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Small Models", "Models\Small Models\Small Models.csproj", "{6F3CABAC-A40E-4AFE-AC5B-5989D278F64C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HI-Cell", "HI-Cell\HI-Cell.csproj", "{ABE98F0D-A9F8-432D-A2B3-B027BD32DC5D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8823091C-387F-4F4D-ABCD-8F71D1528CBB} = {8823091C-387F-4F4D-ABCD-8F71D1528CBB}
+		{96F3A853-B30A-4413-98C8-C9AAA4C084DE} = {96F3A853-B30A-4413-98C8-C9AAA4C084DE}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

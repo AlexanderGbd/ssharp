@@ -43,6 +43,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Expression.Drawing, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Expression.Interactions, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="Microsoft.CSharp" />
@@ -159,6 +160,10 @@
     <Resource Include="Resources\Entypo.ttf" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\HI-Cell\HI-Cell.csproj">
+      <Project>{abe98f0d-a9f8-432d-a2b3-b027bd32dc5d}</Project>
+      <Name>HI-Cell</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Source\SafetyChecking\SafetyChecking.csproj">
       <Project>{a91cb8af-8a4c-4f69-848e-b3962f9a94f9}</Project>
       <Name>SafetyChecking</Name>
