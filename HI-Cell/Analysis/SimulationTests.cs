@@ -39,7 +39,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         public void RobotIsNotMovingWhenItShouldBe() {
             var model = new Model();
             model.Faults.SuppressActivations();
-            model.Robot.SuppressMoving.ForceActivation();
+            model.Robot.SuppressMoving.Activation = ISSE.SafetyChecking.Modeling.Activation.Forced;
 
             var simulator = new Simulator(model);
             model = (Model)simulator.Model;
@@ -55,7 +55,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         public void RobotDoesntStopWhenItShould() {
             var model = new Model();
             model.Faults.SuppressActivations();
-            model.Robot.SuppressStop.ForceActivation();
+            model.Robot.SuppressStop.Activation = ISSE.SafetyChecking.Modeling.Activation.Forced;
 
             var simulator = new Simulator(model);
             model = (Model)simulator.Model;
@@ -71,7 +71,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         public void RobotDoesntDetectObstacleWhenItShouldDo() {
             var model = new Model();
             model.Faults.SuppressActivations();
-            model.Sensor.SuppressDetecting.ForceActivation();
+            model.Sensor.SuppressDetecting.Activation = ISSE.SafetyChecking.Modeling.Activation.Forced;
 
             var simulator = new Simulator(model);
             model = (Model)simulator.Model;
@@ -104,7 +104,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         public void CameraDoesntRecordWhenItShouldDo() {
             var model = new Model();
             model.Faults.SuppressActivations();
-            model.Camera.SuppressRecording.ForceActivation();
+            model.Camera.SuppressRecording.Activation = ISSE.SafetyChecking.Modeling.Activation.Forced;
 
             var simulator = new Simulator(model);
             model = (Model)simulator.Model;

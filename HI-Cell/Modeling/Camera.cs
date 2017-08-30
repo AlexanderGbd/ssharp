@@ -13,7 +13,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
         /// The fault that prevents the camera from recording
         /// </summary>
-        public readonly Fault SuppressRecording = new PermanentFault();
+        public readonly ISSE.SafetyChecking.Modeling.Fault SuppressRecording = new ISSE.SafetyChecking.Modeling.PermanentFault();
 
         [FaultEffect(Fault = nameof(SuppressRecording))]
         public class SuppressRecordingEffect : Camera

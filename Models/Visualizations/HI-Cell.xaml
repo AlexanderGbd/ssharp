@@ -44,6 +44,20 @@
                 <EasingDoubleKeyFrame KeyTime="0:0:0.5" Value="360" />
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
+        <Storyboard x:Key="SensorEvent">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="SensorAlert">
+                <EasingDoubleKeyFrame KeyTime="0" Value="1" />
+                <EasingDoubleKeyFrame KeyTime="0:0:0.5" Value="1" />
+                <EasingDoubleKeyFrame KeyTime="0:0:1.5" Value="0" />
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="CameraEvent">
+            <DoubleAnimationUsingKeyFrames
+                Storyboard.TargetProperty=""
+                Storyboard.TargetName="Robot">
+                <EasingDoubleKeyFrame KeyTime="0:0:0.5" Value="360" />
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
 
     </UserControl.Resources>
     <UserControl.Triggers>

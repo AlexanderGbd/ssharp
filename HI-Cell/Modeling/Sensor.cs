@@ -15,7 +15,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
         ///   The fault that doesn't recognise an obstacle, thus causes the robot to collide with an obstacle.
         /// </summary>
-        public readonly Fault SuppressDetecting = new PermanentFault();
+        public readonly ISSE.SafetyChecking.Modeling.Fault SuppressDetecting = new ISSE.SafetyChecking.Modeling.PermanentFault();
 
         /// <summary>
         ///   The positions of the robot, the obstacles and the target

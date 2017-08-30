@@ -21,7 +21,6 @@ namespace SafetySharp.CaseStudies.Visualizations
     using System.Windows.Media.Animation;
     using CaseStudies.HI_Cell.Modeling;
     using Infrastructure;
-    using Modeling;
     using System.Windows.Threading;
 
     public partial class HI_Cell
@@ -63,6 +62,8 @@ namespace SafetySharp.CaseStudies.Visualizations
             Storyboard.SetTargetProperty(myDoubleAnimation,
                 new PropertyPath(WidthProperty));
 
+            
+
             //TimerAlert.Opacity = 0;
             //SensorAlert.Opacity = 0;
             //SimulationControls.MaxSpeed = 64;
@@ -82,12 +83,20 @@ namespace SafetySharp.CaseStudies.Visualizations
             if (SimulationControls.Simulator.IsReplay)
                 return;
 
-            _model.Robot.SuppressMoving.Activation = SuppressMoving.IsChecked.ToOccurenceKind();
-            _model.Sensor.SuppressDetecting.Activation = SuppressDetecting.IsChecked.ToOccurenceKind();
-            _model.Camera.SuppressRecording.Activation = SuppressRecording.IsChecked.ToOccurenceKind();
+            //_model.Robot.SuppressMoving.Activation = SuppressMoving.IsChecked.ToOccurenceKind();
+            //_model.Sensor.SuppressDetecting.Activation = SuppressDetecting.IsChecked.ToOccurenceKind();
+            //_model.Camera.SuppressRecording.Activation = SuppressRecording.IsChecked.ToOccurenceKind();
         }
 
         private void UpdateModelState() {
+            //Robot
+            
+
+            //Sensor
+            
+
+            //Camera
+
 
         }
 
