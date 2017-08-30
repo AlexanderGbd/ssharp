@@ -66,7 +66,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         {
             var model = new Model();
             model.Faults.SuppressActivations();
-            model.Robot.SuppressMoving.Activation = Activation.Forced;
+            model.Robot.SuppressMoving.Activation = ISSE.SafetyChecking.Modeling.Activation.Forced;
 
             var result = ModelChecker.CheckInvariant(model, model.Robot.IsMoving);
             result.FormulaHolds.Should().BeFalse();
@@ -93,7 +93,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         {
             var model = new Model();
             model.Faults.SuppressActivations();
-            model.Sensor.SuppressDetecting.Activation = Activation.Forced;
+            model.Sensor.SuppressDetecting.Activation = ISSE.SafetyChecking.Modeling.Activation.Forced;
 
             var result = ModelChecker.CheckInvariant(model, model.Robot.IsCollided && !model.Robot.ObstDetected);
             result.FormulaHolds.Should().BeFalse();

@@ -1,4 +1,4 @@
-﻿<UserControl x:Name="HI_Cell" x:Class="SafetySharp.CaseStudies.Visualizations.HI_Cell"
+﻿<UserControl x:Name="HICell" x:Class="SafetySharp.CaseStudies.Visualizations.HI_Cell"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 

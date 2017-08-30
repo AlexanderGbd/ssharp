@@ -83,9 +83,9 @@ namespace SafetySharp.CaseStudies.Visualizations
             if (SimulationControls.Simulator.IsReplay)
                 return;
 
-            //_model.Robot.SuppressMoving.Activation = SuppressMoving.IsChecked.ToOccurenceKind();
-            //_model.Sensor.SuppressDetecting.Activation = SuppressDetecting.IsChecked.ToOccurenceKind();
-            //_model.Camera.SuppressRecording.Activation = SuppressRecording.IsChecked.ToOccurenceKind();
+            _model.Robot.SuppressMoving.Activation = SuppressMoving.IsChecked.ToOccurenceKind();
+            _model.Sensor.SuppressDetecting.Activation = SuppressDetecting.IsChecked.ToOccurenceKind();
+            _model.Camera.SuppressRecording.Activation = SuppressRecording.IsChecked.ToOccurenceKind();
         }
 
         private void UpdateModelState() {
