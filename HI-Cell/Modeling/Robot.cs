@@ -8,6 +8,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
     public class Robot : Component
     {
 
+        //private Vector2 Position => CameraPosition;
         private Vector2 Position = new Vector2(0, 0);
         public bool IsMoving { get; private set; }
         public bool HasStopped => !IsMoving;
@@ -20,6 +21,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public extern bool IsSamePositionAsObst { get; }
         public extern bool IsSamePositionAsTarg { get; }
         public extern bool ObstacleDetected { get; }
+        public extern Vector2 CameraPosition { get; }
 
         /// <summary>
 		///   The fault that prevents the robot from moving.
@@ -60,7 +62,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             if (ObstDetected)
                 IsMoving = false;
             else if (Position[0] < 5)
-                Position[0]++;
+                Position.x++;
         }
 
         [FaultEffect(Fault = nameof(SuppressMoving))]

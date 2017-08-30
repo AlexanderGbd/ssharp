@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using UnityEngine;
 
 namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
     using SafetySharp.Modeling;
     public class Camera : Component
     {
+        public Vector2 Position = new Vector2(0, 0);
         public bool IsRecording { get; private set; } = true;
         /// <summary>
         /// The fault that prevents the camera from recording
@@ -26,7 +23,22 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public override void Update()
         {
-            
+            //Move method here or still in Robot?
+        }
+
+        public double GetXCoord()
+        {
+            return Position.x;
+        }
+
+        public double GetYCoord()
+        {
+            return Position.y;
+        }
+
+        public Vector2 GetPosition()
+        {
+            return Position;
         }
     }
 }

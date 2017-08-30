@@ -51,20 +51,20 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// </summary>
         public bool ComparePositions()
         {
-            return (((DynObstPosition[0] == RobotPosition.x) && (DynObstPosition[1] == RobotPosition.y)) ||
-                    ((StatObstPosition[0] == RobotPosition.x) && (StatObstPosition[1] == RobotPosition.y)));
+            return (((DynObstPosition[0] == RobPosition.x) && (DynObstPosition[1] == RobPosition.y)) ||
+                    ((StatObstPosition[0] == RobPosition.x) && (StatObstPosition[1] == RobPosition.y)));
         }
 
         public bool ScanForObstaclesInNextStep(double x, double y)
         {
-            return (((DynObstPosition.x == RobotPosition.x + x) && (DynObstPosition.y == RobotPosition.y + y)) ||
-                    ((StatObstPosition.x == RobotPosition.x + x) && (StatObstPosition.y == RobotPosition.y + y)));
+            return (((DynObstPosition.x == RobPosition.x + x) && (DynObstPosition.y == RobPosition.y + y)) ||
+                    ((StatObstPosition.x == RobPosition.x + x) && (StatObstPosition.y == RobPosition.y + y)));
         }
 
         /// <summary>
 		///   Gets the value indicating, that the robot has the same position as its target
 		/// </summary>
-        public bool SamePositionAsTarg => ((TargetPosition.x == RobotPosition.x) && (TargetPosition.y == RobotPosition.y)) ? true : false;
+        public bool SamePositionAsTarg => ((TargetPosition.x == RobPosition.x) && (TargetPosition.y == RobPosition.y)) ? true : false;
 
         /// <summary>
         ///   Gets the distance between the robot and the dynamic obstacle

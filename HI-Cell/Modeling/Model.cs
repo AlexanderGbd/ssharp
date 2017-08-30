@@ -27,6 +27,7 @@
             Bind(nameof(Robot.IsSamePositionAsObst), nameof(Sensor.IsSamePositionAsObst));
             Bind(nameof(Robot.IsSamePositionAsTarg), nameof(Sensor.IsSamePositionAsTarg));
             Bind(nameof(Robot.ObstacleDetected), nameof(Sensor.ObstDetected));
+            //Bind(nameof(Camera.Position), nameof(Robot.CamPosition));
 
         }
 
