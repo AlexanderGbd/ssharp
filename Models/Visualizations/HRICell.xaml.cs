@@ -1,42 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
-namespace SafetySharp.CaseStudies.Visualizations
+﻿namespace SafetySharp.CaseStudies.Visualizations
 {
-
     using System;
-    using System.Windows;
     using System.Windows.Media.Animation;
     using CaseStudies.HI_Cell.Modeling;
     using Infrastructure;
-    using System.Windows.Threading;
+    using System.Windows;
 
-    public partial class HI_Cell
+    public partial class HRICell
     {
         private readonly Storyboard _movingStoryboard;
         private readonly Storyboard _sensorAlertStoryboard;
         private readonly Storyboard _cameraAlertStoryboard;
         private Model _model;
-        DispatcherTimer timer = new DispatcherTimer();
 
-        public HI_Cell()
+        public HRICell()
         {
             InitializeComponent();
-            timer.Interval = TimeSpan.FromSeconds(0.05);
-            timer.IsEnabled = true;
-            timer.Tick += animate;
 
             // Initialize visualization resources
             _movingStoryboard = (Storyboard)Resources["MovingRobot"];
@@ -54,26 +33,31 @@ namespace SafetySharp.CaseStudies.Visualizations
             // Initialize the visualization state
             UpdateModelState();
 
-            DoubleAnimation myDoubleAnimation = new DoubleAnimation();
-            myDoubleAnimation.From = 100;
-            myDoubleAnimation.To = 200;
-            myDoubleAnimation.Duration = new Duration(TimeSpan.FromSeconds(1));
-            Storyboard.SetTargetName(myDoubleAnimation, Robot.Name);
-            Storyboard.SetTargetProperty(myDoubleAnimation,
-                new PropertyPath(WidthProperty));
+            //DoubleAnimation myDoubleAnimation = new DoubleAnimation();
+            //myDoubleAnimation.From = 100;
+            //myDoubleAnimation.To = 200;
+            //myDoubleAnimation.Duration = new Duration(TimeSpan.FromSeconds(1));
+            //Storyboard.SetTargetName(myDoubleAnimation, Robot.Name);
+            //Storyboard.SetTargetProperty(myDoubleAnimation,
+            //    new PropertyPath(WidthProperty));
 
-            
-
-            //TimerAlert.Opacity = 0;
-            //SensorAlert.Opacity = 0;
-            //SimulationControls.MaxSpeed = 64;
-            //SimulationControls.ChangeSpeed(8);
+            Warning.Opacity = 0;
+            SensorWarning.Opacity = 0;
+            SimulationControls.MaxSpeed = 64;
+            SimulationControls.ChangeSpeed(8);
         }
 
-        public void animate(object sender, EventArgs e) {
-            double x = Canvas.GetLeft(Robot);
-            x += 5.0;
-            Canvas.SetLeft(Robot, x);
+        private void OnSuppressMoving(object sender, RoutedEventArgs e) {
+
+        }
+
+        private void OnSuppressDetecting(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void OnSuppressRecording(object sender, RoutedEventArgs e) {
+
         }
 
         private void OnModelStateReset()
@@ -83,20 +67,30 @@ namespace SafetySharp.CaseStudies.Visualizations
             if (SimulationControls.Simulator.IsReplay)
                 return;
 
-            //_model.Robot.SuppressMoving.Activation = SuppressMoving.IsChecked.ToOccurenceKind();
-            //_model.Sensor.SuppressDetecting.Activation = SuppressDetecting.IsChecked.ToOccurenceKind();
-            //_model.Camera.SuppressRecording.Activation = SuppressRecording.IsChecked.ToOccurenceKind();
+            _model.Robot.SuppressMoving.Activation = SuppressMoving.IsChecked.ToOccurrenceKind();
+            _model.Sensor.SuppressDetecting.Activation = SuppressDetecting.IsChecked.ToOccurrenceKind();
+            _model.Camera.SuppressRecording.Activation = SuppressRecording.IsChecked.ToOccurrenceKind();
         }
 
-        private void UpdateModelState() {
+        private void UpdateModelState()
+        {
             //Robot
-            
+
 
             //Sensor
-            
+
 
             //Camera
 
+
+            //Controller still to implement
+            switch (_model.Controller.StateMachine.State)
+            {
+                case Controller.State.IsMoving: break; 
+                case Controller.State.NotMoving: break;
+                case Controller.State.Collision: break;
+                case Controller.State.StoppedAtTarget: break;
+            }
 
         }
 

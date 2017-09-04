@@ -70,8 +70,8 @@
     <Compile Include="..\..\Source\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="HI-Cell.xaml.cs">
-      <DependentUpon>HI-Cell.xaml</DependentUpon>
+    <Compile Include="HRICell.xaml.cs">
+      <DependentUpon>HRICell.xaml</DependentUpon>
     </Compile>
     <Compile Include="RailroadCrossing.xaml.cs">
       <DependentUpon>RailroadCrossing.xaml</DependentUpon>
@@ -93,7 +93,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="HI-Cell.xaml">
+    <Page Include="HRICell.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

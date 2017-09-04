@@ -24,8 +24,8 @@
             <TabItem Header="Hemodialysis Machine">
                 <visualization:HdMachine />
             </TabItem>
-            <TabItem Header="HI-Cell">
-                <visualization:HI_Cell />
+            <TabItem Header="HRICell">
+                <visualization:HRICell Margin="250,-22,-250,22" />
             </TabItem>
         </TabControl>
     </Grid>
