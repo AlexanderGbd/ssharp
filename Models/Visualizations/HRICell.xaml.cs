@@ -5,12 +5,14 @@
     using CaseStudies.HI_Cell.Modeling;
     using Infrastructure;
     using System.Windows;
+    using Modeling;
 
     public partial class HRICell
     {
         private readonly Storyboard _movingStoryboard;
         private readonly Storyboard _sensorAlertStoryboard;
         private readonly Storyboard _cameraAlertStoryboard;
+        private readonly Storyboard _dynObstacleStoryboard;
         private Model _model;
 
         public HRICell()
@@ -19,9 +21,7 @@
 
             // Initialize visualization resources
             _movingStoryboard = (Storyboard)Resources["MovingRobot"];
-            _movingStoryboard.Begin();
-            _movingStoryboard.Pause();
-
+            _dynObstacleStoryboard = (Storyboard)Resources["MovingObstacle"];
             _cameraAlertStoryboard = (Storyboard)Resources["CameraEvent"];
             _sensorAlertStoryboard = (Storyboard)Resources["SensorEvent"];
 
@@ -33,14 +33,6 @@
             // Initialize the visualization state
             UpdateModelState();
 
-            //DoubleAnimation myDoubleAnimation = new DoubleAnimation();
-            //myDoubleAnimation.From = 100;
-            //myDoubleAnimation.To = 200;
-            //myDoubleAnimation.Duration = new Duration(TimeSpan.FromSeconds(1));
-            //Storyboard.SetTargetName(myDoubleAnimation, Robot.Name);
-            //Storyboard.SetTargetProperty(myDoubleAnimation,
-            //    new PropertyPath(WidthProperty));
-
             Warning.Opacity = 0;
             SensorWarning.Opacity = 0;
             SimulationControls.MaxSpeed = 64;
@@ -48,16 +40,16 @@
         }
 
         private void OnSuppressMoving(object sender, RoutedEventArgs e) {
-
+            _model.Robot.SuppressMoving.ToggleActivationMode();
         }
 
         private void OnSuppressDetecting(object sender, RoutedEventArgs e)
         {
-            
+            _model.Sensor.SuppressDetecting.ToggleActivationMode();
         }
 
         private void OnSuppressRecording(object sender, RoutedEventArgs e) {
-
+            _model.Camera.SuppressRecording.ToggleActivationMode();
         }
 
         private void OnModelStateReset()
@@ -75,79 +67,56 @@
         private void UpdateModelState()
         {
             //Robot
+            Robot.Visibility = SuppressMoving.IsChecked.ToVisibility();
 
+            if (!_model.Robot.IsMoving && !_model.Sensor.ObstDetected && !_model.Robot.IsCollided && !_model.Robot.SamePositionAsTarg)
+            {
+                _movingStoryboard.Begin();
+            }
+            if (_model.Robot.SamePositionAsObst || _model.Robot.SamePositionAsTarg)
+                _movingStoryboard.Stop();
+
+            if (_model.Robot.ObstDetected)
+                _movingStoryboard.Pause();
+
+            //Dynamic Obstacle
+            DynamicObstacle.Visibility = true.ToVisibility();
+            _dynObstacleStoryboard.Begin();
 
             //Sensor
+            SuppressDetecting.IsChecked = _model.Sensor.SuppressDetecting.IsActivated;
+            Warning.Visibility = SuppressDetecting.IsChecked.ToVisibility();
+            SensorWarning.Visibility = SuppressDetecting.IsChecked.ToVisibility();
 
+            if (!_model.Sensor.IsDetecting)
+                _sensorAlertStoryboard.Begin();
 
             //Camera
+            SuppressRecording.IsChecked = _model.Camera.SuppressRecording.IsActivated;
+            Warning.Visibility = SuppressRecording.IsChecked.ToVisibility();
+            CameraWarning.Visibility = SuppressRecording.IsChecked.ToVisibility();
 
+            if (!_model.Camera.IsRecording)
+                _cameraAlertStoryboard.Begin();
 
             //Controller still to implement
             switch (_model.Controller.StateMachine.State)
             {
-                case Controller.State.IsMoving: break; 
-                case Controller.State.NotMoving: break;
-                case Controller.State.Collision: break;
-                case Controller.State.StoppedAtTarget: break;
+                case Controller.State.IsMoving:
+                    ControllerScreen.Text = "Is Moving";
+                    break; 
+                case Controller.State.NotMoving:
+                    ControllerScreen.Text = "Not Moving";
+                    break;
+                case Controller.State.Collision:
+                    ControllerScreen.Text = "Collision";
+                    break;
+                case Controller.State.StoppedAtTarget:
+                    ControllerScreen.Text = "Stopped at target";
+                    break;
             }
 
         }
 
-        //private void UpdateModelState()
-        //{
-        //    // Timer
-        //    CountDown.Text = _model.Timer.RemainingTime.ToString();
-        //    CountDown.Visibility = _model.Timer.IsActive.ToVisibility();
-        //    SuppressTimeout.IsChecked = _model.Timer.SuppressTimeout.IsActivated;
-        //    TimerFailure.Visibility = SuppressTimeout.IsChecked.ToVisibility();
-
-        //    if (_model.Timer.HasElapsed)
-        //        _timerAlertStoryboard.Begin();
-
-        //    hallo.Visibility = (_model.Timer.RemainingTime > 30).ToVisibility();
-
-        //    // Camera
-        //    var pressureLevel = Math.Round(_model.Tank.PressureLevel / (double)Model.PressureLimit * 100);
-        //    _pressureLevelStoryboard.Seek(TimeSpan.FromMilliseconds(Math.Max(0, 10 * pressureLevel)));
-        //    PressureLevel.Text = $"{pressureLevel}%";
-        //    PressureLevel.Visibility = (!_model.Tank.IsRuptured).ToVisibility();
-        //    TankRupture.Visibility = _model.Tank.IsRuptured.ToVisibility();
-
-        //    // Sensor
-        //    SuppressFull.IsChecked = _model.Sensor.SuppressIsFull.IsActivated;
-        //    SuppressEmpty.IsChecked = _model.Sensor.SuppressIsEmpty.IsActivated;
-        //    SensorFailure.Visibility = (SuppressFull.IsChecked || SuppressEmpty.IsChecked).ToVisibility();
-
-        //    if ((_model.Sensor.IsFull || _model.Sensor.IsEmpty))
-        //        _sensorAlertStoryboard.Begin();
-
-        //    // Controller
-        //    switch (_model.Controller.StateMachine.State)
-        //    {
-        //        case Controller.State.Inactive:
-        //            ControllerScreen.Text = "Inactive";
-        //            break;
-        //        case Controller.State.Filling:
-        //            ControllerScreen.Text = "Filling";
-        //            break;
-        //        case Controller.State.StoppedBySensor:
-        //            ControllerScreen.Text = "Stopped: Sensor";
-        //            break;
-        //        case Controller.State.StoppedByTimer:
-        //            ControllerScreen.Text = "Stopped: Timer";
-        //            break;
-        //    }
-
-        //    // Pump
-        //    if (!_model.Pump.IsEnabled)
-        //        _pumpingStoryboard.Pause();
-        //    else
-        //        _pumpingStoryboard.Resume();
-
-        //    SuppressPumping.IsChecked = _model.Pump.SuppressPumping.IsActivated;
-        //    PumpFailure.Visibility = SuppressPumping.IsChecked.ToVisibility();
-
-        //}
     }
 }

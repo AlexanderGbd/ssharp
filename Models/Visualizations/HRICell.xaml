@@ -29,10 +29,14 @@
                 <EasingDoubleKeyFrame KeyTime="0:0:3" Value="1"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:4" Value="0.5"/>
             </DoubleAnimationUsingKeyFrames>
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="DynamicObstacle">
+                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="158"/>
+            </DoubleAnimationUsingKeyFrames>
         </Storyboard>
         <Storyboard x:Key="SensorWarningOn">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="Warning">
-                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                <EasingDoubleKeyFrame KeyTime="0" Value="1"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:1" Value="1"/>
             </DoubleAnimationUsingKeyFrames>
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="SensorWarning">
@@ -85,7 +89,7 @@
     <DockPanel>
         <infrastructure:SimulationControls x:Name="SimulationControls" DockPanel.Dock="Top" />
         <Canvas Background="#FFDFDCEC" Margin="-539,-222,-44,-192" Width="892" Height="569" >
-                <Ellipse x:Name="Robot" Height="100" Width="100" Fill="Black" Canvas.Left="88" Canvas.Top="422" ToolTip="Robot" RenderTransformOrigin="0.5,0.5">
+            <Ellipse x:Name="Robot" Height="100" Width="100" Fill="Black" Canvas.Left="88" Canvas.Top="422" ToolTip="Robot" RenderTransformOrigin="0.5,0.5">
                 <Ellipse.ContextMenu>
                     <ContextMenu StaysOpen="true">
                         <MenuItem x:Name="SuppressMoving" Header="Suppress 'Moving'" IsCheckable="True" Click="OnSuppressMoving" />
@@ -93,30 +97,43 @@
                         <MenuItem x:Name="SuppressRecording" Header="Suppress 'Recording'" IsCheckable="True" Click="OnSuppressRecording" />
                     </ContextMenu>
                 </Ellipse.ContextMenu>
-                    <Ellipse.RenderTransform>
-                        <TransformGroup>
-                            <ScaleTransform/>
-                            <SkewTransform/>
-                            <RotateTransform/>
-                            <TranslateTransform/>
-                        </TransformGroup>
-                    </Ellipse.RenderTransform>
-                </Ellipse>
-                <Rectangle x:Name="Target" Fill="#FF7A7A97" Height="118" Stroke="#FF191717" Width="116" Canvas.Left="723" Canvas.Top="412" ToolTip="Target"/>
-                <Rectangle x:Name="StaticObstacle" Fill="#FFBF0C0C" Stroke="#FF191717" Width="102" Height="100" Canvas.Left="251" Canvas.Top="262" ToolTip="Static Obstacle"/>
-                <Ellipse x:Name="DynamicObstacle" Height="100" Width="100" Fill="#FFEAB26D" Canvas.Left="407" Canvas.Top="264" ToolTip="Danamic Obstacle"/>
-                <ed:RegularPolygon x:Name="Warning" Fill="#FFE4CE44" Height="80" InnerRadius="1" Canvas.Left="54" Stretch="Fill" Canvas.Top="46" Width="80" PointCount="3" RenderTransformOrigin="0.5,0.5" Opacity="0">
-                    <ed:RegularPolygon.RenderTransform>
-                        <TransformGroup>
-                            <ScaleTransform/>
-                            <SkewTransform/>
-                            <RotateTransform Angle="180"/>
-                            <TranslateTransform/>
-                        </TransformGroup>
-                    </ed:RegularPolygon.RenderTransform>
-                </ed:RegularPolygon>
-                <TextBlock x:Name="SensorWarning" Height="62" Canvas.Left="50" TextWrapping="Wrap" Text="Sensor fault!!!" Canvas.Top="50" Width="123" FontSize="24" FontFamily="Showcard Gothic" Opacity="0"/>
-                <TextBlock x:Name="CameraWarning" Height="58" Canvas.Left="50" TextWrapping="Wrap" Text="Camera fault!!!" Canvas.Top="54" Width="140" FontSize="24" FontWeight="Bold" FontFamily="Showcard Gothic" Opacity="0"/>
+                <Ellipse.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Ellipse.RenderTransform>
+            </Ellipse>
+            <Rectangle x:Name="Target" Fill="#FF7A7A97" Height="118" Stroke="#FF191717" Width="116" Canvas.Left="723" Canvas.Top="412" ToolTip="Target"/>
+            <Rectangle x:Name="StaticObstacle" Fill="#FFBF0C0C" Stroke="#FF191717" Width="102" Height="100" Canvas.Left="251" Canvas.Top="262" ToolTip="Static Obstacle"/>
+            <Ellipse x:Name="DynamicObstacle" Height="100" Width="100" Fill="#FFEAB26D" Canvas.Left="407" Canvas.Top="264" ToolTip="Danamic Obstacle" RenderTransformOrigin="0.5,0.5">
+                <Ellipse.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Ellipse.RenderTransform>
+            </Ellipse>
+            <ed:RegularPolygon x:Name="Warning" Fill="#FFE4CE44" Height="80" InnerRadius="1" Canvas.Left="180" Stretch="Fill" Canvas.Top="46" Width="80" PointCount="3" RenderTransformOrigin="0.5,0.5" Opacity="0">
+                <ed:RegularPolygon.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="180"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </ed:RegularPolygon.RenderTransform>
+            </ed:RegularPolygon>
+            <TextBlock x:Name="SensorWarning" Height="62" Canvas.Left="176" TextWrapping="Wrap" Text="Sensor fault!!!" Canvas.Top="50" Width="123" FontSize="24" FontFamily="Showcard Gothic" Opacity="0"/>
+            <TextBlock x:Name="CameraWarning" Height="58" Canvas.Left="172" TextWrapping="Wrap" Text="Camera fault!!!" Canvas.Top="52" Width="140" FontSize="24" FontWeight="Bold" FontFamily="Showcard Gothic" Opacity="0"/>
+            <DockPanel Width="137" Canvas.Top="49" Height="134" IsHitTestVisible="false" Canvas.Left="19">
+                <TextBlock x:Name="ControllerScreen" TextWrapping="Wrap" TextAlignment="Center" Text="Not Moving"
+                               Foreground="Blue" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </DockPanel>
         </Canvas>
     </DockPanel>
 </UserControl>
