@@ -6,7 +6,6 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:visualization="clr-namespace:SafetySharp.CaseStudies.Visualizations"
       xmlns:infrastructure="clr-namespace:SafetySharp.CaseStudies.Visualizations.Infrastructure"
-      xmlns:local="clr-namespace:SafetySharp.CaseStudies.Visualizations"
       xmlns:ed="http://schemas.microsoft.com/expression/2010/drawing"
       mc:Ignorable="d" 
       d:DesignHeight="300" d:DesignWidth="300">
@@ -89,7 +88,7 @@
     <!--DockPanel LastChildFill="true"-->
     <DockPanel>
         <infrastructure:SimulationControls x:Name="SimulationControls" DockPanel.Dock="Top" />
-        <Canvas Background="#FFDFDCEC" Margin="-539,-222,-44,-192" Width="892" Height="569">
+        <Canvas x:Name="Canvas" Background="#FFDFDCEC" Margin="-539,-222,-44,-192" Width="892" Height="569" KeyDown="Canvas_OnKeyDown_">
             <Ellipse x:Name="Robot" Height="100" Width="100" Fill="Black" Canvas.Left="88" Canvas.Top="422" ToolTip="Robot" RenderTransformOrigin="0.5,0.5">
                 <Ellipse.ContextMenu>
                     <ContextMenu StaysOpen="true">

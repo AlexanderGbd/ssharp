@@ -5,6 +5,8 @@
     using CaseStudies.HI_Cell.Modeling;
     using Infrastructure;
     using System.Windows;
+    using System.Windows.Input;
+    using System.Windows.Shapes;
     using Modeling;
 
     public partial class HRICell
@@ -118,7 +120,17 @@
 
         }
 
+        /// <summary>
+        /// This method is invoked, when a key was pressed
+        /// </summary>
+        private void Canvas_OnKeyDown_(object sender, KeyEventArgs e)
+        {
+            Point position = Robot.TranslatePoint(Robot.RenderTransformOrigin, Robot);
+            Robot.TranslatePoint(new Point(position.X + 100, position.Y), Robot);
 
-
+            Random rnd = new Random();
+            position = DynamicObstacle.RenderTransformOrigin;
+            DynamicObstacle.TranslatePoint(new Point(position.X + rnd.Next(101), position.Y + rnd.Next(101)), DynamicObstacle);
+        }
     }
 }
