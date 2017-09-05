@@ -1,14 +1,4 @@
-﻿using NUnit.Framework;
-using SafetySharp.Analysis;
-using SafetySharp.CaseStudies.HI_Cell.Modeling;
-using SafetySharp.Modeling;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SafetySharp.CaseStudies.HI_Cell.Analysis
+﻿namespace SafetySharp.CaseStudies.HI_Cell.Analysis
 {
     using FluentAssertions;
     using Modeling;
@@ -25,7 +15,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
             var model = new Model();
             model.Faults.SuppressActivations();
 
-            var simulator = new Simulator(model);
+            var simulator = new SafetySharpSimulator(model);
             model = (Model)simulator.Model;
             simulator.FastForward(steps: 120);
 
@@ -39,9 +29,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         public void RobotIsNotMovingWhenItShouldBe() {
             var model = new Model();
             model.Faults.SuppressActivations();
-            model.Robot.SuppressMoving.Activation = ISSE.SafetyChecking.Modeling.Activation.Forced;
+            model.Robot.SuppressMoving.ForceActivation();
 
-            var simulator = new Simulator(model);
+            var simulator = new SafetySharpSimulator(model);
             model = (Model)simulator.Model;
             simulator.FastForward(steps: 120);
 
@@ -55,9 +45,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         public void RobotDoesntStopWhenItShould() {
             var model = new Model();
             model.Faults.SuppressActivations();
-            model.Robot.SuppressStop.Activation = ISSE.SafetyChecking.Modeling.Activation.Forced;
+            model.Robot.SuppressStop.ForceActivation();
 
-            var simulator = new Simulator(model);
+            var simulator = new SafetySharpSimulator(model);
             model = (Model)simulator.Model;
             simulator.FastForward(steps: 120);
 
@@ -71,9 +61,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         public void RobotDoesntDetectObstacleWhenItShouldDo() {
             var model = new Model();
             model.Faults.SuppressActivations();
-            model.Sensor.SuppressDetecting.Activation = ISSE.SafetyChecking.Modeling.Activation.Forced;
+            model.Sensor.SuppressDetecting.ForceActivation();
 
-            var simulator = new Simulator(model);
+            var simulator = new SafetySharpSimulator(model);
             model = (Model)simulator.Model;
             simulator.FastForward(steps: 120);
 
@@ -89,7 +79,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
             var model = new Model();
             model.Faults.SuppressActivations();
 
-            var simulator = new Simulator(model);
+            var simulator = new SafetySharpSimulator(model);
             model = (Model)simulator.Model;
             simulator.FastForward(steps: 120);
 
@@ -104,9 +94,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         public void CameraDoesntRecordWhenItShouldDo() {
             var model = new Model();
             model.Faults.SuppressActivations();
-            model.Camera.SuppressRecording.Activation = ISSE.SafetyChecking.Modeling.Activation.Forced;
+            model.Camera.SuppressRecording.ForceActivation();
 
-            var simulator = new Simulator(model);
+            var simulator = new SafetySharpSimulator(model);
             model = (Model)simulator.Model;
             simulator.FastForward(steps: 120);
 

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SafetySharp.CaseStudies.HI_Cell.Analysis
+﻿namespace SafetySharp.CaseStudies.HI_Cell.Analysis
 {
 
     using FluentAssertions;
     using Modeling;
     using NUnit.Framework;
+    using ISSE.SafetyChecking.Formula;
+    using ISSE.SafetyChecking.Modeling;
     using SafetySharp.Analysis;
     using SafetySharp.Modeling;
     using static SafetySharp.Analysis.Operators;
@@ -26,7 +22,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         {
             var model = new Model();
 
-            var result = ModelChecker.CheckInvariant(model, true);
+            var result = SafetySharpModelChecker.CheckInvariant(model, true);
             result.FormulaHolds.Should().BeTrue();
         }
 
@@ -39,8 +35,13 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
             var model = new Model();
             model.Faults.SuppressActivations();
 
-            var result = ModelChecker.CheckInvariant(model, model.Sensor.IsDetecting);
-            var result1 = ModelChecker.CheckInvariant(model, model.Robot.HasStopped && model.Robot.SamePositionAsTarg);
+            Formula noFaults = !model.Sensor.SuppressDetecting.IsActivated &&
+                                !model.Camera.SuppressRecording.IsActivated &&
+                                !model.Robot.SuppressMoving.IsActivated &&
+                                !model.Robot.SuppressStop.IsActivated;
+
+            var result = SafetySharpModelChecker.CheckInvariant(model, G(noFaults).Implies(!F(model.Robot.IsCollided)));
+            //var result1 = SafetySharpModelChecker.CheckInvariant(model, model.Robot.HasStopped && model.Robot.SamePositionAsTarg);
             result.FormulaHolds.Should().BeTrue();
         }
 
@@ -52,8 +53,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         {
             var model = new Model();
 
-            var result = ModelChecker.CheckInvariant(model, model.Robot.GetXCoord() < 6);
-            var result1 = ModelChecker.CheckInvariant(model, model.Robot.GetYCoord() == 0);
+            var result = SafetySharpModelChecker.CheckInvariant(model, model.Robot.GetXCoord() < 6);
+            var result1 = SafetySharpModelChecker.CheckInvariant(model, model.Robot.GetYCoord() == 0);
                        
             result.FormulaHolds.Should().BeTrue();
         }
@@ -66,9 +67,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         {
             var model = new Model();
             model.Faults.SuppressActivations();
-            model.Robot.SuppressMoving.Activation = ISSE.SafetyChecking.Modeling.Activation.Forced;
+            model.Robot.SuppressMoving.Activation = Activation.Forced;
 
-            var result = ModelChecker.CheckInvariant(model, model.Robot.IsMoving);
+            var result = SafetySharpModelChecker.CheckInvariant(model, model.Robot.IsMoving);
             result.FormulaHolds.Should().BeFalse();
         }
 
@@ -81,7 +82,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
             var model = new Model();
             model.Faults.SuppressActivations();
 
-            var result = ModelChecker.CheckInvariant(model, model.Robot.IsCollided);
+            var result = SafetySharpModelChecker.CheckInvariant(model, model.Robot.IsCollided);
             result.FormulaHolds.Should().BeFalse();
         }
 
@@ -93,9 +94,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Analysis
         {
             var model = new Model();
             model.Faults.SuppressActivations();
-            model.Sensor.SuppressDetecting.Activation = ISSE.SafetyChecking.Modeling.Activation.Forced;
+            model.Sensor.SuppressDetecting.Activation = Activation.Forced;
 
-            var result = ModelChecker.CheckInvariant(model, model.Robot.IsCollided && !model.Robot.ObstDetected);
+            var result = SafetySharpModelChecker.CheckInvariant(model, model.Robot.IsCollided && !model.Robot.ObstDetected);
             result.FormulaHolds.Should().BeFalse();
         }
     }

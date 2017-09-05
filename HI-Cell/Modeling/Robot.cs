@@ -26,11 +26,14 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
 		///   The fault that prevents the robot from moving.
 		/// </summary>
-		public readonly ISSE.SafetyChecking.Modeling.Fault SuppressMoving = new ISSE.SafetyChecking.Modeling.PermanentFault();
+		//public readonly ISSE.SafetyChecking.Modeling.Fault SuppressMoving = new ISSE.SafetyChecking.Modeling.PermanentFault();
+        public readonly Fault SuppressMoving = new PermanentFault();
         /// <summary>
 		///   The fault that doesn't recognise an obstacle, thus causes the robot to collide with an obstacle.
 		/// </summary>
-        public readonly ISSE.SafetyChecking.Modeling.Fault SuppressStop = new ISSE.SafetyChecking.Modeling.PermanentFault();
+        //public readonly ISSE.SafetyChecking.Modeling.Fault SuppressStop = new ISSE.SafetyChecking.Modeling.PermanentFault();
+        public readonly Fault SuppressStop = new PermanentFault();
+
 
         /// <summary>
         ///   Moves the robot. Increases the direction by a maximum of one.
