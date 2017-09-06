@@ -1,6 +1,6 @@
 ﻿namespace SafetySharp.CaseStudies.HI_Cell.Analysis
 {
-
+    using System;
     using FluentAssertions;
     using Modeling;
     using NUnit.Framework;
@@ -35,13 +35,20 @@
             var model = new Model();
             model.Faults.SuppressActivations();
 
-            Formula noFaults = !model.Sensor.SuppressDetecting.IsActivated &&
-                                !model.Camera.SuppressRecording.IsActivated &&
-                                !model.Robot.SuppressMoving.IsActivated &&
-                                !model.Robot.SuppressStop.IsActivated;
-
-            var result = SafetySharpModelChecker.CheckInvariant(model, G(noFaults).Implies(!F(model.Robot.IsCollided)));
-            //var result1 = SafetySharpModelChecker.CheckInvariant(model, model.Robot.HasStopped && model.Robot.SamePositionAsTarg);
+            SafetySharpInvariantAnalysisResult result;
+            if (!model.Sensor.SuppressDetecting.IsActivated &&
+                !model.Camera.SuppressRecording.IsActivated &&
+                !model.Robot.SuppressMoving.IsActivated &&
+                !model.Robot.SuppressStop.IsActivated)
+            {
+                result = SafetySharpModelChecker.CheckInvariant(model, !model.Robot.IsCollided);
+            }
+            else
+            {
+                Console.WriteLine("Shouldn't be here!!!");
+                result = new SafetySharpInvariantAnalysisResult();
+            }
+            //var result = ModelChecker.CheckInvariant(model, G(noFaults).Implies(!F(model.Robot.IsCollided)));
             result.FormulaHolds.Should().BeTrue();
         }
 
