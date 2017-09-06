@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 
-namespace SafetySharp.CaseStudies.HI_Cell.Modeling
+namespace SafetySharp.CaseStudies.HRICell.Modeling
 {
-    using ISSE.SafetyChecking.Modeling;
     using SafetySharp.Modeling;
 
     public class Sensor : Component
@@ -26,7 +29,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public bool ObstDetected { get; private set; }
         public bool IsDetecting { get; private set; } = true;
-        public bool ObstInEnvironment { get; private set; }
+        public bool ObstInEnvironment { get; private set; } = false;
 
         /// <summary>
         ///   Gets the robot's position
@@ -66,7 +69,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
         ///   Gets the distance between the robot and the dynamic obstacle
         /// </summary>
-        public Vector2 DistanceToDynObstacle => new Vector2(Math.Abs(RobPosition.x-DynObstPosition.x), Math.Abs(RobPosition.y-DynObstPosition.y));
+        public Vector2 DistanceToDynObstacle => new Vector2(Math.Abs(RobPosition.x - DynObstPosition.x), Math.Abs(RobPosition.y - DynObstPosition.y));
         /// <summary>
         ///   Gets the distance between the robot and the static obstacle
         /// </summary>
@@ -75,11 +78,13 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
         ///   Calculates if the robot is at the same position as an obstacle
         /// </summary>
-        public bool IsSamePositionAsObst() {
+        public bool IsSamePositionAsObst()
+        {
             return ComparePositions();
         }
 
-        public bool IsSamePositionAsTarg() {
+        public bool IsSamePositionAsTarg()
+        {
             return ((TargetPosition[0] == RobPosition.x) && (TargetPosition[1] == RobPosition.y)) ? true : false;
         }
 

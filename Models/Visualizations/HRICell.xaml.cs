@@ -2,12 +2,13 @@
 {
     using System;
     using System.Windows.Media.Animation;
-    using CaseStudies.HI_Cell.Modeling;
+    using CaseStudies.HRICell.Modeling;
     using Infrastructure;
     using System.Windows;
     using System.Windows.Input;
     using System.Windows.Shapes;
     using Modeling;
+
 
     public partial class HRICell
     {
@@ -41,7 +42,8 @@
             SimulationControls.ChangeSpeed(8);
         }
 
-        private void OnSuppressMoving(object sender, RoutedEventArgs e) {
+        private void OnSuppressMoving(object sender, RoutedEventArgs e)
+        {
             _model.Robot.SuppressMoving.ToggleActivationMode();
         }
 
