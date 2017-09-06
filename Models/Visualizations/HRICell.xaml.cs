@@ -2,12 +2,12 @@
 {
     using System;
     using System.Windows.Media.Animation;
-    using CaseStudies.HRICell.Modeling;
+    using HI_Cell.Modeling;
     using Infrastructure;
     using System.Windows;
     using System.Windows.Input;
-    using System.Windows.Shapes;
     using Modeling;
+    using ISSE.SafetyChecking.Modeling;
 
 
     public partial class HRICell

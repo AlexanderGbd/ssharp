@@ -1,30 +1,10 @@
-﻿// The MIT License (MIT)
-// 
-// Copyright (c) 2014-2016, Institute for Software & Systems Engineering
-// 
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-// 
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-// 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-
-namespace SafetySharp.CaseStudies.Visualizations.Infrastructure
+﻿namespace SafetySharp.CaseStudies.Visualizations.Infrastructure
 {
     using System;
     using System.Windows;
     using Analysis;
+    using ISSE.SafetyChecking.Formula;
+    using ISSE.SafetyChecking.Modeling;
     using Microsoft.Win32;
     using Modeling;
     using Runtime;
@@ -43,8 +23,9 @@ namespace SafetySharp.CaseStudies.Visualizations.Infrastructure
             CloseCounterExampleButton.Visibility = Visibility.Hidden;
         }
 
-        public RealTimeSimulator Simulator { get; private set; }
+        public RealTimeSafetySharpSimulator Simulator { get; private set; }
         public ModelBase Model => Simulator.Model;
+        public SafetySharpRuntimeModel RuntimeModel => Simulator.RuntimeModel;
 
         public int StepDelay { get; set; } = 1000;
         public bool ReplayingCounterExample => Simulator?.IsReplay ?? false;
@@ -53,7 +34,7 @@ namespace SafetySharp.CaseStudies.Visualizations.Infrastructure
         public event EventHandler Rewound;
         public event EventHandler ModelStateChanged;
 
-        private void SetSimulator(Simulator simulator)
+        private void SetSimulator(SafetySharpSimulator simulator)
         {
             if (Simulator != null)
             {
@@ -61,7 +42,7 @@ namespace SafetySharp.CaseStudies.Visualizations.Infrastructure
                 Simulator.Pause();
             }
 
-            Simulator = new RealTimeSimulator(simulator, (int)Math.Round(1000 / _speed));
+            Simulator = new RealTimeSafetySharpSimulator(simulator, (int)Math.Round(1000 / _speed));
             Simulator.ModelStateChanged += OnModelStateChanged;
             UpdateSimulationButtonVisibilities();
 
@@ -76,7 +57,7 @@ namespace SafetySharp.CaseStudies.Visualizations.Infrastructure
             foreach (var fault in _model.Faults)
                 fault.Activation = Activation.Suppressed;
 
-            SetSimulator(new Simulator(_model, formulas));
+            SetSimulator(new SafetySharpSimulator(_model, formulas));
         }
 
         private void OnModelStateChanged(object sender, EventArgs e)
@@ -179,13 +160,14 @@ namespace SafetySharp.CaseStudies.Visualizations.Infrastructure
 
         private void OnCounterExample(object sender, RoutedEventArgs e)
         {
+            var counterExampleSerialization = new SafetySharpCounterExampleSerialization();
             var dialog = new OpenFileDialog
             {
                 AddExtension = true,
                 CheckFileExists = true,
                 CheckPathExists = true,
                 DefaultExt = ".ltsmin",
-                Filter = $"S# Counter Examples (*{CounterExample.FileExtension})|*{CounterExample.FileExtension}",
+                Filter = $"S# Counter Examples (*{counterExampleSerialization.FileExtension})|*{counterExampleSerialization.FileExtension}",
                 Title = "Open S# Counter Example",
                 Multiselect = false
             };
@@ -195,7 +177,7 @@ namespace SafetySharp.CaseStudies.Visualizations.Infrastructure
 
             try
             {
-                var simulator = new Simulator(CounterExample.Load(dialog.FileName));
+                var simulator = new SafetySharpSimulator(counterExampleSerialization.Load(dialog.FileName));
 
                 SetSimulator(simulator);
                 CloseCounterExampleButton.Visibility = Visibility.Visible;
@@ -210,7 +192,7 @@ namespace SafetySharp.CaseStudies.Visualizations.Infrastructure
 
         private void OnCounterExampleClosed(object sender, RoutedEventArgs e)
         {
-            SetSimulator(new Simulator(_model, _formulas));
+            SetSimulator(new SafetySharpSimulator(_model, _formulas));
             CloseCounterExampleButton.Visibility = Visibility.Hidden;
         }
     }

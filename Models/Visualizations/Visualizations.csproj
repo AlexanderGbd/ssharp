@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\Dependencies\ISSE.SafetySharp.1.2.3\build\ISSE.SafetySharp.props" Condition="Exists('..\..\Dependencies\ISSE.SafetySharp.1.2.3\build\ISSE.SafetySharp.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -47,10 +46,6 @@
     </Reference>
     <Reference Include="Microsoft.Expression.Drawing, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Expression.Interactions, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
-    <Reference Include="SafetySharp.Modeling, Version=1.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\Dependencies\ISSE.SafetySharp.1.2.3\lib\net45\SafetySharp.Modeling.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="Microsoft.CSharp" />
@@ -168,10 +163,6 @@
     <Resource Include="Resources\Entypo.ttf" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\HRICell\HRICell.csproj">
-      <Project>{270bcc49-0cff-4bb1-bbd2-2883cc9dfd2f}</Project>
-      <Name>HRICell</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Source\SafetyChecking\SafetyChecking.csproj">
       <Project>{a91cb8af-8a4c-4f69-848e-b3962f9a94f9}</Project>
       <Name>SafetyChecking</Name>
@@ -183,6 +174,10 @@
     <ProjectReference Include="..\Height Control\Height Control.csproj">
       <Project>{6ae088bd-212e-4f38-96a1-b16c4f95d243}</Project>
       <Name>Height Control</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\HI-Cell\HI-Cell.csproj">
+      <Project>{abe98f0d-a9f8-432d-a2b3-b027bd32dc5d}</Project>
+      <Name>HI-Cell</Name>
     </ProjectReference>
     <ProjectReference Include="..\Railroad Crossing\Railroad Crossing.csproj">
       <Project>{84c1f882-31d9-4a71-95a9-e1586740954a}</Project>
@@ -204,12 +199,4 @@
     <Resource Include="Resources\Entypo-license.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>Dieses Projekt verweist auf mindestens ein NuGet-Paket, das auf diesem Computer fehlt. Verwenden Sie die Wiederherstellung von NuGet-Paketen, um die fehlenden Dateien herunterzuladen. Weitere Informationen finden Sie unter "http://go.microsoft.com/fwlink/?LinkID=322105". Die fehlende Datei ist "{0}".</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\Dependencies\ISSE.SafetySharp.1.2.3\build\ISSE.SafetySharp.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\Dependencies\ISSE.SafetySharp.1.2.3\build\ISSE.SafetySharp.props'))" />
-    <Error Condition="!Exists('..\..\Dependencies\ISSE.SafetySharp.1.2.3\build\ISSE.SafetySharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\Dependencies\ISSE.SafetySharp.1.2.3\build\ISSE.SafetySharp.targets'))" />
-  </Target>
-  <Import Project="..\..\Dependencies\ISSE.SafetySharp.1.2.3\build\ISSE.SafetySharp.targets" Condition="Exists('..\..\Dependencies\ISSE.SafetySharp.1.2.3\build\ISSE.SafetySharp.targets')" />
 </Project>

@@ -95,8 +95,8 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="$(OutDir)\SafetySharp.Compiler.dll" />
-    <Analyzer Include="$(OutDir)\SafetySharp.Modeling.dll" />
+    <Analyzer Include="..\..\..\..\P-Modul\ssharp\Binaries\Debug\SafetySharp.Compiler.dll" />
+    <Analyzer Include="..\..\..\..\P-Modul\ssharp\Binaries\Debug\SafetySharp.Modeling.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="../../Source/SafetySharp.targets" />
