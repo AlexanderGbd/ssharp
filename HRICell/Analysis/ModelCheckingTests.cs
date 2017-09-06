@@ -41,7 +41,7 @@
             {
                 result = ModelChecker.CheckInvariant(model, !model.Robot.IsCollided);
             } else {
-                Console.WriteLine("WAS HERE!!!");
+                Console.WriteLine("Shouldn't be here!!!");
                 result = new AnalysisResult();
             }
             //var result = ModelChecker.CheckInvariant(model, G(noFaults).Implies(!F(model.Robot.IsCollided)));
