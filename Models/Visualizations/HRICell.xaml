@@ -12,26 +12,28 @@
     <UserControl.Resources>
         <Storyboard x:Key="MoveRobot">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Robot">
+                <EasingDoubleKeyFrame KeyTime="0"/>
+                <!--
                 <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:1" Value="164"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:2" Value="322"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:3" Value="482"/>
-                <EasingDoubleKeyFrame KeyTime="0:0:4" Value="642"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:4" Value="624"/>
+                -->
             </DoubleAnimationUsingKeyFrames>
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Robot">
+                <EasingDoubleKeyFrame KeyTime="0"/>
+                <!--
                 <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:2" Value="0"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:3" Value="0"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:4" Value="0"/>
+                -->
             </DoubleAnimationUsingKeyFrames>
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="Target">
                 <EasingDoubleKeyFrame KeyTime="0:0:3" Value="1"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:4" Value="0.5"/>
-            </DoubleAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="DynamicObstacle">
-                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
-                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="158"/>
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
         <Storyboard x:Key="SensorWarningOn">
@@ -74,7 +76,25 @@
                 <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0"/>
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
+        <Storyboard x:Key="MoveObstacle">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="DynamicObstacle">
+                <EasingDoubleKeyFrame KeyTime="0"/>
+                <!--
+                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="79.5"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:2" Value="159"/>
+                -->
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+
     </UserControl.Resources>
+    <!--
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+            <BeginStoryboard Storyboard="{StaticResource Storyboard1}"/>
+        </EventTrigger>
+    </UserControl.Triggers>  -->
+ 
     <UserControl.Triggers>
         <EventTrigger RoutedEvent="FrameworkElement.Loaded">
             <BeginStoryboard Storyboard="{StaticResource MoveRobot}"/>
@@ -82,17 +102,19 @@
             <BeginStoryboard Storyboard="{StaticResource CameraWarningOn}"/>
             <BeginStoryboard Storyboard="{StaticResource CameraWarningOff}"/>
             <BeginStoryboard Storyboard="{StaticResource SensorWarningOff}"/>
+            <BeginStoryboard Storyboard="{StaticResource MoveObstacle}"/>
         </EventTrigger>
     </UserControl.Triggers>
 
     <!--DockPanel LastChildFill="true"-->
-    <DockPanel>
+    <DockPanel LastChildFill="true">
         <infrastructure:SimulationControls x:Name="SimulationControls" DockPanel.Dock="Top" />
-        <Canvas x:Name="Canvas" Background="#FFDFDCEC" Margin="-539,-222,-44,-192" Width="892" Height="569" KeyDown="Canvas_OnKeyDown_">
-            <Ellipse x:Name="Robot" Height="100" Width="100" Fill="Black" Canvas.Left="88" Canvas.Top="422" ToolTip="Robot" RenderTransformOrigin="0.5,0.5">
+        <Canvas x:Name="canvas" Background="#FFDFDCEC" Margin="-539,0,-44,-119.5" Width="892" KeyDown="Canvas_OnKeyDown_" MouseLeftButtonDown="Canvas_MouseLeftButtonDown">
+            <Ellipse x:Name="Robot" Height="68" Width="68" Fill="Black" Canvas.Left="104.5" Canvas.Top="327.5" ToolTip="Robot" RenderTransformOrigin="0.5,0.5">
                 <Ellipse.ContextMenu>
                     <ContextMenu StaysOpen="true">
                         <MenuItem x:Name="SuppressMoving" Header="Suppress 'Moving'" IsCheckable="True" Click="OnSuppressMoving" />
+                        <MenuItem x:Name="SuppressStop" Header="Suppress 'Stop'" IsCheckable="True" Click="OnSuppressStop" />
                         <MenuItem x:Name="SuppressDetecting" Header="Suppress 'Detecting'" IsCheckable="true" Click="OnSuppressDetecting" />
                         <MenuItem x:Name="SuppressRecording" Header="Suppress 'Recording'" IsCheckable="True" Click="OnSuppressRecording" />
                     </ContextMenu>
@@ -106,9 +128,9 @@
                     </TransformGroup>
                 </Ellipse.RenderTransform>
             </Ellipse>
-            <Rectangle x:Name="Target" Fill="#FF7A7A97" Height="118" Stroke="#FF191717" Width="116" Canvas.Left="723" Canvas.Top="412" ToolTip="Target"/>
-            <Rectangle x:Name="StaticObstacle" Fill="#FFBF0C0C" Stroke="#FF191717" Width="102" Height="100" Canvas.Left="251" Canvas.Top="262" ToolTip="Static Obstacle"/>
-            <Ellipse x:Name="DynamicObstacle" Height="100" Width="100" Fill="#FFEAB26D" Canvas.Left="407" Canvas.Top="264" ToolTip="Danamic Obstacle" RenderTransformOrigin="0.5,0.5">
+            <Rectangle x:Name="Target" Fill="#FF7A7A97" Height="80" Stroke="#FF191717" Width="80" Canvas.Left="723" Canvas.Top="320.5" ToolTip="Target"/>
+            <Rectangle x:Name="StaticObstacle" Fill="#FFBF0C0C" Stroke="#FF191717" Width="70" Height="70" Canvas.Left="225.5" Canvas.Top="166" ToolTip="Static Obstacle"/>
+            <Ellipse x:Name="DynamicObstacle" Height="68" Width="68" Fill="#FFEAB26D" Canvas.Left="386" Canvas.Top="166.5" ToolTip="Danamic Obstacle" RenderTransformOrigin="0.5,0.5">
                 <Ellipse.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>

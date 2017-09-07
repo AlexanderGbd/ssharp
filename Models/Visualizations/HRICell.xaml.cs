@@ -7,8 +7,9 @@
     using System.Windows;
     using System.Windows.Input;
     using Modeling;
-    using ISSE.SafetyChecking.Modeling;
-
+    using System.Windows.Shapes;
+    using System.Windows.Media;
+    using System.Windows.Controls;
 
     public partial class HRICell
     {
@@ -16,17 +17,33 @@
         private readonly Storyboard _sensorAlertStoryboard;
         private readonly Storyboard _cameraAlertStoryboard;
         private readonly Storyboard _dynObstacleStoryboard;
+        private Storyboard sb;
         private Model _model;
 
         public HRICell()
         {
             InitializeComponent();
 
+            //Tests
+            sb = new Storyboard();
+            //Timeline tl = ;
+            //sb.Children.Add();
+
+
             // Initialize visualization resources
-            _movingStoryboard = (Storyboard)Resources["MovingRobot"];
-            _dynObstacleStoryboard = (Storyboard)Resources["MovingObstacle"];
-            _cameraAlertStoryboard = (Storyboard)Resources["CameraEvent"];
-            _sensorAlertStoryboard = (Storyboard)Resources["SensorEvent"];
+            _movingStoryboard = (Storyboard)Resources["MoveRobot"];
+            Canvas.GetLeft(Robot);
+            Canvas.GetTop(Robot);
+            _movingStoryboard.SetValue(TranslateTransform.XProperty, Canvas.GetLeft(Robot) + 100);
+            _movingStoryboard.Begin();
+            _movingStoryboard.Pause();
+           
+            _dynObstacleStoryboard = (Storyboard)Resources["MoveObstacle"];
+            _dynObstacleStoryboard.Begin();
+            _dynObstacleStoryboard.Pause();
+
+            _cameraAlertStoryboard = (Storyboard)Resources["CameraWarningOn"];
+            _sensorAlertStoryboard = (Storyboard)Resources["SensorWarningOn"];
 
             // Initialize the simulation environment
             SimulationControls.ModelStateChanged += (o, e) => UpdateModelState();
@@ -36,8 +53,6 @@
             // Initialize the visualization state
             UpdateModelState();
 
-            Warning.Opacity = 0;
-            SensorWarning.Opacity = 0;
             SimulationControls.MaxSpeed = 64;
             SimulationControls.ChangeSpeed(8);
         }
@@ -45,6 +60,10 @@
         private void OnSuppressMoving(object sender, RoutedEventArgs e)
         {
             _model.Robot.SuppressMoving.ToggleActivationMode();
+        }
+
+        private void OnSuppressStop(object sender, RoutedEventArgs e) {
+            _model.Robot.SuppressStop.ToggleActivationMode();               
         }
 
         private void OnSuppressDetecting(object sender, RoutedEventArgs e)
@@ -60,10 +79,16 @@
         {
             _model = (Model)SimulationControls.Model;
 
-            if (SimulationControls.Simulator.IsReplay)
+            if (SimulationControls.Simulator.IsReplay) {
+                Canvas.SetTop(Robot, 327.5);
+                Canvas.SetLeft(Robot, 104.5);
+                Canvas.SetTop(DynamicObstacle, 166.5);
+                Canvas.SetLeft(DynamicObstacle, 386);
                 return;
-
+            }
+            
             _model.Robot.SuppressMoving.Activation = SuppressMoving.IsChecked.ToOccurrenceKind();
+            _model.Robot.SuppressStop.Activation = SuppressStop.IsChecked.ToOccurrenceKind();
             _model.Sensor.SuppressDetecting.Activation = SuppressDetecting.IsChecked.ToOccurrenceKind();
             _model.Camera.SuppressRecording.Activation = SuppressRecording.IsChecked.ToOccurrenceKind();
         }
@@ -71,16 +96,17 @@
         private void UpdateModelState()
         {
             //Robot
-            Robot.Visibility = SuppressMoving.IsChecked.ToVisibility();
+            SuppressMoving.IsChecked = _model.Robot.SuppressMoving.IsActivated;
+            SuppressStop.IsChecked = _model.Robot.SuppressStop.IsActivated; 
 
-            if (!_model.Robot.IsMoving && !_model.Sensor.ObstDetected && !_model.Robot.IsCollided && !_model.Robot.SamePositionAsTarg)
+            if (!_model.Robot.IsMoving && !_model.Sensor.ObstDetected && !_model.Robot.IsCollided && !_model.Robot.SamePositionAsTarg && !SuppressMoving.IsChecked)
             {
                 _movingStoryboard.Begin();
             }
-            if (_model.Robot.SamePositionAsObst || _model.Robot.SamePositionAsTarg)
+            if ((_model.Robot.SamePositionAsObst || _model.Robot.SamePositionAsTarg) && !SuppressStop.IsChecked)
                 _movingStoryboard.Stop();
 
-            if (_model.Robot.ObstDetected)
+            if (_model.Robot.ObstDetected && !SuppressStop.IsChecked)
                 _movingStoryboard.Pause();
 
             //Dynamic Obstacle
@@ -127,12 +153,52 @@
         /// </summary>
         private void Canvas_OnKeyDown_(object sender, KeyEventArgs e)
         {
+            Console.WriteLine("\nI WAS HERE!!!!!!!!!!!!!!!!!!!!\n");
             Point position = Robot.TranslatePoint(Robot.RenderTransformOrigin, Robot);
             Robot.TranslatePoint(new Point(position.X + 100, position.Y), Robot);
 
             Random rnd = new Random();
             position = DynamicObstacle.RenderTransformOrigin;
             DynamicObstacle.TranslatePoint(new Point(position.X + rnd.Next(101), position.Y + rnd.Next(101)), DynamicObstacle);
+        }
+
+        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Random random = new Random();
+            double leftRob = Canvas.GetLeft(Robot);
+            double leftObst = Canvas.GetLeft(DynamicObstacle);
+            double topObst = Canvas.GetTop(DynamicObstacle);
+
+            if (leftRob + 100 <= 750 && leftRob >= 0) {
+                Canvas.SetLeft(Robot, leftRob + 100);
+            }
+            int rnd = random.Next(-100, 101);
+            if (topObst + rnd <= 320 && topObst >= 0) {
+                Canvas.SetTop(DynamicObstacle, topObst + random.Next(-100, 101));
+            }
+            rnd = random.Next(-100, 101);
+            if (leftObst + rnd <= 750 && leftObst >= 0)
+            {
+                Canvas.SetLeft(DynamicObstacle, leftObst + random.Next(-101, 101));
+            }
+
+
+
+            //Test
+            //Rectangle test = new Rectangle();
+            //test.Width = 100;
+            //test.Height = 100;
+            //test.Fill = Brushes.Red;
+            //test.Stroke = Brushes.Red;
+            //test.StrokeThickness = 4;
+            //test.RadiusX = 5;
+            //test.RadiusY = 5;
+            //canvas.Children.Add(test);
+            //Point pos = e.GetPosition(canvas);
+            //Canvas.SetLeft(test, (int) pos.X);
+            //Canvas.SetTop(test, (int) pos.Y);
+
+            _sensorAlertStoryboard.Begin();
         }
     }
 }
