@@ -7,9 +7,8 @@
     using System.Windows;
     using System.Windows.Input;
     using Modeling;
-    using System.Windows.Media;
+    using SafetySharp.Analysis;
     using System.Windows.Controls;
-    using System.Windows.Shapes;
 
     public partial class HRICell
     {
@@ -17,22 +16,18 @@
         private readonly Storyboard _sensorAlertStoryboard;
         private readonly Storyboard _cameraAlertStoryboard;
         private readonly Storyboard _dynObstacleStoryboard;
-        private Storyboard sb;
         private Model _model;
+        //private RealTimeSafetySharpSimulator realTimeSimulator;
+        //private SafetySharpSimulator simulator;
+        //int stepDelay;
 
         public HRICell()
         {
             InitializeComponent();
+            //realTimeSimulator = new RealTimeSafetySharpSimulator(simulator, stepDelay: 100);
 
             // Initialize visualization resources
             _movingStoryboard = (Storyboard)Resources["MoveRobot"];
-            _movingStoryboard.Children[1].SetValue(TranslateTransform.XProperty, Canvas.GetLeft(Robot) + 100);
-            
-            Console.WriteLine("\n"+_movingStoryboard.Children[1].ToString()+ "\n");
-            //_movingStoryboard.SetValue(TranslateTransform.XProperty, Canvas.GetLeft(Robot) + 100);
-
-
-
             _movingStoryboard.Begin();
             _movingStoryboard.Pause();
            
@@ -195,8 +190,6 @@
             //Point pos = e.GetPosition(canvas);
             //Canvas.SetLeft(test, (int) pos.X);
             //Canvas.SetTop(test, (int) pos.Y);
-
-            _sensorAlertStoryboard.Begin();
         }
 
         private void MoveRobotAnimation(int newCoordinate, TimeSpan duration)
@@ -220,6 +213,9 @@
             DynamicObstacle.BeginAnimation(Canvas.TopProperty, animation);
         }
 
+        /// <summary>
+        /// Randomly chooses one of two values
+        /// </summary>
         private int ChooseValue(int value1, int value2)
         {
             Random random = new Random();

@@ -40,9 +40,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// </summary>
         public virtual void Move(double x, double y)
         {
-            double PosX = GetXCoord();
-            double PosY = GetYCoord();
-
             if (x > 0 && GetXCoord() < 5 && !SamePositionAsObst && ObstDetected)
             {
                 Position.x++;

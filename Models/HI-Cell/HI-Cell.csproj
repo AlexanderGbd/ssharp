@@ -71,6 +71,7 @@
     <Compile Include="Modeling\Controller.cs" />
     <Compile Include="Modeling\DynamicObstacle.cs" />
     <Compile Include="Modeling\Model.cs" />
+    <Compile Include="Modeling\Monitor.cs" />
     <Compile Include="Modeling\Robot.cs" />
     <Compile Include="Modeling\Sensor.cs" />
     <Compile Include="Modeling\StaticObstacle.cs" />
