@@ -30,10 +30,16 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// </summary>
         public void Move() {
             Random rnd = new Random();
+
             if (rnd.Next(0, 2) != 0)
                 Position.x = (Position.x + 1) % 6;
             if (rnd.Next(0, 2) != 0)
                 Position.y = (Position.y + 1) % 6;
+
+            //if (x != 0)
+            //    Position.x = (Position.x + x) % 6;
+            //if (y != 0)
+            //    Position.y = (Position.y + y) % 6;
         }
 
         public void Stop()

@@ -7,9 +7,9 @@
     using System.Windows;
     using System.Windows.Input;
     using Modeling;
-    using System.Windows.Shapes;
     using System.Windows.Media;
     using System.Windows.Controls;
+    using System.Windows.Shapes;
 
     public partial class HRICell
     {
@@ -24,17 +24,15 @@
         {
             InitializeComponent();
 
-            //Tests
-            sb = new Storyboard();
-            //Timeline tl = ;
-            //sb.Children.Add();
-
-
             // Initialize visualization resources
             _movingStoryboard = (Storyboard)Resources["MoveRobot"];
-            Canvas.GetLeft(Robot);
-            Canvas.GetTop(Robot);
-            _movingStoryboard.SetValue(TranslateTransform.XProperty, Canvas.GetLeft(Robot) + 100);
+            _movingStoryboard.Children[1].SetValue(TranslateTransform.XProperty, Canvas.GetLeft(Robot) + 100);
+            
+            Console.WriteLine("\n"+_movingStoryboard.Children[1].ToString()+ "\n");
+            //_movingStoryboard.SetValue(TranslateTransform.XProperty, Canvas.GetLeft(Robot) + 100);
+
+
+
             _movingStoryboard.Begin();
             _movingStoryboard.Pause();
            
@@ -129,7 +127,7 @@
             if (!_model.Camera.IsRecording)
                 _cameraAlertStoryboard.Begin();
 
-            //Controller still to implement
+            //Controller
             switch (_model.Controller.StateMachine.State)
             {
                 case Controller.State.IsMoving:
@@ -145,21 +143,6 @@
                     ControllerScreen.Text = "Stopped at target";
                     break;
             }
-
-        }
-
-        /// <summary>
-        /// This method is invoked, when a key was pressed
-        /// </summary>
-        private void Canvas_OnKeyDown_(object sender, KeyEventArgs e)
-        {
-            Console.WriteLine("\nI WAS HERE!!!!!!!!!!!!!!!!!!!!\n");
-            Point position = Robot.TranslatePoint(Robot.RenderTransformOrigin, Robot);
-            Robot.TranslatePoint(new Point(position.X + 100, position.Y), Robot);
-
-            Random rnd = new Random();
-            position = DynamicObstacle.RenderTransformOrigin;
-            DynamicObstacle.TranslatePoint(new Point(position.X + rnd.Next(101), position.Y + rnd.Next(101)), DynamicObstacle);
         }
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -170,20 +153,35 @@
             double topObst = Canvas.GetTop(DynamicObstacle);
 
             if (leftRob + 100 <= 750 && leftRob >= 0) {
-                Canvas.SetLeft(Robot, leftRob + 100);
+                MoveRobotAnimation((int)Canvas.GetLeft(Robot) + 100, new TimeSpan(0, 0, 1));
+                //Canvas.SetLeft(Robot, leftRob + 100);
+                _model.Robot.Move(1, 0);
             }
             int rnd = random.Next(-100, 101);
-            if (topObst + rnd <= 320 && topObst >= 0) {
-                Canvas.SetTop(DynamicObstacle, topObst + random.Next(-100, 101));
+            if (topObst + rnd <= 400 && topObst >= 0) {
+                int value = ChooseValue(-100, 100);
+                MoveLeftDynObstacleAnimation((int)Canvas.GetTop(DynamicObstacle) + value, new TimeSpan(0, 0, 1));
+                //Canvas.SetTop(DynamicObstacle, topObst + value);
+
+                //if (value == 100)
+                //    _model.DynamicObstacle.Move(0, 1);
+                //else
+                //    _model.DynamicObstacle.Move(0, -1);
             }
             rnd = random.Next(-100, 101);
             if (leftObst + rnd <= 750 && leftObst >= 0)
             {
-                Canvas.SetLeft(DynamicObstacle, leftObst + random.Next(-101, 101));
+                int value = ChooseValue(-100, 100);
+                MoveTopDynObstacleAnimation((int)Canvas.GetLeft(DynamicObstacle) + value, new TimeSpan(0, 0, 1));
+                //Canvas.SetLeft(DynamicObstacle, leftObst + value);
+
+                //if (value == 100)
+                //    _model.DynamicObstacle.Move(0, 1);
+                //else
+                //    _model.DynamicObstacle.Move(0, -1);
             }
 
-
-
+            
             //Test
             //Rectangle test = new Rectangle();
             //test.Width = 100;
@@ -199,6 +197,37 @@
             //Canvas.SetTop(test, (int) pos.Y);
 
             _sensorAlertStoryboard.Begin();
+        }
+
+        private void MoveRobotAnimation(int newCoordinate, TimeSpan duration)
+        {
+            //PointAnimation animation = new PointAnimation(new Point(300, 300), duration);
+            //Robot.BeginAnimation(EllipseGeometry.CenterProperty, animation);
+
+            DoubleAnimation animation = new DoubleAnimation(newCoordinate, duration);
+            Robot.BeginAnimation(Canvas.LeftProperty, animation);
+        }
+
+        private void MoveLeftDynObstacleAnimation(int newCoordinate, TimeSpan duration)
+        {
+            DoubleAnimation animation = new DoubleAnimation(newCoordinate, duration);
+            DynamicObstacle.BeginAnimation(Canvas.LeftProperty, animation);
+        }
+
+        private void MoveTopDynObstacleAnimation(int newCoordinate, TimeSpan duration)
+        {
+            DoubleAnimation animation = new DoubleAnimation(newCoordinate, duration);
+            DynamicObstacle.BeginAnimation(Canvas.TopProperty, animation);
+        }
+
+        private int ChooseValue(int value1, int value2)
+        {
+            Random random = new Random();
+            int rand = random.Next(0, 2);
+            if (rand == 0)
+                return value1;
+            else
+                return value2;
         }
     }
 }

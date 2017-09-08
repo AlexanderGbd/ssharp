@@ -12,7 +12,7 @@
     <UserControl.Resources>
         <Storyboard x:Key="MoveRobot">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Robot">
-                <EasingDoubleKeyFrame KeyTime="0"/>
+
                 <!--
                 <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:1" Value="164"/>
@@ -79,6 +79,7 @@
         <Storyboard x:Key="MoveObstacle">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="DynamicObstacle">
                 <EasingDoubleKeyFrame KeyTime="0"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:1"/>
                 <!--
                 <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:1" Value="79.5"/>
@@ -94,7 +95,7 @@
             <BeginStoryboard Storyboard="{StaticResource Storyboard1}"/>
         </EventTrigger>
     </UserControl.Triggers>  -->
- 
+
     <UserControl.Triggers>
         <EventTrigger RoutedEvent="FrameworkElement.Loaded">
             <BeginStoryboard Storyboard="{StaticResource MoveRobot}"/>
@@ -109,7 +110,7 @@
     <!--DockPanel LastChildFill="true"-->
     <DockPanel LastChildFill="true">
         <infrastructure:SimulationControls x:Name="SimulationControls" DockPanel.Dock="Top" />
-        <Canvas x:Name="canvas" Background="#FFDFDCEC" Margin="-539,0,-44,-119.5" Width="892" KeyDown="Canvas_OnKeyDown_" MouseLeftButtonDown="Canvas_MouseLeftButtonDown">
+        <Canvas x:Name="canvas" Background="#FFDFDCEC" Margin="-539,0,-44,-119.5" Width="892" MouseLeftButtonDown="Canvas_MouseLeftButtonDown">
             <Ellipse x:Name="Robot" Height="68" Width="68" Fill="Black" Canvas.Left="104.5" Canvas.Top="327.5" ToolTip="Robot" RenderTransformOrigin="0.5,0.5">
                 <Ellipse.ContextMenu>
                     <ContextMenu StaysOpen="true">
