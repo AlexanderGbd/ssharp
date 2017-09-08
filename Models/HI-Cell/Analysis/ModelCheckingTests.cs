@@ -61,7 +61,7 @@
             var model = new Model();
 
             var result = SafetySharpModelChecker.CheckInvariant(model, model.Robot.GetXCoord() < 6);
-            var result1 = SafetySharpModelChecker.CheckInvariant(model, model.Robot.GetYCoord() == 0);
+            //var result1 = SafetySharpModelChecker.CheckInvariant(model, model.Robot.GetYCoord() == 0);
                        
             result.FormulaHolds.Should().BeTrue();
         }

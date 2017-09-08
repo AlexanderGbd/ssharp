@@ -18,5 +18,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public extern bool RobotIsAtSamePositionAsTarg { get; }
         public extern bool ObstacleDetected { get; }
 
+        public override void Update()
+        {
+            //To be implemented
+        }
     }
 }
