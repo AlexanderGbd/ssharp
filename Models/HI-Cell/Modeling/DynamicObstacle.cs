@@ -49,7 +49,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public override void Update()
         {
-            Move();
+            if (!HasStopped)
+                Move();
         }
     }
 }

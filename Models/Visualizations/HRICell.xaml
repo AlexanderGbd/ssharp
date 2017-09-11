@@ -110,8 +110,8 @@
     <!--DockPanel LastChildFill="true"-->
     <DockPanel LastChildFill="true">
         <infrastructure:SimulationControls x:Name="SimulationControls" DockPanel.Dock="Top" />
-        <Canvas x:Name="canvas" Background="#FFDFDCEC" Margin="-539,0,-44,-119.5" Width="892" MouseLeftButtonDown="Canvas_MouseLeftButtonDown">
-            <Ellipse x:Name="Robot" Height="68" Width="68" Fill="Black" Canvas.Left="104.5" Canvas.Top="327.5" ToolTip="Robot" RenderTransformOrigin="0.5,0.5">
+        <Canvas x:Name="canvas" Background="#FFDFDCEC" Margin="-539,0,-44,-119.5" Width="500" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" Height="500">
+            <Ellipse x:Name="Robot" Height="100" Width="100" Fill="Black" Canvas.Top="400" ToolTip="Robot" RenderTransformOrigin="0.5,0.5" Canvas.Left="0">
                 <Ellipse.ContextMenu>
                     <ContextMenu StaysOpen="true">
                         <MenuItem x:Name="SuppressMoving" Header="Suppress 'Moving'" IsCheckable="True" Click="OnSuppressMoving" />
@@ -129,9 +129,9 @@
                     </TransformGroup>
                 </Ellipse.RenderTransform>
             </Ellipse>
-            <Rectangle x:Name="Target" Fill="#FF7A7A97" Height="80" Stroke="#FF191717" Width="80" Canvas.Left="723" Canvas.Top="320.5" ToolTip="Target"/>
-            <Rectangle x:Name="StaticObstacle" Fill="#FFBF0C0C" Stroke="#FF191717" Width="70" Height="70" Canvas.Left="225.5" Canvas.Top="166" ToolTip="Static Obstacle"/>
-            <Ellipse x:Name="DynamicObstacle" Height="68" Width="68" Fill="#FFEAB26D" Canvas.Left="386" Canvas.Top="166.5" ToolTip="Danamic Obstacle" RenderTransformOrigin="0.5,0.5">
+            <Rectangle x:Name="Target" Fill="#FF7A7A97" Height="100" Stroke="#FF191717" Width="100" Canvas.Left="400" Canvas.Top="400" ToolTip="Target"/>
+            <Rectangle x:Name="StaticObstacle" Fill="#FFBF0C0C" Stroke="#FF191717" Width="100" Height="100" Canvas.Left="100" Canvas.Top="200" ToolTip="Static Obstacle"/>
+            <Ellipse x:Name="DynamicObstacle" Height="100" Width="100" Fill="#FFEAB26D" Canvas.Left="297" Canvas.Top="200" ToolTip="Danamic Obstacle" RenderTransformOrigin="0.5,0.5">
                 <Ellipse.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>
@@ -141,7 +141,7 @@
                     </TransformGroup>
                 </Ellipse.RenderTransform>
             </Ellipse>
-            <ed:RegularPolygon x:Name="Warning" Fill="#FFE4CE44" Height="80" InnerRadius="1" Canvas.Left="180" Stretch="Fill" Canvas.Top="46" Width="80" PointCount="3" RenderTransformOrigin="0.5,0.5" Opacity="0">
+            <ed:RegularPolygon x:Name="Warning" Fill="#FFE4CE44" Height="80" InnerRadius="1" Canvas.Left="180" Stretch="Fill" Canvas.Top="46" Width="80" PointCount="3" RenderTransformOrigin="0.5,0.5">
                 <ed:RegularPolygon.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>
@@ -151,8 +151,8 @@
                     </TransformGroup>
                 </ed:RegularPolygon.RenderTransform>
             </ed:RegularPolygon>
-            <TextBlock x:Name="SensorWarning" Height="62" Canvas.Left="176" TextWrapping="Wrap" Text="Sensor fault!!!" Canvas.Top="50" Width="123" FontSize="24" FontFamily="Showcard Gothic" Opacity="0"/>
-            <TextBlock x:Name="CameraWarning" Height="58" Canvas.Left="172" TextWrapping="Wrap" Text="Camera fault!!!" Canvas.Top="52" Width="140" FontSize="24" FontWeight="Bold" FontFamily="Showcard Gothic" Opacity="0"/>
+            <TextBlock x:Name="SensorWarning" Height="62" Canvas.Left="176" TextWrapping="Wrap" Text="Sensor fault!!!" Canvas.Top="50" Width="123" FontSize="24" FontFamily="Showcard Gothic"/>
+            <TextBlock x:Name="CameraWarning" Height="58" Canvas.Left="172" TextWrapping="Wrap" Text="Camera fault!!!" Canvas.Top="52" Width="140" FontSize="24" FontWeight="Bold" FontFamily="Showcard Gothic"/>
             <DockPanel Width="137" Canvas.Top="49" Height="134" IsHitTestVisible="false" Canvas.Left="19">
                 <TextBlock x:Name="ControllerScreen" TextWrapping="Wrap" TextAlignment="Center" Text="Not Moving"
                                Foreground="Blue" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />

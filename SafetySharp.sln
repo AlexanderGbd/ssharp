@@ -77,6 +77,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HRICell", "HRICell\HRICell.csproj", "{270BCC49-0CFF-4BB1-BBD2-2883CC9DFD2F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HI-Cell", "Models\HI-Cell\HI-Cell.csproj", "{ABE98F0D-A9F8-432D-A2B3-B027BD32DC5D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8823091C-387F-4F4D-ABCD-8F71D1528CBB} = {8823091C-387F-4F4D-ABCD-8F71D1528CBB}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

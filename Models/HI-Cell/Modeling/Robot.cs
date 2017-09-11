@@ -40,6 +40,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// </summary>
         public virtual void Move(bool moveX, bool moveY)
         {
+            IsMoving = true;
             if (moveX && GetXCoord() < 5 && !SamePositionAsObst && ObstDetected && !HasStopped)
             {
                 Position.x++;
@@ -78,8 +79,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             public override void Move(bool moveX, bool moveY)
             {
-                double PosX = GetXCoord();
-                double PosY = GetYCoord();
+                float PosX = GetXCoord();
+                float PosY = GetYCoord();
 
                 if (moveX && PosX < 5 && !ObstDetected && !SamePositionAsObst)
                 {
@@ -93,11 +94,11 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             }
         }
 
-        public double GetXCoord() {
+        public float GetXCoord() {
             return Position.x;
         }
 
-        public double GetYCoord()
+        public float GetYCoord()
         {
             return Position.y;
         }

@@ -24,16 +24,14 @@
         public HRICell()
         {
             InitializeComponent();
-            //realTimeSimulator = new RealTimeSafetySharpSimulator(simulator, stepDelay: 100);
 
             // Initialize visualization resources
             _movingStoryboard = (Storyboard)Resources["MoveRobot"];
-            _movingStoryboard.Begin();
-            _movingStoryboard.Pause();
+            //_movingStoryboard.Begin();
            
-            _dynObstacleStoryboard = (Storyboard)Resources["MoveObstacle"];
-            _dynObstacleStoryboard.Begin();
-            _dynObstacleStoryboard.Pause();
+            //_dynObstacleStoryboard = (Storyboard)Resources["MoveObstacle"];
+            //_dynObstacleStoryboard.Begin();
+            //_dynObstacleStoryboard.Pause();
 
             _cameraAlertStoryboard = (Storyboard)Resources["CameraWarningOn"];
             _sensorAlertStoryboard = (Storyboard)Resources["SensorWarningOn"];
@@ -46,6 +44,9 @@
             // Initialize the visualization state
             UpdateModelState();
 
+            Warning.Opacity = 0;
+            SensorWarning.Opacity = 0;
+            CameraWarning.Opacity = 0;
             SimulationControls.MaxSpeed = 64;
             SimulationControls.ChangeSpeed(8);
         }
@@ -89,22 +90,32 @@
         private void UpdateModelState()
         {
             //Robot
-            SuppressMoving.IsChecked = _model.Robot.SuppressMoving.IsActivated;
-            SuppressStop.IsChecked = _model.Robot.SuppressStop.IsActivated; 
+            float xPos = _model.Robot.GetXCoord();
+            if (!_model.Robot.SamePositionAsTarg)
+                Canvas.SetLeft(Robot, xPos * 100);
+            if (_model.Robot.SamePositionAsTarg)
+                Target.Opacity = 0.5;
 
-            if (!_model.Robot.IsMoving && !_model.Sensor.ObstDetected && !_model.Robot.IsCollided && !_model.Robot.SamePositionAsTarg && !SuppressMoving.IsChecked)
-            {
+            //Canvas.GetLeft(Robot);
+            //MoveRobotAnimation((int)Canvas.GetLeft(Robot) + 100, new TimeSpan(0, 0, 1));
+
+            SuppressMoving.IsChecked = _model.Robot.SuppressMoving.IsActivated;
+            SuppressStop.IsChecked = _model.Robot.SuppressStop.IsActivated;
+
+            if (_model.Robot.IsCollided) {
+                _movingStoryboard.Stop();
+            }
+            if ((_model.Robot.HasStopped || _model.Robot.ObstDetected || _model.Robot.SamePositionAsTarg) && !SuppressStop.IsChecked) {
+                _movingStoryboard.Stop();
+            }
+            if (_model.Robot.HasStopped && !_model.Sensor.ObstDetected && !_model.Robot.IsCollided && !_model.Robot.SamePositionAsTarg && !SuppressMoving.IsChecked) {
                 _movingStoryboard.Begin();
             }
-            if ((_model.Robot.SamePositionAsObst || _model.Robot.SamePositionAsTarg) && !SuppressStop.IsChecked)
-                _movingStoryboard.Stop();
+            
 
-            if (_model.Robot.ObstDetected && !SuppressStop.IsChecked)
-                _movingStoryboard.Pause();
-
-            //Dynamic Obstacle
-            DynamicObstacle.Visibility = true.ToVisibility();
-            _dynObstacleStoryboard.Begin();
+            ////Dynamic Obstacle
+            //DynamicObstacle.Visibility = true.ToVisibility();
+            //_dynObstacleStoryboard.Begin();
 
             //Sensor
             SuppressDetecting.IsChecked = _model.Sensor.SuppressDetecting.IsActivated;
@@ -113,6 +124,8 @@
 
             if (!_model.Sensor.IsDetecting)
                 _sensorAlertStoryboard.Begin();
+            else
+                _sensorAlertStoryboard.Stop();
 
             //Camera
             SuppressRecording.IsChecked = _model.Camera.SuppressRecording.IsActivated;
@@ -121,6 +134,8 @@
 
             if (!_model.Camera.IsRecording)
                 _cameraAlertStoryboard.Begin();
+            else
+                _cameraAlertStoryboard.Stop();
 
             //Controller
             switch (_model.Controller.StateMachine.State)
