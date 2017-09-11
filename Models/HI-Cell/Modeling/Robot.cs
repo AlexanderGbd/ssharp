@@ -21,7 +21,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public extern bool IsSamePositionAsObst { get; }
         public extern bool IsSamePositionAsTarg { get; }
         public extern bool ObstacleDetected { get; }
-        public extern Vector2 CameraPosition { get; }
+        /*public extern Vector2 CameraPosition { get; }*/
 
         /// <summary>
 		///   The fault that prevents the robot from moving.
@@ -38,13 +38,13 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
         ///   Moves the robot. Increases the direction by a maximum of one.
         /// </summary>
-        public virtual void Move(double x, double y)
+        public virtual void Move(bool moveX, bool moveY)
         {
-            if (x > 0 && GetXCoord() < 5 && !SamePositionAsObst && ObstDetected)
+            if (moveX && GetXCoord() < 5 && !SamePositionAsObst && ObstDetected && !HasStopped)
             {
                 Position.x++;
             }
-            if (y > 0 && GetYCoord() < 5 && !SamePositionAsObst && ObstDetected) {
+            if (moveY && GetYCoord() < 5 && !SamePositionAsObst && ObstDetected && !HasStopped) {
                 Position.y++;
             }
         }
@@ -65,27 +65,27 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                 Position.x++;
         }
 
-        [FaultEffect(Fault = nameof(SuppressMoving))]
+        [FaultEffect(Fault = nameof(SuppressMoving)), Priority(2)]
         public class SuppressMovingEffect : Robot
         {
-            public override void Move(double x, double y) {
+            public override void Move(bool moveX, bool moveY) {
 
             }
         }
 
-        [FaultEffect(Fault = nameof(SuppressStop))]
+        [FaultEffect(Fault = nameof(SuppressStop)), Priority(1)]
         public class SuppressStopEffect : Robot
         {
-            public override void Move(double x, double y)
+            public override void Move(bool moveX, bool moveY)
             {
                 double PosX = GetXCoord();
                 double PosY = GetYCoord();
 
-                if (x > 0 && PosX < 5 && !ObstDetected && !SamePositionAsObst)
+                if (moveX && PosX < 5 && !ObstDetected && !SamePositionAsObst)
                 {
                     Position[0]++;
                 }
-                if (y > 0 && Position[1] < 5 && !ObstDetected && !SamePositionAsObst)
+                if (moveY && Position[1] < 5 && !ObstDetected && !SamePositionAsObst)
                 {
                     Position[1]++;
                 }

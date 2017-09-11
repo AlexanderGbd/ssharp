@@ -73,10 +73,10 @@
             _model = (Model)SimulationControls.Model;
 
             if (SimulationControls.Simulator.IsReplay) {
-                Canvas.SetTop(Robot, 327.5);
-                Canvas.SetLeft(Robot, 104.5);
-                Canvas.SetTop(DynamicObstacle, 166.5);
-                Canvas.SetLeft(DynamicObstacle, 386);
+                //Canvas.SetTop(Robot, 327.5);
+                //Canvas.SetLeft(Robot, 104.5);
+                //Canvas.SetTop(DynamicObstacle, 166.5);
+                //Canvas.SetLeft(DynamicObstacle, 386);
                 return;
             }
             
@@ -150,7 +150,7 @@
             if (leftRob + 100 <= 750 && leftRob >= 0) {
                 MoveRobotAnimation((int)Canvas.GetLeft(Robot) + 100, new TimeSpan(0, 0, 1));
                 //Canvas.SetLeft(Robot, leftRob + 100);
-                _model.Robot.Move(1, 0);
+                _model.Robot.Move(true, false);
             }
             int rnd = random.Next(-100, 101);
             if (topObst + rnd <= 400 && topObst >= 0) {

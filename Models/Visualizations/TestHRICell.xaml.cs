@@ -150,7 +150,7 @@
             {
                 MoveRobotAnimation((int)Canvas.GetLeft(Robot) + 100, new TimeSpan(0, 0, 1));
                 //Canvas.SetLeft(Robot, leftRob + 100);
-                _model.Robot.Move(1, 0);
+                _model.Robot.Move(true, false);
             }
             int rnd = random.Next(-100, 101);
             if (topObst + rnd <= 400 && topObst >= 0)
