@@ -8,7 +8,7 @@
             /// <summary>
             ///     Indicates that the robot hit an obstacle, instead of reaching its target
             /// </summary>
-            Collision,
+            Collided,
 
             /// <summary>
             ///     Indicates that the robot stopped at its target
@@ -72,26 +72,34 @@
                 .Transition(
                     from: State.IsMoving,
                     to: State.NotMoving,
-                    guard: Robot.IsSamePositionAsTarg || Robot.ObstDetected,
+                    guard: Robot.ObstDetected,
                     action: () => {
                         Robot.Stop();
-                        //DynamicObstacle.Stop();
+                        DynamicObstacle.Stop();
                     })
                 .Transition(
                     from: State.IsMoving,
-                    to: State.Collision,
+                    to: State.Collided,
                     guard: Robot.SamePositionAsObst,
                     action: () => {
                         Robot.Stop();
-                        /*DynamicObstacle.Stop();*/ })
+                        DynamicObstacle.Stop();
+                    })
                 .Transition(
                     from: new[] { State.NotMoving },
                     to: State.IsMoving,
                     guard: !Sensor.ObstDetected && !Robot.IsSamePositionAsTarg,
                     action: () =>
                     {
-                        //DynamicObstacle.Move();
+                        DynamicObstacle.Move();
                         Robot.Move(true, false);
+                    })
+                .Transition(
+                    from: State.IsMoving,
+                    to: State.StoppedAtTarget,
+                    guard: Robot.SamePositionAsTarg,
+                    action: () => {
+                        DynamicObstacle.Stop();
                     });
         }
 

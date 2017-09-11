@@ -48,20 +48,28 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// </summary>
         public bool ComparePositions()
         {
-            return (((DynObstPosition[0] == RobPosition.x) && (DynObstPosition[1] == RobPosition.y)) ||
-                    ((StatObstPosition[0] == RobPosition.x) && (StatObstPosition[1] == RobPosition.y)));
+            return (int) DynObstPosition[0] == (int) RobPosition.x && (int) DynObstPosition[1] == (int) RobPosition.y ||
+                    (int) StatObstPosition[0] == (int) RobPosition.x && (int) StatObstPosition[1] == (int) RobPosition.y;
         }
 
         public bool ScanForObstaclesInNextStep(double x, double y)
         {
-            return (((DynObstPosition.x == RobPosition.x + x) && (DynObstPosition.y == RobPosition.y + y)) ||
-                    ((StatObstPosition.x == RobPosition.x + x) && (StatObstPosition.y == RobPosition.y + y)));
+            return (int) DynObstPosition.x == (int) (RobPosition.x + x) && (int) DynObstPosition.y == (int) (RobPosition.y + y) ||
+                    (int) StatObstPosition.x == (int) (RobPosition.x + x) && (int) StatObstPosition.y == (int) (RobPosition.y + y);
+        }
+
+        /// <summary>
+        /// Scans only the x-direction currently
+        /// </summary>
+        public bool OneStepScanIsOk()
+        {
+            return (int) DynObstPosition.x == (int) RobPosition.x + 1 || (int) StatObstPosition.x == (int) RobPosition.x + 1;
         }
 
         /// <summary>
 		///   Gets the value indicating, that the robot has the same position as its target
 		/// </summary>
-        public bool SamePositionAsTarg => ((TargetPosition.x == RobPosition.x) && (TargetPosition.y == RobPosition.y)) ? true : false;
+        public bool SamePositionAsTarg => ((int) TargetPosition.x == (int) RobPosition.x && (int) TargetPosition.y == (int) RobPosition.y);
 
         /// <summary>
         ///   Gets the distance between the robot and the dynamic obstacle
@@ -80,7 +88,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         }
 
         public bool IsSamePositionAsTarg() {
-            return ((TargetPosition[0] == RobPosition.x) && (TargetPosition[1] == RobPosition.y)) ? true : false;
+            return ((int) TargetPosition[0] == (int) RobPosition.x && (int) TargetPosition[1] == (int) RobPosition.y);
         }
 
         [FaultEffect(Fault = nameof(SuppressDetecting))]

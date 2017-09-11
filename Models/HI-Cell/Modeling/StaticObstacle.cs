@@ -5,7 +5,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     public class StaticObstacle : Component
     {
-        private Vector2 Position = new Vector2(4, 3);
+        private Vector2 Position = new Vector2(1, 2);
 
         public double GetXCoord()
         {

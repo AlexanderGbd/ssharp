@@ -9,7 +9,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
     {
 
         //private Vector2 Position => CameraPosition;
-        private Vector2 Position = new Vector2(0, 0);
+        private Vector2 Position = new Vector2(0, 4);
         public bool IsMoving { get; private set; }
         public bool HasStopped => !IsMoving;
         public bool IsCollided => SamePositionAsObst;
@@ -26,12 +26,10 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
 		///   The fault that prevents the robot from moving.
 		/// </summary>
-		//public readonly ISSE.SafetyChecking.Modeling.Fault SuppressMoving = new ISSE.SafetyChecking.Modeling.PermanentFault();
         public readonly Fault SuppressMoving = new PermanentFault();
         /// <summary>
 		///   The fault that doesn't recognise an obstacle, thus causes the robot to collide with an obstacle.
 		/// </summary>
-        //public readonly ISSE.SafetyChecking.Modeling.Fault SuppressStop = new ISSE.SafetyChecking.Modeling.PermanentFault();
         public readonly Fault SuppressStop = new PermanentFault();
 
 
@@ -41,11 +39,12 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public virtual void Move(bool moveX, bool moveY)
         {
             IsMoving = true;
-            if (moveX && GetXCoord() < 5 && !SamePositionAsObst && ObstDetected && !HasStopped)
+            if (moveX && GetXCoord() < 5) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
             {
                 Position.x++;
             }
-            if (moveY && GetYCoord() < 5 && !SamePositionAsObst && ObstDetected && !HasStopped) {
+            if (moveY && GetYCoord() < 5) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
+            {
                 Position.y++;
             }
         }
@@ -62,8 +61,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             if (ObstDetected)
                 IsMoving = false;
-            else if (Position[0] < 5)
-                Position.x++;
+            else if (Position[0] < 5 && !SamePositionAsObst && !ObstDetected && !HasStopped)
+                Move(true, false);
         }
 
         [FaultEffect(Fault = nameof(SuppressMoving)), Priority(2)]
@@ -79,14 +78,14 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             public override void Move(bool moveX, bool moveY)
             {
-                float PosX = GetXCoord();
-                float PosY = GetYCoord();
+                float posX = GetXCoord();
+                float posY = GetYCoord();
 
-                if (moveX && PosX < 5 && !ObstDetected && !SamePositionAsObst)
+                if (moveX && posX < 5)     /* && !ObstDetected && !SamePositionAsObst*/
                 {
                     Position[0]++;
                 }
-                if (moveY && Position[1] < 5 && !ObstDetected && !SamePositionAsObst)
+                if (moveY && posY < 5)     /* && !ObstDetected && !SamePositionAsObst*/
                 {
                     Position[1]++;
                 }

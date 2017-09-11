@@ -6,16 +6,16 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     public class DynamicObstacle : Component
     {
-        private Vector2 Position = new Vector2(3, 1);
+        private Vector2 Position = new Vector2(3, 2);
         public bool IsMoving { get; private set; }
         public bool HasStopped => !IsMoving;
 
-        public double GetXCoord()
+        public float GetXCoord()
         {
             return Position.x;
         }
 
-        public double GetYCoord()
+        public float GetYCoord()
         {
             return Position.y;
         }
@@ -31,15 +31,50 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public void Move() {
             Random rnd = new Random();
 
-            if (rnd.Next(0, 2) != 0)
-                Position.x = (Position.x + 1) % 6;
-            if (rnd.Next(0, 2) != 0)
-                Position.y = (Position.y + 1) % 6;
+            bool plusOperation = rnd.Next(2) == 1;
 
-            //if (x != 0)
-            //    Position.x = (Position.x + x) % 6;
-            //if (y != 0)
-            //    Position.y = (Position.y + y) % 6;
+            switch (rnd.Next(0, 4))
+            {
+                case 0:
+                    if (plusOperation)
+                        Position.x = (Position.x + 1) % 6;
+                    else
+                        Position.x = (Position.x - 1) % 6;
+                    break;
+
+                case 1:
+                    if (plusOperation)
+                        Position.y = (Position.y + 1) % 6;
+                    else
+                        Position.y = (Position.y - 1) % 6;
+                    break;
+
+                case 2:
+                    if (plusOperation)
+                    {
+                        Position.x = (Position.x + 1) % 6;
+                        Position.y = (Position.y + 1) % 6;
+                    }
+                    else
+                    {
+                        Position.x = (Position.x - 1) % 6;
+                        Position.y = (Position.y - 1) % 6;
+                    }
+                    break;
+
+                case 3:
+                    if (plusOperation)
+                    {
+                        Position.x = (Position.x + 1) % 6;
+                        Position.y = (Position.y - 1) % 6;
+                    }
+                    else
+                    {
+                        Position.x = (Position.x - 1) % 6;
+                        Position.y = (Position.y + 1) % 6;
+                    }
+                    break;
+            }
         }
 
         public void Stop()

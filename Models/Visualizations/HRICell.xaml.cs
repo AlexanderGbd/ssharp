@@ -74,10 +74,6 @@
             _model = (Model)SimulationControls.Model;
 
             if (SimulationControls.Simulator.IsReplay) {
-                //Canvas.SetTop(Robot, 327.5);
-                //Canvas.SetLeft(Robot, 104.5);
-                //Canvas.SetTop(DynamicObstacle, 166.5);
-                //Canvas.SetLeft(DynamicObstacle, 386);
                 return;
             }
             
@@ -89,6 +85,12 @@
 
         private void UpdateModelState()
         {
+            //Dynamic Obstacle
+            float obstacleX = _model.DynamicObstacle.GetXCoord();
+            float obstacleY = _model.DynamicObstacle.GetXCoord();
+            Canvas.SetLeft(DynamicObstacle, obstacleX * 100);
+            Canvas.SetTop(DynamicObstacle, obstacleY * 100);
+            
             //Robot
             float xPos = _model.Robot.GetXCoord();
             if (!_model.Robot.SamePositionAsTarg)
@@ -102,20 +104,16 @@
             SuppressMoving.IsChecked = _model.Robot.SuppressMoving.IsActivated;
             SuppressStop.IsChecked = _model.Robot.SuppressStop.IsActivated;
 
-            if (_model.Robot.IsCollided) {
-                _movingStoryboard.Stop();
-            }
-            if ((_model.Robot.HasStopped || _model.Robot.ObstDetected || _model.Robot.SamePositionAsTarg) && !SuppressStop.IsChecked) {
-                _movingStoryboard.Stop();
-            }
-            if (_model.Robot.HasStopped && !_model.Sensor.ObstDetected && !_model.Robot.IsCollided && !_model.Robot.SamePositionAsTarg && !SuppressMoving.IsChecked) {
-                _movingStoryboard.Begin();
-            }
+            //if (_model.Robot.IsCollided) {
+            //    _movingStoryboard.Stop();
+            //}
+            //if ((_model.Robot.HasStopped || _model.Robot.ObstDetected || _model.Robot.SamePositionAsTarg) && !SuppressStop.IsChecked) {
+            //    _movingStoryboard.Stop();
+            //}
+            //if (_model.Robot.HasStopped && !_model.Sensor.ObstDetected && !_model.Robot.IsCollided && !_model.Robot.SamePositionAsTarg && !SuppressMoving.IsChecked) {
+            //    _movingStoryboard.Begin();
+            //}
             
-
-            ////Dynamic Obstacle
-            //DynamicObstacle.Visibility = true.ToVisibility();
-            //_dynObstacleStoryboard.Begin();
 
             //Sensor
             SuppressDetecting.IsChecked = _model.Sensor.SuppressDetecting.IsActivated;
@@ -123,20 +121,36 @@
             SensorWarning.Visibility = SuppressDetecting.IsChecked.ToVisibility();
 
             if (!_model.Sensor.IsDetecting)
+            {
+                //Warning.Opacity = 1;
+                //SensorWarning.Opacity = 1;
                 _sensorAlertStoryboard.Begin();
+            }
             else
+            {
+                //Warning.Opacity = 0;
+                //SensorWarning.Opacity = 0;
                 _sensorAlertStoryboard.Stop();
-
+            }
+            
             //Camera
             SuppressRecording.IsChecked = _model.Camera.SuppressRecording.IsActivated;
             Warning.Visibility = SuppressRecording.IsChecked.ToVisibility();
             CameraWarning.Visibility = SuppressRecording.IsChecked.ToVisibility();
 
             if (!_model.Camera.IsRecording)
+            {
+                //Warning.Opacity = 1;
+                //CameraWarning.Opacity = 1;
                 _cameraAlertStoryboard.Begin();
+            }
             else
+            {
+                //Warning.Opacity = 0;
+                //CameraWarning.Opacity = 0;
                 _cameraAlertStoryboard.Stop();
-
+            }
+            
             //Controller
             switch (_model.Controller.StateMachine.State)
             {
@@ -146,8 +160,8 @@
                 case Controller.State.NotMoving:
                     ControllerScreen.Text = "Not Moving";
                     break;
-                case Controller.State.Collision:
-                    ControllerScreen.Text = "Collision";
+                case Controller.State.Collided:
+                    ControllerScreen.Text = "Collided";
                     break;
                 case Controller.State.StoppedAtTarget:
                     ControllerScreen.Text = "Stopped at target";
@@ -155,63 +169,37 @@
             }
         }
 
-        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            Random random = new Random();
-            double leftRob = Canvas.GetLeft(Robot);
-            double leftObst = Canvas.GetLeft(DynamicObstacle);
-            double topObst = Canvas.GetTop(DynamicObstacle);
+        //private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        //{
+        //    Random random = new Random();
+        //    double leftRob = Canvas.GetLeft(Robot);
+        //    double leftObst = Canvas.GetLeft(DynamicObstacle);
+        //    double topObst = Canvas.GetTop(DynamicObstacle);
 
-            if (leftRob + 100 <= 750 && leftRob >= 0) {
-                MoveRobotAnimation((int)Canvas.GetLeft(Robot) + 100, new TimeSpan(0, 0, 1));
-                //Canvas.SetLeft(Robot, leftRob + 100);
-                _model.Robot.Move(true, false);
-            }
-            int rnd = random.Next(-100, 101);
-            if (topObst + rnd <= 400 && topObst >= 0) {
-                int value = ChooseValue(-100, 100);
-                MoveLeftDynObstacleAnimation((int)Canvas.GetTop(DynamicObstacle) + value, new TimeSpan(0, 0, 1));
-                //Canvas.SetTop(DynamicObstacle, topObst + value);
+        //    if (leftRob + 100 <= 750 && leftRob >= 0) {
+        //        MoveRobotAnimation((int)Canvas.GetLeft(Robot) + 100, new TimeSpan(0, 0, 1));
+        //        //Canvas.SetLeft(Robot, leftRob + 100);
+        //        _model.Robot.Move(true, false);
+        //    }
+        //    int rnd = random.Next(-100, 101);
+        //    if (topObst + rnd <= 400 && topObst >= 0) {
+        //        int value = ChooseValue(-100, 100);
+        //        MoveLeftDynObstacleAnimation((int)Canvas.GetTop(DynamicObstacle) + value, new TimeSpan(0, 0, 1));
+        //        //Canvas.SetTop(DynamicObstacle, topObst + value);
 
-                //if (value == 100)
-                //    _model.DynamicObstacle.Move(0, 1);
-                //else
-                //    _model.DynamicObstacle.Move(0, -1);
-            }
-            rnd = random.Next(-100, 101);
-            if (leftObst + rnd <= 750 && leftObst >= 0)
-            {
-                int value = ChooseValue(-100, 100);
-                MoveTopDynObstacleAnimation((int)Canvas.GetLeft(DynamicObstacle) + value, new TimeSpan(0, 0, 1));
-                //Canvas.SetLeft(DynamicObstacle, leftObst + value);
+        //    }
+        //    rnd = random.Next(-100, 101);
+        //    if (leftObst + rnd <= 750 && leftObst >= 0)
+        //    {
+        //        int value = ChooseValue(-100, 100);
+        //        MoveTopDynObstacleAnimation((int)Canvas.GetLeft(DynamicObstacle) + value, new TimeSpan(0, 0, 1));
+        //        //Canvas.SetLeft(DynamicObstacle, leftObst + value);
+        //    }
 
-                //if (value == 100)
-                //    _model.DynamicObstacle.Move(0, 1);
-                //else
-                //    _model.DynamicObstacle.Move(0, -1);
-            }
-
-            
-            //Test
-            //Rectangle test = new Rectangle();
-            //test.Width = 100;
-            //test.Height = 100;
-            //test.Fill = Brushes.Red;
-            //test.Stroke = Brushes.Red;
-            //test.StrokeThickness = 4;
-            //test.RadiusX = 5;
-            //test.RadiusY = 5;
-            //canvas.Children.Add(test);
-            //Point pos = e.GetPosition(canvas);
-            //Canvas.SetLeft(test, (int) pos.X);
-            //Canvas.SetTop(test, (int) pos.Y);
-        }
+        //}
 
         private void MoveRobotAnimation(int newCoordinate, TimeSpan duration)
-        {
-            //PointAnimation animation = new PointAnimation(new Point(300, 300), duration);
-            //Robot.BeginAnimation(EllipseGeometry.CenterProperty, animation);
-
+        { 
             DoubleAnimation animation = new DoubleAnimation(newCoordinate, duration);
             Robot.BeginAnimation(Canvas.LeftProperty, animation);
         }

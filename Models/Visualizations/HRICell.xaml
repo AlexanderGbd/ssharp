@@ -108,9 +108,10 @@
     </UserControl.Triggers>
 
     <!--DockPanel LastChildFill="true"-->
+    <!--MouseLeftButtonDown="Canvas_MouseLeftButtonDown"-->
     <DockPanel LastChildFill="true">
         <infrastructure:SimulationControls x:Name="SimulationControls" DockPanel.Dock="Top" />
-        <Canvas x:Name="canvas" Background="#FFDFDCEC" Margin="-539,0,-44,-119.5" Width="500" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" Height="500">
+        <Canvas x:Name="canvas" Background="#FFDFDCEC" Margin="-539,0,-44,-119.5" Width="500" Height="500">
             <Ellipse x:Name="Robot" Height="100" Width="100" Fill="Black" Canvas.Top="400" ToolTip="Robot" RenderTransformOrigin="0.5,0.5" Canvas.Left="0">
                 <Ellipse.ContextMenu>
                     <ContextMenu StaysOpen="true">
@@ -131,7 +132,7 @@
             </Ellipse>
             <Rectangle x:Name="Target" Fill="#FF7A7A97" Height="100" Stroke="#FF191717" Width="100" Canvas.Left="400" Canvas.Top="400" ToolTip="Target"/>
             <Rectangle x:Name="StaticObstacle" Fill="#FFBF0C0C" Stroke="#FF191717" Width="100" Height="100" Canvas.Left="100" Canvas.Top="200" ToolTip="Static Obstacle"/>
-            <Ellipse x:Name="DynamicObstacle" Height="100" Width="100" Fill="#FFEAB26D" Canvas.Left="297" Canvas.Top="200" ToolTip="Danamic Obstacle" RenderTransformOrigin="0.5,0.5">
+            <Ellipse x:Name="DynamicObstacle" Height="100" Width="100" Fill="#FFEAB26D" Canvas.Left="300" Canvas.Top="200" ToolTip="Danamic Obstacle" RenderTransformOrigin="0.5,0.5">
                 <Ellipse.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>
