@@ -84,7 +84,7 @@
                 .Transition(
                     from: State.IsMoving,
                     to: State.ObstacleDetected,
-                    guard: Robot.ObstDetected,
+                    guard: Robot.ObstDetected || Robot.ObstacleInEnvironment,
                     action: () => {
                         Robot.Stop();
                         DynamicObstacle.Stop();
@@ -99,7 +99,7 @@
                 .Transition(
                     from: new[] { State.NotMoving, State.ObstacleDetected },
                     to: State.IsMoving,
-                    guard: !Sensor.ObstDetected && !Robot.IsSamePositionAsTarg && !Robot.IsSamePositionAsObst,
+                    guard: !Sensor.ObstDetected && !Robot.IsSamePositionAsObst,
                     action: () =>
                     {
                         DynamicObstacle.Move();

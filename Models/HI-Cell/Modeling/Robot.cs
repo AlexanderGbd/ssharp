@@ -21,6 +21,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public extern bool IsSamePositionAsObst { get; }
         public extern bool IsSamePositionAsTarg { get; }
         public extern bool ObstacleDetected { get; }
+        public extern bool ObstacleInEnvironment { get; }
         /*public extern Vector2 CameraPosition { get; }*/
 
         /// <summary>
@@ -52,16 +53,16 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
         ///   Stops the robot.
         /// </summary>
-        public void Stop()
+        public virtual void Stop()
         {
             IsMoving = false;
         }
 
         public override void Update()
         {
-            if (ObstDetected)
+            if (ObstDetected || ObstacleInEnvironment)
                 IsMoving = false;
-            else if (Position[0] < 5 && !SamePositionAsObst && !ObstDetected && !HasStopped)
+            else if (Position[0] < 5 && !SamePositionAsObst && !ObstDetected && !ObstacleInEnvironment && !HasStopped)
                 Move(true, false);
         }
 
@@ -89,6 +90,11 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                 {
                     Position[1]++;
                 }
+                IsMoving = true;
+            }
+
+            public override void Stop()
+            {
                 IsMoving = true;
             }
         }

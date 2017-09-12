@@ -31,12 +31,16 @@
                 <EasingDoubleKeyFrame KeyTime="0:0:4" Value="0"/>
                 -->
             </DoubleAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="Target">
+            <!-- 
+             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="Target">
                 <EasingDoubleKeyFrame KeyTime="0:0:3" Value="1"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:4" Value="0.5"/>
             </DoubleAnimationUsingKeyFrames>
+            -->
         </Storyboard>
-        <Storyboard x:Key="SensorWarningOn">
+
+        <!--
+                <Storyboard x:Key="SensorWarningOn">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="Warning">
                 <EasingDoubleKeyFrame KeyTime="0" Value="1"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:1" Value="1"/>
@@ -76,6 +80,8 @@
                 <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0"/>
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
+        -->
+
         <Storyboard x:Key="MoveObstacle">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="DynamicObstacle">
                 <EasingDoubleKeyFrame KeyTime="0"/>
@@ -96,20 +102,23 @@
         </EventTrigger>
     </UserControl.Triggers>  -->
 
-    <UserControl.Triggers>
-        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-            <BeginStoryboard Storyboard="{StaticResource MoveRobot}"/>
+    <!-- 
             <BeginStoryboard Storyboard="{StaticResource SensorWarningOn}"/>
             <BeginStoryboard Storyboard="{StaticResource CameraWarningOn}"/>
             <BeginStoryboard Storyboard="{StaticResource CameraWarningOff}"/>
             <BeginStoryboard Storyboard="{StaticResource SensorWarningOff}"/>
+    -->
+
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+            <BeginStoryboard Storyboard="{StaticResource MoveRobot}"/>
             <BeginStoryboard Storyboard="{StaticResource MoveObstacle}"/>
         </EventTrigger>
     </UserControl.Triggers>
 
     <!--DockPanel LastChildFill="true"-->
     <!--MouseLeftButtonDown="Canvas_MouseLeftButtonDown"-->
-    <DockPanel> 
+    <DockPanel>
 
         <infrastructure:SimulationControls x:Name="SimulationControls" DockPanel.Dock="Top" />
         <Canvas x:Name="canvas" Background="#FFDFDCEC"  Width="500" Height="500">
@@ -132,7 +141,7 @@
                     </TransformGroup>
                 </Ellipse.RenderTransform>
             </Ellipse>
-            <Rectangle x:Name="Target" Fill="#FF7A7A97" Height="100" Stroke="#FF191717" Width="100" Canvas.Left="400" Canvas.Top="400" ToolTip="Target"/>
+            <Rectangle x:Name="Target" Fill="#FF7A7A97" Height="100" Stroke="#FF191717" Width="100" Canvas.Left="400" Canvas.Top="400" ToolTip="Target" Opacity="0.5"/>
             <Rectangle x:Name="StaticObstacle" Fill="#FFBF0C0C" Stroke="#FF191717" Width="100" Height="100" Canvas.Left="100" Canvas.Top="200" ToolTip="Static Obstacle"/>
             <Ellipse x:Name="DynamicObstacle" Height="100" Width="100" Fill="#FFEAB26D" Canvas.Left="300" Canvas.Top="200" ToolTip="Danamic Obstacle" RenderTransformOrigin="0.5,0.5">
                 <Ellipse.RenderTransform>
@@ -144,7 +153,7 @@
                     </TransformGroup>
                 </Ellipse.RenderTransform>
             </Ellipse>
-            <ed:RegularPolygon x:Name="Warning" Fill="#FFE4CE44" Height="80" InnerRadius="1" Canvas.Left="180" Stretch="Fill" Canvas.Top="46" Width="80" PointCount="3" RenderTransformOrigin="0.5,0.5">
+            <ed:RegularPolygon x:Name="Warning" Fill="#FFE4CE44" Height="80" InnerRadius="1" Canvas.Left="75" Stretch="Fill" Canvas.Top="14" Width="80" PointCount="3" RenderTransformOrigin="0.5,0.5">
                 <ed:RegularPolygon.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform/>
@@ -154,8 +163,8 @@
                     </TransformGroup>
                 </ed:RegularPolygon.RenderTransform>
             </ed:RegularPolygon>
-            <TextBlock x:Name="SensorWarning" Height="62" Canvas.Left="176" TextWrapping="Wrap" Text="Sensor fault!!!" Canvas.Top="50" Width="123" FontSize="24" FontFamily="Showcard Gothic"/>
-            <TextBlock x:Name="CameraWarning" Height="58" Canvas.Left="172" TextWrapping="Wrap" Text="Camera fault!!!" Canvas.Top="52" Width="140" FontSize="24" FontWeight="Bold" FontFamily="Showcard Gothic"/>
+            <TextBlock x:Name="SensorWarning" Height="62" Canvas.Left="161" TextWrapping="Wrap" Text="Sensor fault!!!" Canvas.Top="73" Width="123" FontSize="24" FontFamily="Showcard Gothic" Background="#FF0F0F0F" RenderTransformOrigin="0.459,1.395"/>
+            <TextBlock x:Name="CameraWarning" Height="58" Canvas.Left="161" TextWrapping="Wrap" Text="Camera fault!!!" Canvas.Top="10" Width="140" FontSize="24" FontWeight="Bold" FontFamily="Showcard Gothic" Background="#FF0F0F0F"/>
             <DockPanel Width="137" Canvas.Top="49" Height="134" IsHitTestVisible="false" Canvas.Left="19">
                 <TextBlock x:Name="ControllerScreen" TextWrapping="Wrap" TextAlignment="Center" Text="Not Moving"
                                Foreground="Blue" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />

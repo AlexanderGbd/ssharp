@@ -41,18 +41,19 @@
         /// <summary>
         ///   Simulates a path where only the robot's 'stop' fault occurs with the expectation that the robot does in fact not stop.
         /// </summary>
-        //[Test]
-        //public void RobotDoesntStopWhenItShould() {
-        //    var model = new Model();
-        //    model.Faults.SuppressActivations();
-        //    model.Robot.SuppressStop.ForceActivation();
+        [Test]
+        public void RobotDoesntStopWhenItShould()
+        {
+            var model = new Model();
+            model.Faults.SuppressActivations();
+            model.Robot.SuppressStop.ForceActivation();
 
-        //    var simulator = new SafetySharpSimulator(model);
-        //    model = (Model)simulator.Model;
-        //    simulator.FastForward(steps: 120);
+            var simulator = new SafetySharpSimulator(model);
+            model = (Model)simulator.Model;
+            simulator.FastForward(steps: 120);
 
-        //    model.Robot.IsMoving.Should().BeTrue();
-        //}
+            model.Robot.IsMoving.Should().BeTrue();
+        }
 
         /// <summary>
         ///   Simulates a path where only the robot's 'detecting' fault occurs with the expectation that the robot does in fact not detect an obstacle.

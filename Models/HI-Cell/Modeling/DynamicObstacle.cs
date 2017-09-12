@@ -6,7 +6,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     public class DynamicObstacle : Component
     {
-        private Vector2 Position = new Vector2(3, 3);
+        private Vector2 Position = new Vector2(3, 4);
         public bool IsMoving { get; private set; }
         public bool HasStopped => !IsMoving;
 
@@ -36,42 +36,51 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             switch (rnd.Next(0, 4))
             {
                 case 0:
-                    if (plusOperation)
+                    Case1:
+                    if ((plusOperation || (int)Position.x == 0) && (int)Position.x < 5)
                         Position.x = (Position.x + 1) % 5;
                     else
                         Position.x = (Position.x - 1) % 5;
                     break;
 
                 case 1:
-                    if (plusOperation)
+                    if ((plusOperation || (int)Position.y == 0) && (int)Position.y < 5)
                         Position.y = (Position.y + 1) % 5;
                     else
                         Position.y = (Position.y - 1) % 5;
                     break;
 
                 case 2:
-                    if (plusOperation)
+                    if (plusOperation && (int)Position.x == 0 && (int)Position.x < 5)
                     {
                         Position.x = (Position.x + 1) % 5;
                         Position.y = (Position.y + 1) % 5;
                     }
-                    else
+                    else if (Position.x > 0 && Position.y > 0)
                     {
                         Position.x = (Position.x - 1) % 5;
                         Position.y = (Position.y - 1) % 5;
+                    }
+                    else
+                    {
+                        goto Case1;
                     }
                     break;
 
                 case 3:
-                    if (plusOperation)
+                    if (plusOperation && (int)Position.x < 5 && Position.y > 0 && (int)Position.y < 5)
                     {
                         Position.x = (Position.x + 1) % 5;
                         Position.y = (Position.y - 1) % 5;
                     }
-                    else
+                    else if (Position.x > 0)
                     {
                         Position.x = (Position.x - 1) % 5;
                         Position.y = (Position.y + 1) % 5;
+                    }
+                    else
+                    {
+                        goto Case1;
                     }
                     break;
             }
@@ -84,7 +93,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public override void Update()
         {
-            if (!HasStopped)
+            if (IsMoving)
                 Move();
         }
     }

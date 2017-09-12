@@ -27,6 +27,7 @@
             Bind(nameof(Robot.IsSamePositionAsObst), nameof(Sensor.IsSamePositionAsObst));
             Bind(nameof(Robot.IsSamePositionAsTarg), nameof(Sensor.IsSamePositionAsTarg));
             Bind(nameof(Robot.ObstacleDetected), nameof(Sensor.ObstDetected));
+            Bind(nameof(Robot.ObstacleInEnvironment), nameof(Sensor.ObstInEnvironment));
             /*Bind(nameof(Robot.CameraPosition), nameof(Camera.Position));*/
             //Monitor bindings         MIT AGENTEN MACHEN WIE IN ROBOT CELL!
             /*Bind(nameof(Monitor.CameraIsRecording), nameof(Camera.IsRecording));

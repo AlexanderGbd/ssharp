@@ -57,7 +57,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             bool obstacleInXDirection = (int)DynObstPosition.x == (int)(RobPosition.x + x) && (int)DynObstPosition.y == (int)(RobPosition.y + y) ||
                                         (int)StatObstPosition.x == (int)(RobPosition.x + x) && (int)StatObstPosition.y == (int)(RobPosition.y + y);
             bool obstacleInXyDirection = (int)DynObstPosition.x == (int)(RobPosition.x + x) && (int)DynObstPosition.y == (int)(RobPosition.y + y) ||
-                                         (int)StatObstPosition.y == (int)(RobPosition.y -1) && (int)StatObstPosition.y == (int)(RobPosition.y - 1);
+                                         (int)StatObstPosition.y == (int)(RobPosition.y - y) && (int)StatObstPosition.y == (int)(RobPosition.y - y);
             return obstacleInXDirection && obstacleInXyDirection;
         }
 
@@ -100,6 +100,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             public override void Update()
             {
                 ObstDetected = false;
+                ObstInEnvironment = false;
                 IsDetecting = false;
             }
         }
@@ -112,7 +113,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             ObstDetected = (ScanForObstaclesInNextStep(1, 0) || ComparePositions());
             ObstInEnvironment = (ScanForObstaclesInNextStep(1, 0) || ScanForObstaclesInNextStep(0, 1) || ScanForObstaclesInNextStep(1, 1)
-                                || ScanForObstaclesInNextStep(0, -1) || ComparePositions());
+                                || ScanForObstaclesInNextStep(0, -1) || ScanForObstaclesInNextStep(-1, 0) || ScanForObstaclesInNextStep(-1, -1)
+                                || ScanForObstaclesInNextStep(-1, 1) || ScanForObstaclesInNextStep(1, -1) || ComparePositions());
         }
     }
 }

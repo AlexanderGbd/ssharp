@@ -12,6 +12,7 @@
 
     public partial class HRICell
     {
+        public static int Counter = 0;
         //private readonly Storyboard _movingStoryboard;
         //private readonly Storyboard _sensorAlertStoryboard;
         //private readonly Storyboard _cameraAlertStoryboard;
@@ -45,8 +46,6 @@
             UpdateModelState();
 
             Warning.Opacity = 0;
-            SensorWarning.Opacity = 0;
-            CameraWarning.Opacity = 0;
             SimulationControls.MaxSpeed = 3.0;
             SimulationControls.ChangeSpeed(8);
         }
@@ -85,18 +84,26 @@
 
         private void UpdateModelState()
         {
+            Console.WriteLine("\nDas ist der "+Counter+". Durchgang: ");
+
             //Dynamic Obstacle
             float obstacleX = _model.DynamicObstacle.GetXCoord();
             float obstacleY = _model.DynamicObstacle.GetYCoord();
             Canvas.SetLeft(DynamicObstacle, obstacleX * 100);
             Canvas.SetTop(DynamicObstacle, obstacleY * 100);
             
+            Console.WriteLine("Dynamic Obstacle x-Coordinate: "+ Canvas.GetLeft(DynamicObstacle));
+            Console.WriteLine("Dynamic Obstacle y-Coordinate: "+ Canvas.GetTop(DynamicObstacle)  + "\n");
+
+            Console.WriteLine("\nObstacle detected?: "+ _model.Robot.ObstacleDetected + "\n");
+            
             //Robot
             float xPos = _model.Robot.GetXCoord();
             if (!_model.Robot.SamePositionAsTarg)
                 Canvas.SetLeft(Robot, xPos * 100);
-            if (_model.Robot.SamePositionAsTarg)
-                Target.Opacity = 0.5;
+
+            Console.WriteLine("Robot x-coordinate: "+ Canvas.GetLeft(Robot));
+            Console.WriteLine("Robot y-coordinate: "+ Canvas.GetTop(Robot) + "\n");
 
             //Canvas.GetLeft(Robot);
             //MoveRobotAnimation((int)Canvas.GetLeft(Robot) + 100, new TimeSpan(0, 0, 1));
@@ -122,34 +129,28 @@
 
             if (!_model.Sensor.IsDetecting)
             {
-                Console.Write("\n_model.Sensor.IsDetecting: " + _model.Sensor.IsDetecting + "\n");
-                Warning.Opacity = 1.0;
+                Console.WriteLine("\n_model.Sensor.IsDetecting: " + _model.Sensor.IsDetecting + "\n");
                 SensorWarning.Opacity = 1.0;
                 //_sensorAlertStoryboard.Begin();
             }
             else
             {
-                Warning.Opacity = 0;
                 SensorWarning.Opacity = 0;
-                Console.Write("\n_model.Sensor.IsDetecting: "+ _model.Sensor.IsDetecting + "\n");
+                Console.WriteLine("\n_model.Sensor.IsDetecting: "+ _model.Sensor.IsDetecting + "\n");
                 //_sensorAlertStoryboard.Stop();
             }
             
             //Camera
             SuppressRecording.IsChecked = _model.Camera.SuppressRecording.IsActivated;
-            Warning.Visibility = SuppressRecording.IsChecked.ToVisibility();
-            CameraWarning.Visibility = SuppressRecording.IsChecked.ToVisibility();
 
             if (!_model.Camera.IsRecording)
             {
-                //Warning.Opacity = 1;
-                //CameraWarning.Opacity = 1;
+                CameraWarning.Opacity = 1.0;
                 //_cameraAlertStoryboard.Begin();
             }
             else
             {
-                //Warning.Opacity = 0;
-                //CameraWarning.Opacity = 0;
+                CameraWarning.Opacity = 0;
                 //_cameraAlertStoryboard.Stop();
             }
             
@@ -172,6 +173,7 @@
                     ControllerScreen.Text = "Stopped at target";
                     break;
             }
+            Counter++;
         }
 
         //private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
