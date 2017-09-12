@@ -6,6 +6,10 @@
     {
         public enum State {
             /// <summary>
+            ///     Indicates that the sensor detected an obstacle
+            /// </summary>
+            ObstacleDetected,
+            /// <summary>
             ///     Indicates that the robot hit an obstacle, instead of reaching its target
             /// </summary>
             Collided,
@@ -71,14 +75,6 @@
             StateMachine
                 .Transition(
                     from: State.IsMoving,
-                    to: State.NotMoving,
-                    guard: Robot.ObstDetected,
-                    action: () => {
-                        Robot.Stop();
-                        DynamicObstacle.Stop();
-                    })
-                .Transition(
-                    from: State.IsMoving,
                     to: State.Collided,
                     guard: Robot.SamePositionAsObst,
                     action: () => {
@@ -86,9 +82,24 @@
                         DynamicObstacle.Stop();
                     })
                 .Transition(
-                    from: new[] { State.NotMoving },
+                    from: State.IsMoving,
+                    to: State.ObstacleDetected,
+                    guard: Robot.ObstDetected,
+                    action: () => {
+                        Robot.Stop();
+                        DynamicObstacle.Stop();
+                    })
+                .Transition(
+                    from: State.IsMoving,
+                    to: State.NotMoving,
+                    guard: Robot.HasStopped,
+                    action: () => {
+                        DynamicObstacle.Stop();
+                    })
+                .Transition(
+                    from: new[] { State.NotMoving, State.ObstacleDetected },
                     to: State.IsMoving,
-                    guard: !Sensor.ObstDetected && !Robot.IsSamePositionAsTarg,
+                    guard: !Sensor.ObstDetected && !Robot.IsSamePositionAsTarg && !Robot.IsSamePositionAsObst,
                     action: () =>
                     {
                         DynamicObstacle.Move();
@@ -99,6 +110,7 @@
                     to: State.StoppedAtTarget,
                     guard: Robot.SamePositionAsTarg,
                     action: () => {
+                        Robot.Stop();
                         DynamicObstacle.Stop();
                     });
         }

@@ -54,8 +54,11 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public bool ScanForObstaclesInNextStep(double x, double y)
         {
-            return (int) DynObstPosition.x == (int) (RobPosition.x + x) && (int) DynObstPosition.y == (int) (RobPosition.y + y) ||
-                    (int) StatObstPosition.x == (int) (RobPosition.x + x) && (int) StatObstPosition.y == (int) (RobPosition.y + y);
+            bool obstacleInXDirection = (int)DynObstPosition.x == (int)(RobPosition.x + x) && (int)DynObstPosition.y == (int)(RobPosition.y + y) ||
+                                        (int)StatObstPosition.x == (int)(RobPosition.x + x) && (int)StatObstPosition.y == (int)(RobPosition.y + y);
+            bool obstacleInXyDirection = (int)DynObstPosition.x == (int)(RobPosition.x + x) && (int)DynObstPosition.y == (int)(RobPosition.y + y) ||
+                                         (int)StatObstPosition.y == (int)(RobPosition.y -1) && (int)StatObstPosition.y == (int)(RobPosition.y - 1);
+            return obstacleInXDirection && obstacleInXyDirection;
         }
 
         /// <summary>

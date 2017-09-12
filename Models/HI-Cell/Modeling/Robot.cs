@@ -81,11 +81,11 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                 float posX = GetXCoord();
                 float posY = GetYCoord();
 
-                if (moveX && posX < 5)     /* && !ObstDetected && !SamePositionAsObst*/
+                if (moveX)     /* && posX < 5 && !ObstDetected && !SamePositionAsObst*/
                 {
                     Position[0]++;
                 }
-                if (moveY && posY < 5)     /* && !ObstDetected && !SamePositionAsObst*/
+                if (moveY)     /* && posY < 5 && !ObstDetected && !SamePositionAsObst*/
                 {
                     Position[1]++;
                 }

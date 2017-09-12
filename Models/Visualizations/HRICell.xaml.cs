@@ -12,10 +12,10 @@
 
     public partial class HRICell
     {
-        private readonly Storyboard _movingStoryboard;
-        private readonly Storyboard _sensorAlertStoryboard;
-        private readonly Storyboard _cameraAlertStoryboard;
-        private readonly Storyboard _dynObstacleStoryboard;
+        //private readonly Storyboard _movingStoryboard;
+        //private readonly Storyboard _sensorAlertStoryboard;
+        //private readonly Storyboard _cameraAlertStoryboard;
+        //private readonly Storyboard _dynObstacleStoryboard;
         private Model _model;
         //private RealTimeSafetySharpSimulator realTimeSimulator;
         //private SafetySharpSimulator simulator;
@@ -26,15 +26,15 @@
             InitializeComponent();
 
             // Initialize visualization resources
-            _movingStoryboard = (Storyboard)Resources["MoveRobot"];
+            //_movingStoryboard = (Storyboard)Resources["MoveRobot"];
             //_movingStoryboard.Begin();
-           
+
             //_dynObstacleStoryboard = (Storyboard)Resources["MoveObstacle"];
             //_dynObstacleStoryboard.Begin();
             //_dynObstacleStoryboard.Pause();
 
-            _cameraAlertStoryboard = (Storyboard)Resources["CameraWarningOn"];
-            _sensorAlertStoryboard = (Storyboard)Resources["SensorWarningOn"];
+            //_cameraAlertStoryboard = (Storyboard)Resources["CameraWarningOn"];
+            //_sensorAlertStoryboard = (Storyboard)Resources["SensorWarningOn"];
 
             // Initialize the simulation environment
             SimulationControls.ModelStateChanged += (o, e) => UpdateModelState();
@@ -47,7 +47,7 @@
             Warning.Opacity = 0;
             SensorWarning.Opacity = 0;
             CameraWarning.Opacity = 0;
-            SimulationControls.MaxSpeed = 64;
+            SimulationControls.MaxSpeed = 3.0;
             SimulationControls.ChangeSpeed(8);
         }
 
@@ -87,7 +87,7 @@
         {
             //Dynamic Obstacle
             float obstacleX = _model.DynamicObstacle.GetXCoord();
-            float obstacleY = _model.DynamicObstacle.GetXCoord();
+            float obstacleY = _model.DynamicObstacle.GetYCoord();
             Canvas.SetLeft(DynamicObstacle, obstacleX * 100);
             Canvas.SetTop(DynamicObstacle, obstacleY * 100);
             
@@ -117,20 +117,22 @@
 
             //Sensor
             SuppressDetecting.IsChecked = _model.Sensor.SuppressDetecting.IsActivated;
-            Warning.Visibility = SuppressDetecting.IsChecked.ToVisibility();
-            SensorWarning.Visibility = SuppressDetecting.IsChecked.ToVisibility();
+            //Warning.Visibility = SuppressDetecting.IsChecked.ToVisibility();
+            //SensorWarning.Visibility = SuppressDetecting.IsChecked.ToVisibility();
 
             if (!_model.Sensor.IsDetecting)
             {
-                //Warning.Opacity = 1;
-                //SensorWarning.Opacity = 1;
-                _sensorAlertStoryboard.Begin();
+                Console.Write("\n_model.Sensor.IsDetecting: " + _model.Sensor.IsDetecting + "\n");
+                Warning.Opacity = 1.0;
+                SensorWarning.Opacity = 1.0;
+                //_sensorAlertStoryboard.Begin();
             }
             else
             {
-                //Warning.Opacity = 0;
-                //SensorWarning.Opacity = 0;
-                _sensorAlertStoryboard.Stop();
+                Warning.Opacity = 0;
+                SensorWarning.Opacity = 0;
+                Console.Write("\n_model.Sensor.IsDetecting: "+ _model.Sensor.IsDetecting + "\n");
+                //_sensorAlertStoryboard.Stop();
             }
             
             //Camera
@@ -142,13 +144,13 @@
             {
                 //Warning.Opacity = 1;
                 //CameraWarning.Opacity = 1;
-                _cameraAlertStoryboard.Begin();
+                //_cameraAlertStoryboard.Begin();
             }
             else
             {
                 //Warning.Opacity = 0;
                 //CameraWarning.Opacity = 0;
-                _cameraAlertStoryboard.Stop();
+                //_cameraAlertStoryboard.Stop();
             }
             
             //Controller
@@ -159,6 +161,9 @@
                     break; 
                 case Controller.State.NotMoving:
                     ControllerScreen.Text = "Not Moving";
+                    break;
+                case Controller.State.ObstacleDetected:
+                    ControllerScreen.Text = "Obstacle detected";
                     break;
                 case Controller.State.Collided:
                     ControllerScreen.Text = "Collided";

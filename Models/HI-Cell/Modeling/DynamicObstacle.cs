@@ -6,7 +6,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     public class DynamicObstacle : Component
     {
-        private Vector2 Position = new Vector2(3, 2);
+        private Vector2 Position = new Vector2(3, 3);
         public bool IsMoving { get; private set; }
         public bool HasStopped => !IsMoving;
 
@@ -37,41 +37,41 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             {
                 case 0:
                     if (plusOperation)
-                        Position.x = (Position.x + 1) % 6;
+                        Position.x = (Position.x + 1) % 5;
                     else
-                        Position.x = (Position.x - 1) % 6;
+                        Position.x = (Position.x - 1) % 5;
                     break;
 
                 case 1:
                     if (plusOperation)
-                        Position.y = (Position.y + 1) % 6;
+                        Position.y = (Position.y + 1) % 5;
                     else
-                        Position.y = (Position.y - 1) % 6;
+                        Position.y = (Position.y - 1) % 5;
                     break;
 
                 case 2:
                     if (plusOperation)
                     {
-                        Position.x = (Position.x + 1) % 6;
-                        Position.y = (Position.y + 1) % 6;
+                        Position.x = (Position.x + 1) % 5;
+                        Position.y = (Position.y + 1) % 5;
                     }
                     else
                     {
-                        Position.x = (Position.x - 1) % 6;
-                        Position.y = (Position.y - 1) % 6;
+                        Position.x = (Position.x - 1) % 5;
+                        Position.y = (Position.y - 1) % 5;
                     }
                     break;
 
                 case 3:
                     if (plusOperation)
                     {
-                        Position.x = (Position.x + 1) % 6;
-                        Position.y = (Position.y - 1) % 6;
+                        Position.x = (Position.x + 1) % 5;
+                        Position.y = (Position.y - 1) % 5;
                     }
                     else
                     {
-                        Position.x = (Position.x - 1) % 6;
-                        Position.y = (Position.y + 1) % 6;
+                        Position.x = (Position.x - 1) % 5;
+                        Position.y = (Position.y + 1) % 5;
                     }
                     break;
             }

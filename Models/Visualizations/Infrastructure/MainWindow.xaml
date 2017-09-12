@@ -8,8 +8,8 @@
                       mc:Ignorable="d"
                       GlowBrush="{DynamicResource AccentColorBrush}"
                       WindowStartupLocation="CenterScreen"
-                      MinWidth="900" MinHeight="600"
-                      Title="S# Case Study Visualizations" Width="700" Height="600">
+                      MinWidth="900" MinHeight="700"
+                      Title="S# Case Study Visualizations" Width="700" Height="700">
     <Grid>
         <TabControl>
             <TabItem Header="Height Control">
@@ -25,7 +25,7 @@
                 <visualization:HdMachine />
             </TabItem>
             <TabItem Header="HRICell">
-                <visualization:HRICell Margin="250,-22,-250,22" />
+                <visualization:HRICell />
             </TabItem>
         </TabControl>
     </Grid>

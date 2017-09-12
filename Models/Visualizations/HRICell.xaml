@@ -8,7 +8,7 @@
       xmlns:infrastructure="clr-namespace:SafetySharp.CaseStudies.Visualizations.Infrastructure"
       xmlns:ed="http://schemas.microsoft.com/expression/2010/drawing"
       mc:Ignorable="d" 
-      d:DesignHeight="300" d:DesignWidth="300">
+      d:DesignHeight="500" d:DesignWidth="500">
     <UserControl.Resources>
         <Storyboard x:Key="MoveRobot">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Robot">
@@ -109,9 +109,11 @@
 
     <!--DockPanel LastChildFill="true"-->
     <!--MouseLeftButtonDown="Canvas_MouseLeftButtonDown"-->
-    <DockPanel LastChildFill="true">
+    <DockPanel> 
+
         <infrastructure:SimulationControls x:Name="SimulationControls" DockPanel.Dock="Top" />
-        <Canvas x:Name="canvas" Background="#FFDFDCEC" Margin="-539,0,-44,-119.5" Width="500" Height="500">
+        <Canvas x:Name="canvas" Background="#FFDFDCEC"  Width="500" Height="500">
+            <!--Margin="-539,0,-44,-119.5"-->
             <Ellipse x:Name="Robot" Height="100" Width="100" Fill="Black" Canvas.Top="400" ToolTip="Robot" RenderTransformOrigin="0.5,0.5" Canvas.Left="0">
                 <Ellipse.ContextMenu>
                     <ContextMenu StaysOpen="true">
