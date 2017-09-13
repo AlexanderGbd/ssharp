@@ -53,7 +53,7 @@ namespace SafetySharp.CaseStudies.RobotCell.Modeling.Controllers
 
 			foreach (var agent in Agents)
 			{
-				agent.ObserverController = this;
+				agent.ObserverController = this; 
 				GenerateConstraints(agent);
 			}
 		}

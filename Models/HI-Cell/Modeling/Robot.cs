@@ -2,10 +2,13 @@
 
 namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using ISSE.SafetyChecking.Modeling;
     using SafetySharp.Modeling;
 
-    public class Robot : Component
+    public partial class Robot : Component
     {
 
         //private Vector2 Position => CameraPosition;
@@ -23,6 +26,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public extern bool ObstacleDetected { get; }
         public extern bool ObstacleInEnvironment { get; }
         /*public extern Vector2 CameraPosition { get; }*/
+        public bool MonitorText = false;
+
+        public List<Func<bool>> Constraints;
 
         /// <summary>
 		///   The fault that prevents the robot from moving.
@@ -33,6 +39,20 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 		/// </summary>
         public readonly Fault SuppressStop = new PermanentFault();
 
+
+        public Robot()
+        {
+            Constraints = new List<Func<bool>>()
+            {
+                () => ObstacleInEnvironment == !IsCollided,
+                () => IsMoving == !IsCollided,
+                () => IsMoving == !SamePositionAsTarg,
+                () => IsCollided == SamePositionAsObst,
+                () => IsSamePositionAsTarg ? HasStopped : !HasStopped
+            };
+            //Problem: the binding between the ports is done, AFTER this constructor was avoked...
+            //Console.WriteLine(ObstacleInEnvironment + "\n");
+        }
 
         /// <summary>
         ///   Moves the robot. Increases the direction by a maximum of one.
@@ -64,6 +84,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                 IsMoving = false;
             else if (Position[0] < 5 && !SamePositionAsObst && !ObstDetected && !ObstacleInEnvironment && !HasStopped)
                 Move(true, false);
+            CheckConstraints();
         }
 
         [FaultEffect(Fault = nameof(SuppressMoving)), Priority(2)]
@@ -79,8 +100,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             public override void Move(bool moveX, bool moveY)
             {
-                float posX = GetXCoord();
-                float posY = GetYCoord();
 
                 if (moveX)     /* && posX < 5 && !ObstDetected && !SamePositionAsObst*/
                 {
@@ -110,6 +129,27 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public Vector2 GetPosition() {
             return Position;
+        }
+    }
+
+    public partial class Robot
+    {
+        public bool ValidateConstraints()
+        {
+            return Constraints.All(constraint => constraint());
+        }
+
+        public void CheckConstraints()
+        {
+            if (!ValidateConstraints())
+            {
+                //throw new Exception();
+                MonitorText = true;
+            }
+            else
+            {
+                MonitorText = false;
+            }
         }
     }
 }

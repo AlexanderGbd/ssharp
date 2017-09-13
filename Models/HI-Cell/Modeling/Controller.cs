@@ -84,26 +84,34 @@
                 .Transition(
                     from: State.IsMoving,
                     to: State.ObstacleDetected,
-                    guard: Robot.ObstDetected || Robot.ObstacleInEnvironment,
+                    guard: Sensor.ObstInEnvironment,    //Sensor.ObstDetected
                     action: () => {
                         Robot.Stop();
                         DynamicObstacle.Stop();
                     })
+                //.Transition(
+                //    from: State.IsMoving,
+                //    to: State.NotMoving,
+                //    guard: Robot.HasStopped,
+                //    action: () => {
+                //        DynamicObstacle.Stop();
+                //    })
                 .Transition(
-                    from: State.IsMoving,
-                    to: State.NotMoving,
-                    guard: Robot.HasStopped,
-                    action: () => {
-                        DynamicObstacle.Stop();
-                    })
-                .Transition(
-                    from: new[] { State.NotMoving, State.ObstacleDetected },
+                    from: new[] { State.NotMoving },
                     to: State.IsMoving,
-                    guard: !Sensor.ObstDetected && !Robot.IsSamePositionAsObst,
+                    guard: !Sensor.ObstInEnvironment && !Robot.IsSamePositionAsObst,
                     action: () =>
                     {
                         DynamicObstacle.Move();
                         Robot.Move(true, false);
+                    })
+                .Transition(
+                    from: State.ObstacleDetected,
+                    to: State.NotMoving,
+                    guard: Sensor.ObstInEnvironment,
+                    action: () =>
+                    {
+                        Robot.Stop();
                     })
                 .Transition(
                     from: State.IsMoving,

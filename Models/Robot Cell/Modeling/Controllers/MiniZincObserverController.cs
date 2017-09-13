@@ -65,7 +65,7 @@ namespace SafetySharp.CaseStudies.RobotCell.Modeling.Controllers
 				var capabilities = String.Join(",", Agents.Select(a =>
 					$"{{{String.Join(",", a.AvailableCapabilities.Select(c => c.Identifier))}}}"));
 				var isConnected = String.Join("\n|", Agents.Select(from =>
-					String.Join(",", Agents.Select(to => (from.Outputs.Contains(to) || from == to).ToString().ToLower()))));
+                    String.Join(",", Agents.Select(to => (from.Outputs.Contains(to) || from == to).ToString().ToLower()))));
 
 				writer.WriteLine($"task = [{task}];");
 				writer.WriteLine($"noAgents = {Agents.Length};");

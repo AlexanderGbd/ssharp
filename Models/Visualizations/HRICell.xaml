@@ -169,6 +169,7 @@
                 <TextBlock x:Name="ControllerScreen" TextWrapping="Wrap" TextAlignment="Center" Text="Not Moving"
                                Foreground="Blue" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </DockPanel>
+            <TextBlock x:Name="Exception" Height="125" Canvas.Left="306" TextWrapping="Wrap" Canvas.Top="10" Width="184" FontSize="24" FontFamily="Showcard Gothic" RenderTransformOrigin="0.5,0.776" Foreground="#FFF00B0B"><Run Background="#FF0E0C0C" Text="TextBlock"/></TextBlock>
         </Canvas>
     </DockPanel>
 </UserControl>

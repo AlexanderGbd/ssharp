@@ -4,7 +4,11 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
     using ISSE.SafetyChecking.Modeling;
     using SafetySharp.Modeling;
-    class Monitor : Component
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    public class Monitor : Component
     {
         /*public extern Vector2 RobotPosition { get; }
         public extern Vector2 DynObstaclePosition { get; }
@@ -18,6 +22,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public extern bool RobotIsAtSamePositionAsTarg { get; }
         public extern bool ObstacleDetected { get; }*/
 
+        
         public override void Update()
         {
             //To be implemented

@@ -9,6 +9,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         private Vector2 Position = new Vector2(3, 4);
         public bool IsMoving { get; private set; }
         public bool HasStopped => !IsMoving;
+        public extern bool IsDetected { get; }
 
         public float GetXCoord()
         {
@@ -36,7 +37,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             switch (rnd.Next(0, 4))
             {
                 case 0:
-                    Case1:
                     if ((plusOperation || (int)Position.x == 0) && (int)Position.x < 5)
                         Position.x = (Position.x + 1) % 5;
                     else
@@ -63,7 +63,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                     }
                     else
                     {
-                        goto Case1;
+                        goto case  0;
                     }
                     break;
 
@@ -80,7 +80,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                     }
                     else
                     {
-                        goto Case1;
+                        goto case 0;
                     }
                     break;
             }

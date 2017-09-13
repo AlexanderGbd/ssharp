@@ -86,6 +86,16 @@
         {
             Console.WriteLine("\nDas ist der "+Counter+". Durchgang: ");
 
+            if (_model.Robot.MonitorText)
+            {
+                Exception.Opacity = 1.0;
+                Exception.Text = "EXCEPTION WAS THROWN!";
+            }
+            else
+                Exception.Text = "EXCEPTION WAS NOT THROWN!";
+            //Exception.Opacity = 0;
+
+
             //Dynamic Obstacle
             float obstacleX = _model.DynamicObstacle.GetXCoord();
             float obstacleY = _model.DynamicObstacle.GetYCoord();
