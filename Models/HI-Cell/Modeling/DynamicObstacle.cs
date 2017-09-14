@@ -6,7 +6,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     public class DynamicObstacle : Component
     {
-        private Vector2 Position = new Vector2(3, 4);
+        public Vector2 Position = new Vector2(3, 4);
         public bool IsMoving { get; private set; }
         public bool HasStopped => !IsMoving;
         public extern bool IsDetected { get; }

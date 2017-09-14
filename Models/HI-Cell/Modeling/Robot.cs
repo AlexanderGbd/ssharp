@@ -25,8 +25,10 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public extern bool IsSamePositionAsTarg { get; }
         public extern bool ObstacleDetected { get; }
         public extern bool ObstacleInEnvironment { get; }
+        public extern bool NextMoveIsSave { get; }
+
         /*public extern Vector2 CameraPosition { get; }*/
-        public bool MonitorText = false;
+        public bool MonitorText;
 
         public List<Func<bool>> Constraints;
 
@@ -44,13 +46,14 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             Constraints = new List<Func<bool>>()
             {
-                () => ObstacleInEnvironment == !IsCollided,
-                () => IsMoving == !IsCollided,
-                () => IsMoving == !SamePositionAsTarg,
-                () => IsCollided == SamePositionAsObst,
-                () => IsSamePositionAsTarg ? HasStopped : !HasStopped
+                () => !ObstacleInEnvironment || !IsCollided,        //At error occurence false: IsCollided is true, but should be false!
+                () => !IsMoving || !IsCollided,
+                () => !IsMoving || !SamePositionAsTarg,
+                () => !IsCollided || SamePositionAsObst,
+                () => !IsSamePositionAsTarg || HasStopped
             };
-            //Problem: the binding between the ports is done, AFTER this constructor was avoked...
+
+            //Problem at the beginning: the binding between the ports is done, AFTER this constructor was avoked...
             //Console.WriteLine(ObstacleInEnvironment + "\n");
         }
 
@@ -60,11 +63,16 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public virtual void Move(bool moveX, bool moveY)
         {
             IsMoving = true;
-            if (moveX && GetXCoord() < 5) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
+            //if (moveX && moveY && GetXCoord() < 5 && GetYCoord() < 5 && NextMoveIsSave)
+            //{
+            //    Position.x++;
+            //    Position.y++;
+            //}
+            /*else*/ if (moveX && GetXCoord() < 5) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
             {
                 Position.x++;
             }
-            if (moveY && GetYCoord() < 5) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
+            /*else*/ if (moveY && GetYCoord() < 5) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
             {
                 Position.y++;
             }
@@ -82,7 +90,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             if (ObstDetected || ObstacleInEnvironment)
                 IsMoving = false;
-            else if (Position[0] < 5 && !SamePositionAsObst && !ObstDetected && !ObstacleInEnvironment && !HasStopped)
+            else if (Position.x < 5 && !SamePositionAsObst && !ObstDetected && !ObstacleInEnvironment && !HasStopped)
                 Move(true, false);
             CheckConstraints();
         }

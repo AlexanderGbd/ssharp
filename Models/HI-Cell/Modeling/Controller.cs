@@ -74,7 +74,7 @@
 
             StateMachine
                 .Transition(
-                    from: State.IsMoving,
+                    from: State.NotMoving,
                     to: State.Collided,
                     guard: Robot.SamePositionAsObst,
                     action: () => {
@@ -87,7 +87,7 @@
                     guard: Sensor.ObstInEnvironment,    //Sensor.ObstDetected
                     action: () => {
                         Robot.Stop();
-                        DynamicObstacle.Stop();
+                        //DynamicObstacle.Stop();
                     })
                 //.Transition(
                 //    from: State.IsMoving,

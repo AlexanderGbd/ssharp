@@ -48,8 +48,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// </summary>
         public bool ComparePositions()
         {
-            return (int) DynObstPosition[0] == (int) RobPosition.x && (int) DynObstPosition[1] == (int) RobPosition.y ||
-                    (int) StatObstPosition[0] == (int) RobPosition.x && (int) StatObstPosition[1] == (int) RobPosition.y;
+            return (int) DynObstPosition.x == (int) RobPosition.x && (int) DynObstPosition.y == (int) RobPosition.y ||
+                    (int) StatObstPosition.x == (int) RobPosition.x && (int) StatObstPosition.y == (int) RobPosition.y;
         }
 
         public bool ScanForObstaclesInNextStep(double x, double y)
@@ -60,6 +60,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                                          (int)StatObstPosition.y == (int)(RobPosition.y - y) && (int)StatObstPosition.y == (int)(RobPosition.y - y);
             return obstacleInXDirection && obstacleInXyDirection;
         }
+
+        public bool NextMoveIsSave => (int)DynObstPosition.x == (int)(RobPosition.x + 1);
 
         /// <summary>
         /// Scans only the x-direction currently
@@ -91,7 +93,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         }
 
         public bool IsSamePositionAsTarg() {
-            return ((int) TargetPosition[0] == (int) RobPosition.x && (int) TargetPosition[1] == (int) RobPosition.y);
+            return (int) TargetPosition[0] == (int) RobPosition.x && (int) TargetPosition[1] == (int) RobPosition.y;
         }
 
         [FaultEffect(Fault = nameof(SuppressDetecting))]
@@ -112,9 +114,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public override void Update()
         {
             ObstDetected = (ScanForObstaclesInNextStep(1, 0) || ComparePositions());
-            ObstInEnvironment = (ScanForObstaclesInNextStep(1, 0) || ScanForObstaclesInNextStep(0, 1) || ScanForObstaclesInNextStep(1, 1)
+            ObstInEnvironment = ScanForObstaclesInNextStep(1, 0) || ScanForObstaclesInNextStep(0, 1) || ScanForObstaclesInNextStep(1, 1)
                                 || ScanForObstaclesInNextStep(0, -1) || ScanForObstaclesInNextStep(-1, 0) || ScanForObstaclesInNextStep(-1, -1)
-                                || ScanForObstaclesInNextStep(-1, 1) || ScanForObstaclesInNextStep(1, -1) || ComparePositions());
+                                || ScanForObstaclesInNextStep(-1, 1) || ScanForObstaclesInNextStep(1, -1) || ComparePositions();
         }
     }
 }
