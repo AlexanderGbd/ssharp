@@ -29,7 +29,7 @@
             Bind(nameof(Robot.ObstacleDetected), nameof(Sensor.ObstDetected));
             Bind(nameof(Robot.ObstacleInEnvironment), nameof(Sensor.ObstInEnvironment));
             Bind(nameof(DynamicObstacle.IsDetected), nameof(Sensor.ObstInEnvironment));
-            Bind(nameof(Robot.NextMoveIsSave), nameof(Sensor.NextMoveIsSave));
+            Bind(nameof(DynamicObstacle.RobotPosition), nameof(Robot.GetPosition));
             /*Bind(nameof(Robot.CameraPosition), nameof(Camera.Position));*/
         }
 

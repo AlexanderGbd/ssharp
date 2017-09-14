@@ -25,7 +25,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public extern bool IsSamePositionAsTarg { get; }
         public extern bool ObstacleDetected { get; }
         public extern bool ObstacleInEnvironment { get; }
-        public extern bool NextMoveIsSave { get; }
 
         /*public extern Vector2 CameraPosition { get; }*/
         public bool MonitorText;
@@ -101,19 +100,19 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         [FaultEffect(Fault = nameof(SuppressStop)), Priority(1)]
         public class SuppressStopEffect : Robot
         {
-            public override void Move(bool moveX, bool moveY)
-            {
+            //public override void Move(bool moveX, bool moveY)
+            //{
 
-                if (moveX)     /* && posX < 5 && !ObstDetected && !SamePositionAsObst*/
-                {
-                    Position[0]++;
-                }
-                if (moveY)     /* && posY < 5 && !ObstDetected && !SamePositionAsObst*/
-                {
-                    Position[1]++;
-                }
-                IsMoving = true;
-            }
+            //    if (moveX)     /* && posX < 5 && !ObstDetected && !SamePositionAsObst*/
+            //    {
+            //        Position[0]++;
+            //    }
+            //    if (moveY)     /* && posY < 5 && !ObstDetected && !SamePositionAsObst*/
+            //    {
+            //        Position[1]++;
+            //    }
+            //    IsMoving = true;
+            //}
 
             public override void Stop()
             {
@@ -143,9 +142,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             {
                 () => !ObstacleInEnvironment || !IsCollided,
                 () => !IsMoving || !IsCollided,
-                () => !IsMoving || !SamePositionAsTarg,
+                //() => !IsMoving || !SamePositionAsTarg,           Doesn't make much sense, because if !IsMoving, maybe an obstacle was just detected  
                 () => !IsCollided || SamePositionAsObst,
-                () => !IsSamePositionAsTarg || HasStopped
+                () => !IsSamePositionAsTarg || HasStopped           //HasStopped is false, but SamePosition is true
             };
         }
 

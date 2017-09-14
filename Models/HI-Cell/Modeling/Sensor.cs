@@ -61,8 +61,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             return obstacleInXDirection && obstacleInXyDirection;
         }
 
-        public bool NextMoveIsSave => (int)DynObstPosition.x == (int)(RobPosition.x + 1);
-
         /// <summary>
         /// Scans only the x-direction currently
         /// </summary>

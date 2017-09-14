@@ -1,6 +1,8 @@
 ﻿namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
     using SafetySharp.Modeling;
+    using UnityEngine;
+    using Component = SafetySharp.Modeling.Component;
 
     public class Controller : Component
     {
@@ -82,21 +84,6 @@
                         DynamicObstacle.Stop();
                     })
                 .Transition(
-                    from: State.IsMoving,
-                    to: State.ObstacleDetected,
-                    guard: Sensor.ObstInEnvironment,    //Sensor.ObstDetected
-                    action: () => {
-                        Robot.Stop();
-                        //DynamicObstacle.Stop();
-                    })
-                //.Transition(
-                //    from: State.IsMoving,
-                //    to: State.NotMoving,
-                //    guard: Robot.HasStopped,
-                //    action: () => {
-                //        DynamicObstacle.Stop();
-                //    })
-                .Transition(
                     from: new[] { State.NotMoving },
                     to: State.IsMoving,
                     guard: !Sensor.ObstInEnvironment && !Robot.IsSamePositionAsObst,
@@ -106,22 +93,53 @@
                         Robot.Move(true, false);
                     })
                 .Transition(
+                    from: State.IsMoving,
+                    to: State.ObstacleDetected,
+                    guard: Sensor.ObstInEnvironment,    
+                    action: () => {
+                        Robot.Stop();
+                        //DynamicObstacle.Stop();
+                    })
+                .Transition(
+                    from: State.IsMoving,
+                    to: State.Collided,
+                    guard: Robot.IsSamePositionAsObst,
+                    action: Robot.Stop
+                )
+                .Transition(
+                    from: State.IsMoving,
+                    to: State.StoppedAtTarget,
+                    guard: Robot.IsSamePositionAsTarg,
+                    action: () => {
+                        Robot.Stop();
+                        DynamicObstacle.Stop();
+                    })
+                .Transition(
                     from: State.ObstacleDetected,
                     to: State.NotMoving,
                     guard: Sensor.ObstInEnvironment,
                     action: () =>
                     {
-                        Robot.Stop();
+                        //Robot.Stop();
                     })
-                .Transition(
-                    from: State.IsMoving,
-                    to: State.StoppedAtTarget,
-                    guard: Robot.SamePositionAsTarg,
-                    action: () => {
-                        Robot.Stop();
-                        DynamicObstacle.Stop();
-                    });
+                //.Transition(
+                //    from: State.StoppedAtTarget,
+                //    to: State.IsMoving,
+                //    guard: !Robot.IsSamePositionAsTarg,
+                //    action: () =>
+                //    {
+                //        Robot.Move(true, false);
+                //    })
+                ;
         }
 
+        /// <summary>
+        /// Calculates the coordinates for the robot's next movement
+        /// </summary>
+        public Vector2 CalculatePathForNextStep()
+        {
+            //To be implemented
+            return new Vector2(0, 0);
+        }
     }
 }
