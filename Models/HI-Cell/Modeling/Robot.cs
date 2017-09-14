@@ -44,18 +44,13 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public Robot()
         {
-            Constraints = new List<Func<bool>>()
-            {
-                () => !ObstacleInEnvironment || !IsCollided,        //At error occurence false: IsCollided is true, but should be false!
-                () => !IsMoving || !IsCollided,
-                () => !IsMoving || !SamePositionAsTarg,
-                () => !IsCollided || SamePositionAsObst,
-                () => !IsSamePositionAsTarg || HasStopped
-            };
+            SetConstraints();
 
             //Problem at the beginning: the binding between the ports is done, AFTER this constructor was avoked...
             //Console.WriteLine(ObstacleInEnvironment + "\n");
         }
+
+       
 
         /// <summary>
         ///   Moves the robot. Increases the direction by a maximum of one.
@@ -142,6 +137,18 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     public partial class Robot
     {
+        private void SetConstraints()
+        {
+            Constraints = new List<Func<bool>>()
+            {
+                () => !ObstacleInEnvironment || !IsCollided,
+                () => !IsMoving || !IsCollided,
+                () => !IsMoving || !SamePositionAsTarg,
+                () => !IsCollided || SamePositionAsObst,
+                () => !IsSamePositionAsTarg || HasStopped
+            };
+        }
+
         public bool ValidateConstraints()
         {
             return Constraints.All(constraint => constraint());

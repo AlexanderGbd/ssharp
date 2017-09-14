@@ -25,7 +25,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public override void Update()
         {
-            //Move method here or still in Robot?
+
         }
 
         public double GetXCoord()

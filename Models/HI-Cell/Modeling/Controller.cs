@@ -70,7 +70,7 @@
 		/// </summary>
 		public override void Update()
         {
-            Update(Robot, DynamicObstacle, StaticObstacle, Sensor, Camera);
+            Update(DynamicObstacle, StaticObstacle, Sensor, Camera, Robot);
 
             StateMachine
                 .Transition(
