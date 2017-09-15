@@ -7,7 +7,7 @@
         /// <summary>
 		///   The target's position
 		/// </summary>
-		public const float XTarget = 5;
+		public const float XTarget = 4;
         public const float YTarget = 4;
 
         public Model()

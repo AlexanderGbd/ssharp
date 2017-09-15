@@ -57,16 +57,12 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public virtual void Move(bool moveX, bool moveY)
         {
             IsMoving = true;
-            //if (moveX && moveY && GetXCoord() < 5 && GetYCoord() < 5 && NextMoveIsSave)
-            //{
-            //    Position.x++;
-            //    Position.y++;
-            //}
-            /*else*/ if (moveX && GetXCoord() < 5) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
+
+            if (moveX) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
             {
                 Position.x++;
             }
-            /*else*/ if (moveY && GetYCoord() < 5) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
+            if (moveY) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
             {
                 Position.y++;
             }
@@ -84,7 +80,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             if (ObstDetected || ObstacleInEnvironment)
                 IsMoving = false;
-            else if (Position.x < 5 && !SamePositionAsObst && !ObstDetected && !ObstacleInEnvironment && !HasStopped)
+            else if (!SamePositionAsObst && !ObstDetected && !ObstacleInEnvironment && IsMoving)
                 Move(true, false);
             CheckConstraints();
         }
@@ -100,21 +96,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         [FaultEffect(Fault = nameof(SuppressStop)), Priority(1)]
         public class SuppressStopEffect : Robot
         {
-            //public override void Move(bool moveX, bool moveY)
-            //{
-
-            //    if (moveX)     /* && posX < 5 && !ObstDetected && !SamePositionAsObst*/
-            //    {
-            //        Position[0]++;
-            //    }
-            //    if (moveY)     /* && posY < 5 && !ObstDetected && !SamePositionAsObst*/
-            //    {
-            //        Position[1]++;
-            //    }
-            //    IsMoving = true;
-            //}
-
-            public override void Stop()
+        public override void Stop()
             {
                 IsMoving = true;
             }

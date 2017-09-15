@@ -13,26 +13,14 @@
     public partial class HRICell
     {
         public static int Counter = 0;
-        //private readonly Storyboard _movingStoryboard;
-        //private readonly Storyboard _sensorAlertStoryboard;
-        //private readonly Storyboard _cameraAlertStoryboard;
-        //private readonly Storyboard _dynObstacleStoryboard;
+
         private Model _model;
-        //private RealTimeSafetySharpSimulator realTimeSimulator;
-        //private SafetySharpSimulator simulator;
-        //int stepDelay;
 
         public HRICell()
         {
             InitializeComponent();
 
             // Initialize visualization resources
-            //_movingStoryboard = (Storyboard)Resources["MoveRobot"];
-            //_movingStoryboard.Begin();
-
-            //_dynObstacleStoryboard = (Storyboard)Resources["MoveObstacle"];
-            //_dynObstacleStoryboard.Begin();
-            //_dynObstacleStoryboard.Pause();
 
             //_cameraAlertStoryboard = (Storyboard)Resources["CameraWarningOn"];
             //_sensorAlertStoryboard = (Storyboard)Resources["SensorWarningOn"];
@@ -93,8 +81,6 @@
             }
             else
                 Exception.Text = "EXCEPTION WAS NOT THROWN!";
-            //Exception.Opacity = 0;
-
 
             //Dynamic Obstacle
             float obstacleX = _model.DynamicObstacle.GetXCoord();
@@ -109,14 +95,12 @@
             
             //Robot
             float xPos = _model.Robot.GetXCoord();
-            if (!_model.Robot.SamePositionAsTarg)
-                Canvas.SetLeft(Robot, xPos * 100);
+            
+            Canvas.SetLeft(Robot, xPos * 100);
 
             Console.WriteLine("Robot x-coordinate: "+ Canvas.GetLeft(Robot));
             Console.WriteLine("Robot y-coordinate: "+ Canvas.GetTop(Robot) + "\n");
 
-            //Canvas.GetLeft(Robot);
-            //MoveRobotAnimation((int)Canvas.GetLeft(Robot) + 100, new TimeSpan(0, 0, 1));
 
             SuppressMoving.IsChecked = _model.Robot.SuppressMoving.IsActivated;
             SuppressStop.IsChecked = _model.Robot.SuppressStop.IsActivated;
@@ -221,29 +205,17 @@
             Robot.BeginAnimation(Canvas.LeftProperty, animation);
         }
 
-        private void MoveLeftDynObstacleAnimation(int newCoordinate, TimeSpan duration)
-        {
-            DoubleAnimation animation = new DoubleAnimation(newCoordinate, duration);
-            DynamicObstacle.BeginAnimation(Canvas.LeftProperty, animation);
-        }
-
-        private void MoveTopDynObstacleAnimation(int newCoordinate, TimeSpan duration)
-        {
-            DoubleAnimation animation = new DoubleAnimation(newCoordinate, duration);
-            DynamicObstacle.BeginAnimation(Canvas.TopProperty, animation);
-        }
-
-        /// <summary>
-        /// Randomly chooses one of two values
-        /// </summary>
-        private int ChooseValue(int value1, int value2)
-        {
-            Random random = new Random();
-            int rand = random.Next(0, 2);
-            if (rand == 0)
-                return value1;
-            else
-                return value2;
-        }
+        ///// <summary>
+        ///// Randomly chooses one of two values
+        ///// </summary>
+        //private int ChooseValue(int value1, int value2)
+        //{
+        //    Random random = new Random();
+        //    int rand = random.Next(0, 2);
+        //    if (rand == 0)
+        //        return value1;
+        //    else
+        //        return value2;
+        //}
     }
 }

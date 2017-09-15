@@ -72,7 +72,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
 		///   Gets the value indicating, that the robot has the same position as its target
 		/// </summary>
-        public bool SamePositionAsTarg => ((int) TargetPosition.x == (int) RobPosition.x && (int) TargetPosition.y == (int) RobPosition.y);
+        public bool SamePositionAsTarg => (int) TargetPosition.x == (int) RobPosition.x && (int) TargetPosition.y == (int) RobPosition.y;
 
         /// <summary>
         ///   Gets the distance between the robot and the dynamic obstacle

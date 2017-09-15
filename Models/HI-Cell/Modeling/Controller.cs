@@ -75,14 +75,14 @@
             Update(DynamicObstacle, StaticObstacle, Sensor, Camera, Robot);
 
             StateMachine
-                .Transition(
-                    from: State.NotMoving,
-                    to: State.Collided,
-                    guard: Robot.SamePositionAsObst,
-                    action: () => {
-                        Robot.Stop();
-                        DynamicObstacle.Stop();
-                    })
+                //.Transition(
+                //    from: State.NotMoving,
+                //    to: State.Collided,
+                //    guard: Robot.SamePositionAsObst,
+                //    action: () => {
+                //        Robot.Stop();
+                //        DynamicObstacle.Stop();
+                //    })
                 .Transition(
                     from: new[] { State.NotMoving },
                     to: State.IsMoving,
@@ -96,16 +96,17 @@
                     from: State.IsMoving,
                     to: State.ObstacleDetected,
                     guard: Sensor.ObstInEnvironment,    
-                    action: () => {
-                        Robot.Stop();
-                        //DynamicObstacle.Stop();
-                    })
+                    action: Robot.Stop
+                    )
                 .Transition(
                     from: State.IsMoving,
                     to: State.Collided,
                     guard: Robot.IsSamePositionAsObst,
-                    action: Robot.Stop
-                )
+                    action: () => {
+                        Robot.Stop();
+                        DynamicObstacle.Stop();
+
+                    })
                 .Transition(
                     from: State.IsMoving,
                     to: State.StoppedAtTarget,
@@ -114,22 +115,22 @@
                         Robot.Stop();
                         DynamicObstacle.Stop();
                     })
-                .Transition(
-                    from: State.ObstacleDetected,
-                    to: State.NotMoving,
-                    guard: Sensor.ObstInEnvironment,
-                    action: () =>
-                    {
-                        //Robot.Stop();
-                    })
                 //.Transition(
-                //    from: State.StoppedAtTarget,
-                //    to: State.IsMoving,
-                //    guard: !Robot.IsSamePositionAsTarg,
+                //    from: State.ObstacleDetected,
+                //    to: State.NotMoving,
+                //    guard: Sensor.ObstInEnvironment,
                 //    action: () =>
                 //    {
-                //        Robot.Move(true, false);
+                //        //Robot.Stop();
                 //    })
+                .Transition(
+                    from: State.ObstacleDetected,
+                    to: State.IsMoving,
+                    guard: !Sensor.ObstInEnvironment,
+                    action: () =>
+                    {
+                        Robot.Move(true, false);
+                    })
                 ;
         }
 

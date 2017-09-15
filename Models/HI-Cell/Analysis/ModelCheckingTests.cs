@@ -52,19 +52,19 @@
             result.FormulaHolds.Should().BeTrue();
         }
 
-        /// <summary>
-        ///   Checks a formula over the case study, the x coordinate of our robot (for now) never exceeds 5, and the y coordinate always stays 0 
-        /// </summary>
-        [Test]
-        public void StateGraphAllStates()
-        {
-            var model = new Model();
+        ///// <summary>
+        /////   Checks a formula over the case study, the x coordinate of our robot (for now) never exceeds 5, and the y coordinate always stays 0 
+        ///// </summary>
+        //[Test]
+        //public void StateGraphAllStates()
+        //{
+        //    var model = new Model();
 
-            var result = SafetySharpModelChecker.CheckInvariant(model, model.Robot.GetXCoord() < 6);
-            //var result1 = SafetySharpModelChecker.CheckInvariant(model, model.Robot.GetYCoord() == 0);
+        //    var result = SafetySharpModelChecker.CheckInvariant(model, model.Robot.GetXCoord() < 6);
+        //    //var result1 = SafetySharpModelChecker.CheckInvariant(model, model.Robot.GetYCoord() == 0);
                        
-            result.FormulaHolds.Should().BeTrue();
-        }
+        //    result.FormulaHolds.Should().BeTrue();
+        //}
 
         /// <summary>
         ///   Checks that the robot is not moving when its 'moving' fault occurs
