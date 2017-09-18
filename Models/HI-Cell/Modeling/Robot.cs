@@ -25,6 +25,11 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public extern bool IsSamePositionAsTarg { get; }
         public extern bool ObstacleDetected { get; }
         public extern bool ObstacleInEnvironment { get; }
+        public extern bool DynamicObstInEnvironment { get; }
+        public extern bool StaticObstInEnvironment { get; }
+
+        public extern float XCalculated { get; }
+        public extern float YCalculated { get; }
 
         /*public extern Vector2 CameraPosition { get; }*/
         public bool MonitorText;
@@ -66,6 +71,29 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             {
                 Position.y++;
             }
+
+            if (IsSamePositionAsTarg)
+                Stop();
+        }
+
+        /// <summary>
+        /// Moves the robot dynamically. Increases the directions by a maximum of one
+        /// </summary>
+        public virtual void Move1(int x, int y)
+        {
+            IsMoving = true;
+
+            if (x == 1)
+                Position.x++;
+            else if (x == -1)
+                Position.x--;
+            if (y == 1)
+                Position.y++;
+            else if (y == -1)
+                Position.y--;
+
+            if (IsSamePositionAsTarg)
+                Stop();
         }
 
         /// <summary>
@@ -81,14 +109,20 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             if (ObstDetected || ObstacleInEnvironment)
                 IsMoving = false;
             else if (!SamePositionAsObst && !ObstDetected && !ObstacleInEnvironment && IsMoving)
-                Move(true, false);
-            CheckConstraints();
+                //Move(true, false);
+                Move1((int) XCalculated, (int) YCalculated);
+            CheckConstraints();                             //Moved to the beginning of this method at first, because after the move method the robot is at the same position as the target, but still IsMoving = true => exception is thrown
         }
 
         [FaultEffect(Fault = nameof(SuppressMoving)), Priority(2)]
         public class SuppressMovingEffect : Robot
         {
             public override void Move(bool moveX, bool moveY) {
+
+            }
+
+            public override void Move1(int moveX, int moveY)
+            {
 
             }
         }
@@ -124,9 +158,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             {
                 () => !ObstacleInEnvironment || !IsCollided,
                 () => !IsMoving || !IsCollided,
-                //() => !IsMoving || !SamePositionAsTarg,           Doesn't make much sense, because if !IsMoving, maybe an obstacle was just detected  
+                () => !IsMoving || !SamePositionAsTarg || !ObstacleDetected,         
                 () => !IsCollided || SamePositionAsObst,
-                () => !IsSamePositionAsTarg || HasStopped           //HasStopped is false, but SamePosition is true
+                () => !IsSamePositionAsTarg || HasStopped           
             };
         }
 

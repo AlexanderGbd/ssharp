@@ -1,11 +1,14 @@
 ﻿namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
+    using System;
     using SafetySharp.Modeling;
     using UnityEngine;
     using Component = SafetySharp.Modeling.Component;
 
     public class Controller : Component
     {
+        public float XCalculated => CalculatePathForNextStep().x;
+        public float YCalculated => CalculatePathForNextStep().y;
         public enum State {
             /// <summary>
             ///     Indicates that the sensor detected an obstacle
@@ -90,12 +93,13 @@
                     action: () =>
                     {
                         DynamicObstacle.Move();
-                        Robot.Move(true, false);
+                        //Robot.Move(true, false);
+                        Robot.Move1((int)CalculatePathForNextStep().x, (int)CalculatePathForNextStep().y);
                     })
                 .Transition(
                     from: State.IsMoving,
                     to: State.ObstacleDetected,
-                    guard: Sensor.ObstInEnvironment,    
+                    guard: Sensor.ObstInEnvironment && !Sensor.SamePositionAsTarg,    
                     action: Robot.Stop
                     )
                 .Transition(
@@ -126,10 +130,19 @@
                 .Transition(
                     from: State.ObstacleDetected,
                     to: State.IsMoving,
-                    guard: !Sensor.ObstInEnvironment,
+                    guard: !Sensor.ObstInEnvironment && !Sensor.IsSamePositionAsTarg(),
                     action: () =>
                     {
-                        Robot.Move(true, false);
+                        //Robot.Move(true, false);
+                        Robot.Move1((int) CalculatePathForNextStep().x, (int) CalculatePathForNextStep().y);
+                    })
+                .Transition(
+                    from: State.ObstacleDetected,
+                    to: State.StoppedAtTarget,
+                    guard: Sensor.SamePositionAsTarg,
+                    action: () =>
+                    {
+                        Robot.Stop();
                     })
                 ;
         }
@@ -139,8 +152,48 @@
         /// </summary>
         public Vector2 CalculatePathForNextStep()
         {
-            //To be implemented
-            return new Vector2(0, 0);
+            Vector2 coordinates = new Vector2(0, 0);
+            float xTarget = Model.XTarget;
+            float yTarget = Model.YTarget;
+            float xDynObst = DynamicObstacle.GetXCoord();
+            float yDynObst = DynamicObstacle.GetYCoord();
+            float xStatObst = StaticObstacle.GetXCoord();
+            float yStatObst = StaticObstacle.GetYCoord();
+            float xRobot = Robot.GetXCoord();
+            float yRobot = Robot.GetYCoord();
+
+            if (!Robot.SamePositionAsTarg)
+            {
+                if (Sensor.StaticObstInEnvironment)
+                {
+                    //To be implemented
+                }
+
+                if (xTarget - xRobot > 0 && !Sensor.ScanForObstaclesInNextStep(1, 0))
+                    coordinates.x = 1;
+                if (xTarget - xRobot < 0 && !Sensor.ScanForObstaclesInNextStep(-1, 0))
+                    coordinates.x = -1;
+                if (yTarget - yRobot < 0 && !Sensor.ScanForObstaclesInNextStep(0, -1))
+                    coordinates.y = -1;
+                if (yTarget - yRobot > 0 && !Sensor.ScanForObstaclesInNextStep(0, 1))
+                    coordinates.y = 1;
+
+                //if (xTarget - xRobot > 0 && (int)xDynObst != (int)xRobot + 1 && !((int)xStatObst == (int)xRobot + 1 && (int)yStatObst == (int)yRobot))
+                //    coordinates.x = 1;
+                //if (yTarget - yRobot > 0 && (int)yDynObst != (int)yRobot + 1 && !((int)yStatObst == (int)yRobot + 1 && (int)xStatObst == (int)xRobot))
+                //    coordinates.y = 1;
+                //if (xTarget - xRobot < 0 && (int)xDynObst != (int)xRobot - 1 && !((int)xStatObst == (int)xRobot - 1 && (int)yStatObst != (int)yRobot))
+                //    coordinates.x = -1;
+                //if (yTarget - yRobot < 0 && (int)yDynObst != (int)yRobot - 1 && !((int)yStatObst == (int)yRobot - 1 && (int)xStatObst != (int)xRobot))
+                //    coordinates.y = -1;
+                //if ((int)xTarget - (int)xRobot == 0 && (int)xDynObst != (int)xRobot)
+                //    coordinates.x = 0;
+                //if ((int)yTarget - (int)yRobot == 0 && (int)yDynObst != (int)yRobot)
+                //    coordinates.y = 0;
+            }
+
+            Console.WriteLine("X-Coordinate: "+ coordinates.x + "   Y-Coordinate: " + coordinates.y);
+            return coordinates;
         }
     }
 }

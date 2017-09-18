@@ -27,6 +27,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public bool ObstDetected { get; private set; }
         public bool IsDetecting { get; private set; } = true;
         public bool ObstInEnvironment { get; private set; }
+        public bool DynamicObstInEnvironment { get; private set; }
+        public bool StaticObstInEnvironment { get; private set; }
 
         /// <summary>
         ///   Gets the robot's position
@@ -54,11 +56,19 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public bool ScanForObstaclesInNextStep(double x, double y)
         {
-            bool obstacleInXDirection = (int)DynObstPosition.x == (int)(RobPosition.x + x) && (int)DynObstPosition.y == (int)(RobPosition.y + y) ||
-                                        (int)StatObstPosition.x == (int)(RobPosition.x + x) && (int)StatObstPosition.y == (int)(RobPosition.y + y);
-            bool obstacleInXyDirection = (int)DynObstPosition.x == (int)(RobPosition.x + x) && (int)DynObstPosition.y == (int)(RobPosition.y + y) ||
-                                         (int)StatObstPosition.y == (int)(RobPosition.y - y) && (int)StatObstPosition.y == (int)(RobPosition.y - y);
-            return obstacleInXDirection && obstacleInXyDirection;
+            //bool obstacleInXYDirection = ScanForDynamicObstacleInNextStep(x, y) || ScanForStaticObstacleInNextStep(x, y);
+            //bool obstacleInXyDirection = (int)DynObstPosition.x == (int)(RobPosition.x + x) && (int)DynObstPosition.y == (int)(RobPosition.y + y) ||
+            //                             (int)StatObstPosition.x == (int)(RobPosition.x - x) && (int)StatObstPosition.y == (int)(RobPosition.y - y);
+            return ScanForDynamicObstacleInNextStep(x, y) || ScanForStaticObstacleInNextStep(x, y)/*&& obstacleInXyDirection*/;
+        }
+
+        public bool ScanForDynamicObstacleInNextStep(double x, double y)
+        {
+            return (int)DynObstPosition.x == (int)(RobPosition.x + x) && (int)DynObstPosition.y == (int)(RobPosition.y + y);
+        }
+        public bool ScanForStaticObstacleInNextStep(double x, double y)
+        {
+            return (int)StatObstPosition.x == (int)(RobPosition.x + x) && (int)StatObstPosition.y == (int)(RobPosition.y + y);
         }
 
         /// <summary>
@@ -111,10 +121,18 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// </summary>
         public override void Update()
         {
+            DynamicObstInEnvironment = ScanForDynamicObstacleInNextStep(1, 0) || ScanForDynamicObstacleInNextStep(0, 1) || ScanForDynamicObstacleInNextStep(1, 1) 
+                                        || ScanForDynamicObstacleInNextStep(0, -1) || ScanForDynamicObstacleInNextStep(-1, 0) || ScanForDynamicObstacleInNextStep(-1, -1)
+                                        || ScanForDynamicObstacleInNextStep(-1, 1) || ScanForDynamicObstacleInNextStep(1, -1);
+            StaticObstInEnvironment = ScanForStaticObstacleInNextStep(1, 0) || ScanForStaticObstacleInNextStep(0, 1) || ScanForStaticObstacleInNextStep(1, 1)
+                                      || ScanForStaticObstacleInNextStep(0, -1) || ScanForStaticObstacleInNextStep(-1, 0) || ScanForStaticObstacleInNextStep(-1, -1)
+                                      || ScanForStaticObstacleInNextStep(-1, 1) || ScanForStaticObstacleInNextStep(1, -1);
             ObstDetected = (ScanForObstaclesInNextStep(1, 0) || ComparePositions());
-            ObstInEnvironment = ScanForObstaclesInNextStep(1, 0) || ScanForObstaclesInNextStep(0, 1) || ScanForObstaclesInNextStep(1, 1)
-                                || ScanForObstaclesInNextStep(0, -1) || ScanForObstaclesInNextStep(-1, 0) || ScanForObstaclesInNextStep(-1, -1)
-                                || ScanForObstaclesInNextStep(-1, 1) || ScanForObstaclesInNextStep(1, -1) || ComparePositions();
+            ObstInEnvironment = DynamicObstInEnvironment || StaticObstInEnvironment || ComparePositions();
+
+            //ObstInEnvironment = ScanForObstaclesInNextStep(1, 0) || ScanForObstaclesInNextStep(0, 1) || ScanForObstaclesInNextStep(1, 1)
+            //                    || ScanForObstaclesInNextStep(0, -1) || ScanForObstaclesInNextStep(-1, 0) || ScanForObstaclesInNextStep(-1, -1)
+            //                    || ScanForObstaclesInNextStep(-1, 1) || ScanForObstaclesInNextStep(1, -1) || ComparePositions();
         }
     }
 }

@@ -7,12 +7,12 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
     {
         private Vector2 Position = new Vector2(1, 2);
 
-        public double GetXCoord()
+        public float GetXCoord()
         {
             return Position.x;
         }
 
-        public double GetYCoord()
+        public float GetYCoord()
         {
             return Position.y;
         }

@@ -22,9 +22,6 @@
 
             // Initialize visualization resources
 
-            //_cameraAlertStoryboard = (Storyboard)Resources["CameraWarningOn"];
-            //_sensorAlertStoryboard = (Storyboard)Resources["SensorWarningOn"];
-
             // Initialize the simulation environment
             SimulationControls.ModelStateChanged += (o, e) => UpdateModelState();
             SimulationControls.Reset += (o, e) => OnModelStateReset();
@@ -95,8 +92,10 @@
             
             //Robot
             float xPos = _model.Robot.GetXCoord();
-            
+            float yPos = _model.Robot.GetYCoord();
+
             Canvas.SetLeft(Robot, xPos * 100);
+            Canvas.SetTop(Robot, yPos * 100);
 
             Console.WriteLine("Robot x-coordinate: "+ Canvas.GetLeft(Robot));
             Console.WriteLine("Robot y-coordinate: "+ Canvas.GetTop(Robot) + "\n");
@@ -104,17 +103,6 @@
 
             SuppressMoving.IsChecked = _model.Robot.SuppressMoving.IsActivated;
             SuppressStop.IsChecked = _model.Robot.SuppressStop.IsActivated;
-
-            //if (_model.Robot.IsCollided) {
-            //    _movingStoryboard.Stop();
-            //}
-            //if ((_model.Robot.HasStopped || _model.Robot.ObstDetected || _model.Robot.SamePositionAsTarg) && !SuppressStop.IsChecked) {
-            //    _movingStoryboard.Stop();
-            //}
-            //if (_model.Robot.HasStopped && !_model.Sensor.ObstDetected && !_model.Robot.IsCollided && !_model.Robot.SamePositionAsTarg && !SuppressMoving.IsChecked) {
-            //    _movingStoryboard.Begin();
-            //}
-            
 
             //Sensor
             SuppressDetecting.IsChecked = _model.Sensor.SuppressDetecting.IsActivated;
@@ -125,13 +113,11 @@
             {
                 Console.WriteLine("\n_model.Sensor.IsDetecting: " + _model.Sensor.IsDetecting + "\n");
                 SensorWarning.Opacity = 1.0;
-                //_sensorAlertStoryboard.Begin();
             }
             else
             {
                 SensorWarning.Opacity = 0;
                 Console.WriteLine("\n_model.Sensor.IsDetecting: "+ _model.Sensor.IsDetecting + "\n");
-                //_sensorAlertStoryboard.Stop();
             }
             
             //Camera
@@ -140,12 +126,10 @@
             if (!_model.Camera.IsRecording)
             {
                 CameraWarning.Opacity = 1.0;
-                //_cameraAlertStoryboard.Begin();
             }
             else
             {
                 CameraWarning.Opacity = 0;
-                //_cameraAlertStoryboard.Stop();
             }
             
             //Controller
