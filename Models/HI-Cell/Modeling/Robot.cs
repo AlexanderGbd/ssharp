@@ -56,30 +56,30 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
        
 
-        /// <summary>
-        ///   Moves the robot. Increases the direction by a maximum of one.
-        /// </summary>
-        public virtual void Move(bool moveX, bool moveY)
-        {
-            IsMoving = true;
+        ///// <summary>
+        /////   Moves the robot. Increases the direction by a maximum of one.
+        ///// </summary>
+        //public virtual void Move(bool moveX, bool moveY)
+        //{
+        //    IsMoving = true;
 
-            if (moveX) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
-            {
-                Position.x++;
-            }
-            if (moveY) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
-            {
-                Position.y++;
-            }
+        //    if (moveX) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
+        //    {
+        //        Position.x++;
+        //    }
+        //    if (moveY) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
+        //    {
+        //        Position.y++;
+        //    }
 
-            if (IsSamePositionAsTarg)
-                Stop();
-        }
+        //    if (IsSamePositionAsTarg)
+        //        Stop();
+        //}
 
         /// <summary>
         /// Moves the robot dynamically. Increases the directions by a maximum of one
         /// </summary>
-        public virtual void Move1(int x, int y)
+        public virtual void Move(int x, int y)
         {
             IsMoving = true;
 
@@ -110,21 +110,17 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                 IsMoving = false;
             else if (!SamePositionAsObst && !ObstDetected && !ObstacleInEnvironment && IsMoving)
                 //Move(true, false);
-                Move1((int) XCalculated, (int) YCalculated);
+                Move((int) XCalculated, (int) YCalculated);
             CheckConstraints();                             //Moved to the beginning of this method at first, because after the move method the robot is at the same position as the target, but still IsMoving = true => exception is thrown
         }
 
         [FaultEffect(Fault = nameof(SuppressMoving)), Priority(2)]
         public class SuppressMovingEffect : Robot
         {
-            public override void Move(bool moveX, bool moveY) {
+            public override void Move(int x, int y) {
 
             }
 
-            public override void Move1(int moveX, int moveY)
-            {
-
-            }
         }
 
         [FaultEffect(Fault = nameof(SuppressStop)), Priority(1)]

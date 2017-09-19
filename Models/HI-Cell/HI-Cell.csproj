@@ -72,6 +72,7 @@
     <Compile Include="Analysis\ModelCheckingTests.cs" />
     <Compile Include="Analysis\SimulationTests.cs" />
     <Compile Include="Modeling\Camera.cs" />
+    <Compile Include="Modeling\Client.cs" />
     <Compile Include="Modeling\Controller.cs" />
     <Compile Include="Modeling\DynamicObstacle.cs" />
     <Compile Include="Modeling\Model.cs" />

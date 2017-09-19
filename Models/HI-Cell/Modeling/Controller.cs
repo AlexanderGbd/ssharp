@@ -7,6 +7,7 @@
 
     public class Controller : Component
     {
+        //private Client client = Client.Instance;
         public float XCalculated => CalculatePathForNextStep().x;
         public float YCalculated => CalculatePathForNextStep().y;
         public enum State {
@@ -78,14 +79,6 @@
             Update(DynamicObstacle, StaticObstacle, Sensor, Camera, Robot);
 
             StateMachine
-                //.Transition(
-                //    from: State.NotMoving,
-                //    to: State.Collided,
-                //    guard: Robot.SamePositionAsObst,
-                //    action: () => {
-                //        Robot.Stop();
-                //        DynamicObstacle.Stop();
-                //    })
                 .Transition(
                     from: new[] { State.NotMoving },
                     to: State.IsMoving,
@@ -93,8 +86,8 @@
                     action: () =>
                     {
                         DynamicObstacle.Move();
-                        //Robot.Move(true, false);
-                        Robot.Move1((int)CalculatePathForNextStep().x, (int)CalculatePathForNextStep().y);
+                        //client.MoveDirectlyTo(Model.XTarget, Model.YTarget, 0, 1, 1, 1);
+                        Robot.Move((int)CalculatePathForNextStep().x, (int)CalculatePathForNextStep().y);
                     })
                 .Transition(
                     from: State.IsMoving,
@@ -119,22 +112,14 @@
                         Robot.Stop();
                         DynamicObstacle.Stop();
                     })
-                //.Transition(
-                //    from: State.ObstacleDetected,
-                //    to: State.NotMoving,
-                //    guard: Sensor.ObstInEnvironment,
-                //    action: () =>
-                //    {
-                //        //Robot.Stop();
-                //    })
                 .Transition(
                     from: State.ObstacleDetected,
                     to: State.IsMoving,
                     guard: !Sensor.ObstInEnvironment && !Sensor.IsSamePositionAsTarg(),
                     action: () =>
                     {
-                        //Robot.Move(true, false);
-                        Robot.Move1((int) CalculatePathForNextStep().x, (int) CalculatePathForNextStep().y);
+                        Robot.Move((int) CalculatePathForNextStep().x, (int) CalculatePathForNextStep().y);
+                        //client.MoveDirectlyTo(Model.XTarget, Model.YTarget, 0, 1, 1, 1);
                     })
                 .Transition(
                     from: State.ObstacleDetected,
@@ -155,10 +140,10 @@
             Vector2 coordinates = new Vector2(0, 0);
             float xTarget = Model.XTarget;
             float yTarget = Model.YTarget;
-            float xDynObst = DynamicObstacle.GetXCoord();
-            float yDynObst = DynamicObstacle.GetYCoord();
-            float xStatObst = StaticObstacle.GetXCoord();
-            float yStatObst = StaticObstacle.GetYCoord();
+            //float xDynObst = DynamicObstacle.GetXCoord();
+            //float yDynObst = DynamicObstacle.GetYCoord();
+            //float xStatObst = StaticObstacle.GetXCoord();
+            //float yStatObst = StaticObstacle.GetYCoord();
             float xRobot = Robot.GetXCoord();
             float yRobot = Robot.GetYCoord();
 

@@ -1,0 +1,6 @@
+﻿TcpClient:
+https://msdn.microsoft.com/de-de/library/system.net.sockets.tcpclient(v=vs.110).aspx
+
+(A)Synchrone Clientsockets:
+https://msdn.microsoft.com/de-de/library/kb5kfec7(v=vs.110).aspx
+https://msdn.microsoft.com/de-de/library/bew39x2a(v=vs.110).aspx
