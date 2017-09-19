@@ -164,10 +164,6 @@
 
             if (!Robot.SamePositionAsTarg)
             {
-                if (Sensor.StaticObstInEnvironment)
-                {
-                    //To be implemented
-                }
 
                 if (xTarget - xRobot > 0 && !Sensor.ScanForObstaclesInNextStep(1, 0))
                     coordinates.x = 1;
