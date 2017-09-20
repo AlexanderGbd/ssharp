@@ -6,7 +6,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
     using ISSE.SafetyChecking.Modeling;
     public class Camera : Component
     {
-        public Vector2 Position = new Vector2(0, 0);
+        public Vector3 Position = new Vector3(0, 0);
         public bool IsRecording { get; private set; } = true;
         /// <summary>
         /// The fault that prevents the camera from recording
@@ -38,7 +38,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             return Position.y;
         }
 
-        public Vector2 GetPosition()
+        public Vector3 GetPosition()
         {
             return Position;
         }

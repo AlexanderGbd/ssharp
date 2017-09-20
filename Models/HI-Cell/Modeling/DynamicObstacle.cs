@@ -6,12 +6,12 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     public class DynamicObstacle : Component
     {
-        public Vector2 Position = new Vector2(3, 2);
+        public Vector3 Position = new Vector3(3, 2, 0);
         public bool IsMoving { get; private set; }
         public bool HasStopped => !IsMoving;
         public extern bool IsDetected { get; }
         //When the robot has already stopped, because of detecting the obstacle, the obstacle shouldn't hit the still standing robot
-        public extern Vector2 RobotPosition { get; }
+        public extern Vector3 RobotPosition { get; }
 
         public float GetXCoord()
         {
@@ -23,7 +23,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             return Position.y;
         }
 
-        public Vector2 GetPosition() {
+        public Vector3 GetPosition() {
             return Position; 
         }
 

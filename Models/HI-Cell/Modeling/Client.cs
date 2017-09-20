@@ -2,14 +2,13 @@
 using System.IO;
 using System.Text;
 using System.Net.Sockets;
+using Newtonsoft.Json;
 
 namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
-    using System.Collections;
-    using System.Collections.Generic;
     using System.Globalization;
-    using System.Text.RegularExpressions;
-    using MahApps.Metro.Actions;
+    using System.Threading;
+    using Newtonsoft.Json.Linq;
     using UnityEngine;
 
     public class Client
@@ -20,11 +19,53 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         private static Client instance;
         private String server = "localhost";
         private NetworkStream stream;
+        Sensor sensor = Sensor.Insstance;
+        public Vector3 CurrentPosition { get; set; }
+        public Vector3 CurrentOrientation { get; set; }
 
         private Client()
         {
             Connect(server, port);
+            Thread receiver = new Thread(Detecting);
+            receiver.Start();
+            receiver.IsBackground = true;
             Console.WriteLine("Connected to Robotics API!");
+        }
+
+        private void Detecting()
+        {
+
+            //responseData = String.Empty;
+            //StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+            //Sensor sensor = Sensor.Insstance;
+            //try
+            //{
+            //    while (!reader.EndOfStream)
+            //    {
+            //        responseData = reader.ReadLine();
+
+            //        JObject obj = JObject.Parse(responseData);
+            //        float x = float.Parse(obj.GetValue("x").ToString(), CultureInfo.InvariantCulture.NumberFormat);
+            //        float y = float.Parse(obj.GetValue("y").ToString(), CultureInfo.InvariantCulture.NumberFormat);
+            //        float z = float.Parse(obj.GetValue("z").ToString(), CultureInfo.InvariantCulture.NumberFormat);
+            //        float a = float.Parse(obj.GetValue("a").ToString(), CultureInfo.InvariantCulture.NumberFormat);
+            //        float b = float.Parse(obj.GetValue("b").ToString(), CultureInfo.InvariantCulture.NumberFormat);
+            //        float c = float.Parse(obj.GetValue("c").ToString(), CultureInfo.InvariantCulture.NumberFormat);
+
+            //        Console.WriteLine("Received data: \n{0} {1} {2} {3} {4} {5}", x, y, z, a, b, c);
+            //        CurrentPosition = new Vector3(x, y, z);
+            //        CurrentOrientation = new Vector3(a, b, c);
+
+            //    }
+            //}
+            //catch (IOException e)
+            //{
+            //    Console.WriteLine(e);
+            //}
+            //finally
+            //{
+            //    reader.Close();
+            //}
         }
 
         public static Client Instance
@@ -40,15 +81,13 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public void MoveDirectlyTo(double x, double y, double z, double a, double b, double c)
         {
-            //string jsonString = string.Format("{0}{1}{2}{3}{4}{5}", x, y, z, a, b, c);
-            CultureInfo ci = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
+            CultureInfo ci = (CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
             ci.NumberFormat.NumberDecimalSeparator = ".";
 
             string jsonData = "{ \"x\": \"" + x.ToString(ci) + "\", \"y\": \"" + y.ToString(ci) + "\", \"z\": \"" + z.ToString(ci) + "\", \"a\": \"" + a.ToString(ci) + "\", \"b\": \"" + b.ToString(ci) + "\", \"c\": \"" + c.ToString(ci) + "\" }";
             try
             {
                 Send(jsonData);
-                //Receive();
             }
             catch (SocketException e)
             {
@@ -64,11 +103,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public void Send(String message)
         {
-            // Translate the passed message into ASCII and store it as a Byte array.
-
-            //Byte[] data = Encoding.ASCII.GetBytes(message);
-            //stream.Write(data, 0, data.Length);
-
             StreamWriter writer = new StreamWriter(stream, Encoding.UTF8);
             writer.WriteLine(message);
 
@@ -78,23 +112,39 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public void Receive()
         {
-            // Buffer to store the response bytes.
-            //Byte[] data = new Byte[256];
-
-            // Read the first batch of the TcpServer response bytes.
-            //Int32 bytes = stream.Read(data, 0, data.Length);
-            //responseData = Encoding.ASCII.GetString(data, 0, bytes);
-
-            // String to store the response ASCII representation.
             responseData = String.Empty;
             StreamReader reader = new StreamReader(stream, Encoding.UTF8);
-            while (!reader.EndOfStream)
+            try
             {
+                while (!reader.EndOfStream)
+                {
+                    responseData = reader.ReadLine();
 
+                    JObject obj = JObject.Parse(responseData);
+                    float x = float.Parse(obj.GetValue("x").ToString(), CultureInfo.InvariantCulture.NumberFormat);
+                    float y = float.Parse(obj.GetValue("y").ToString(), CultureInfo.InvariantCulture.NumberFormat);
+                    float z = float.Parse(obj.GetValue("z").ToString(), CultureInfo.InvariantCulture.NumberFormat);
+                    float a = float.Parse(obj.GetValue("a").ToString(), CultureInfo.InvariantCulture.NumberFormat);
+                    float b = float.Parse(obj.GetValue("b").ToString(), CultureInfo.InvariantCulture.NumberFormat);
+                    float c = float.Parse(obj.GetValue("c").ToString(), CultureInfo.InvariantCulture.NumberFormat);
+
+                    Console.WriteLine("Received data: \n{0} {1} {2} {3} {4} {5}", x, y, z, a, b, c);
+                    CurrentPosition = new Vector3(x, y, z);
+                    sensor.APIPosition = new Vector3(x, y, z);
+                    CurrentOrientation = new Vector3(a, b, c);
+                }
             }
-            responseData = reader.ReadLine();
+            catch (IOException e)
+            {
+                Console.WriteLine(e);
+            }
+            finally
+            {
+                reader.Close();
+            }
+           
             
-            Console.WriteLine("Received: {0}", responseData);
+            //return new [] {x, y, z, a, b, c};
         }
 
         public void Connect(String server, int port)
@@ -103,59 +153,10 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             stream = client.GetStream();
         }
 
-        //public void Con(String server, String message)
-        //{
-        //    try
-        //    {
-        //        Int32 port = 13000;
-        //        TcpClient client = new TcpClient(server, port);
-
-        //        // Translate the passed message into ASCII and store it as a Byte array.
-        //        Byte[] data = System.Text.Encoding.ASCII.GetBytes(message);
-
-        //        // Get a client stream for reading and writing.
-        //        NetworkStream stream = client.GetStream();
-
-        //        // Send the message to the connected TcpServer. 
-        //        stream.Write(data, 0, data.Length);
-
-        //        Console.WriteLine("Sent: {0}", message);
-
-        //        // Buffer to store the response bytes.
-        //        data = new Byte[256];
-
-        //        // String to store the response ASCII representation.
-        //        String responseData = String.Empty;
-
-        //        // Read the first batch of the TcpServer response bytes.
-        //        Int32 bytes = stream.Read(data, 0, data.Length);
-        //        responseData = System.Text.Encoding.ASCII.GetString(data, 0, bytes);
-        //        Console.WriteLine("Received: {0}", responseData);
-        //    }
-        //    catch (ArgumentNullException e)
-        //    {
-        //        Console.WriteLine("ArgumentNullException: {0}", e);
-        //    }
-        //    catch (SocketException e)
-        //    {
-        //        Console.WriteLine("SocketException: {0}", e);
-        //    }
-        //}
-
         public void Close()
         {
             stream.Close();
             client.Close();
-        }
-
-        public Vector3 GetCurrentPosition()
-        {
-            float x, y, z, a, b, c;
-            Regex regex = new Regex(",");
-            string[] values = regex.Split(responseData);
-            x = (float) Convert.ToDouble(values[0]);
-
-            return new Vector3(0,0,0);
         }
     }
 }

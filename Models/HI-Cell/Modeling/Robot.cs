@@ -12,7 +12,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
     {
 
         //private Vector2 Position => CameraPosition;
-        private Vector2 Position = new Vector2(0, 4);
+        private Vector3 Position = new Vector3(0, 4, 0);
         public bool IsMoving { get; private set; }
         public bool HasStopped => !IsMoving;
         public bool IsCollided => SamePositionAsObst;
@@ -141,7 +141,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             return Position.y;
         }
 
-        public Vector2 GetPosition() {
+        public Vector3 GetPosition() {
             return Position;
         }
     }

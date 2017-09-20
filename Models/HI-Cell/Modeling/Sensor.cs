@@ -8,6 +8,20 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     public class Sensor : Component
     {
+        private static Sensor instance;
+
+        private Sensor() {}
+
+        public static Sensor Insstance
+        {
+            get
+            {
+                if (instance == null)
+                    return new Sensor();
+                return instance;
+            }
+        }
+
         /// <summary>
         ///   The fault that doesn't recognise an obstacle, thus causes the robot to collide with an obstacle.
         /// </summary>
@@ -19,10 +33,11 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         ///   Note: ew Vector2(DynObstaclePosition.x, DynObstaclePosition.y)
         ///   
         /// </summary>
-        private Vector2 RobPosition => RobotPosition;
-        private Vector2 StatObstPosition => StatObstaclePosition;
-        private Vector2 DynObstPosition => DynObstaclePosition;
-        private Vector2 TargetPosition => new Vector2(Model.XTarget, Model.YTarget);
+        public Vector3 APIPosition { get; set; }
+        private Vector3 RobPosition => RobotPosition;
+        private Vector3 StatObstPosition => StatObstaclePosition;
+        private Vector3 DynObstPosition => DynObstaclePosition;
+        private Vector3 TargetPosition => new Vector3(Model.XTarget, Model.YTarget, 0);
 
         public bool ObstDetected { get; private set; }
         public bool IsDetecting { get; private set; } = true;
@@ -33,17 +48,17 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
         ///   Gets the robot's position
         /// </summary>
-        public extern Vector2 RobotPosition { get; }
+        public extern Vector3 RobotPosition { get; }
 
         /// <summary>
         ///   Gets the position of the dynamic obstacle
         /// </summary>
-        public extern Vector2 DynObstaclePosition { get; }
+        public extern Vector3 DynObstaclePosition { get; }
 
         /// <summary>
         ///   Gets the position of the static obstacle
         /// </summary>
-        public extern Vector2 StatObstaclePosition { get; }
+        public extern Vector3 StatObstaclePosition { get; }
 
         /// <summary>
         ///   Looks if the robot is at the same position as a obstacle
@@ -87,11 +102,11 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
         ///   Gets the distance between the robot and the dynamic obstacle
         /// </summary>
-        public Vector2 DistanceToDynObstacle => new Vector2(Math.Abs(RobPosition.x-DynObstPosition.x), Math.Abs(RobPosition.y-DynObstPosition.y));
+        public Vector3 DistanceToDynObstacle => new Vector3(Math.Abs(RobPosition.x-DynObstPosition.x), Math.Abs(RobPosition.y-DynObstPosition.y));
         /// <summary>
         ///   Gets the distance between the robot and the static obstacle
         /// </summary>
-        public Vector2 DistanceToStatObstacle => new Vector2(Math.Abs(RobPosition.x - StatObstPosition.x), Math.Abs(RobPosition.y - StatObstPosition.y));
+        public Vector3 DistanceToStatObstacle => new Vector3(Math.Abs(RobPosition.x - StatObstPosition.x), Math.Abs(RobPosition.y - StatObstPosition.y));
 
         /// <summary>
         ///   Calculates if the robot is at the same position as an obstacle

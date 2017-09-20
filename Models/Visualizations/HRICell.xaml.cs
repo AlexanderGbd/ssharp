@@ -87,8 +87,6 @@
             
             Console.WriteLine("Dynamic Obstacle x-Coordinate: "+ Canvas.GetLeft(DynamicObstacle));
             Console.WriteLine("Dynamic Obstacle y-Coordinate: "+ Canvas.GetTop(DynamicObstacle)  + "\n");
-
-            Console.WriteLine("\nObstacle detected?: "+ _model.Robot.ObstacleDetected + "\n");
             
             //Robot
             float xPos = _model.Robot.GetXCoord();
@@ -100,24 +98,20 @@
             Console.WriteLine("Robot x-coordinate: "+ Canvas.GetLeft(Robot));
             Console.WriteLine("Robot y-coordinate: "+ Canvas.GetTop(Robot) + "\n");
 
-
             SuppressMoving.IsChecked = _model.Robot.SuppressMoving.IsActivated;
             SuppressStop.IsChecked = _model.Robot.SuppressStop.IsActivated;
 
             //Sensor
             SuppressDetecting.IsChecked = _model.Sensor.SuppressDetecting.IsActivated;
-            //Warning.Visibility = SuppressDetecting.IsChecked.ToVisibility();
-            //SensorWarning.Visibility = SuppressDetecting.IsChecked.ToVisibility();
+
 
             if (!_model.Sensor.IsDetecting)
             {
-                Console.WriteLine("\n_model.Sensor.IsDetecting: " + _model.Sensor.IsDetecting + "\n");
                 SensorWarning.Opacity = 1.0;
             }
             else
             {
                 SensorWarning.Opacity = 0;
-                Console.WriteLine("\n_model.Sensor.IsDetecting: "+ _model.Sensor.IsDetecting + "\n");
             }
             
             //Camera
@@ -154,52 +148,12 @@
             Counter++;
         }
 
-        //private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        //{
-        //    Random random = new Random();
-        //    double leftRob = Canvas.GetLeft(Robot);
-        //    double leftObst = Canvas.GetLeft(DynamicObstacle);
-        //    double topObst = Canvas.GetTop(DynamicObstacle);
 
-        //    if (leftRob + 100 <= 750 && leftRob >= 0) {
-        //        MoveRobotAnimation((int)Canvas.GetLeft(Robot) + 100, new TimeSpan(0, 0, 1));
-        //        //Canvas.SetLeft(Robot, leftRob + 100);
-        //        _model.Robot.Move(true, false);
-        //    }
-        //    int rnd = random.Next(-100, 101);
-        //    if (topObst + rnd <= 400 && topObst >= 0) {
-        //        int value = ChooseValue(-100, 100);
-        //        MoveLeftDynObstacleAnimation((int)Canvas.GetTop(DynamicObstacle) + value, new TimeSpan(0, 0, 1));
-        //        //Canvas.SetTop(DynamicObstacle, topObst + value);
-
-        //    }
-        //    rnd = random.Next(-100, 101);
-        //    if (leftObst + rnd <= 750 && leftObst >= 0)
-        //    {
-        //        int value = ChooseValue(-100, 100);
-        //        MoveTopDynObstacleAnimation((int)Canvas.GetLeft(DynamicObstacle) + value, new TimeSpan(0, 0, 1));
-        //        //Canvas.SetLeft(DynamicObstacle, leftObst + value);
-        //    }
-
+        //private void MoveRobotAnimation(int newCoordinate, TimeSpan duration)
+        //{ 
+        //    DoubleAnimation animation = new DoubleAnimation(newCoordinate, duration);
+        //    Robot.BeginAnimation(Canvas.LeftProperty, animation);
         //}
 
-        private void MoveRobotAnimation(int newCoordinate, TimeSpan duration)
-        { 
-            DoubleAnimation animation = new DoubleAnimation(newCoordinate, duration);
-            Robot.BeginAnimation(Canvas.LeftProperty, animation);
         }
-
-        ///// <summary>
-        ///// Randomly chooses one of two values
-        ///// </summary>
-        //private int ChooseValue(int value1, int value2)
-        //{
-        //    Random random = new Random();
-        //    int rand = random.Next(0, 2);
-        //    if (rand == 0)
-        //        return value1;
-        //    else
-        //        return value2;
-        //}
-    }
 }

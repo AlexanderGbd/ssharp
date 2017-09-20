@@ -137,7 +137,7 @@
         /// </summary>
         public Vector2 CalculatePathForNextStep()
         {
-            Vector2 coordinates = new Vector2(0, 0);
+            Vector3 coordinates = new Vector3(0, 0, 0);
             float xTarget = Model.XTarget;
             float yTarget = Model.YTarget;
             //float xDynObst = DynamicObstacle.GetXCoord();

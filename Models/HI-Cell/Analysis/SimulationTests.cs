@@ -12,7 +12,8 @@
         public void FirstAPITest()
         {
             Client client = Client.Instance;
-            client.MoveDirectlyTo(0.5, 0, 0.2, Math.PI, 0, -Math.PI);
+            client.MoveDirectlyTo(0.5, 0.5, 0.5, Math.PI, 0, -Math.PI);
+            client.Receive();
         }
 
         /// <summary>

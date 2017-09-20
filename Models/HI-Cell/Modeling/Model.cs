@@ -9,13 +9,14 @@
 		/// </summary>
 		public const float XTarget = 4;
         public const float YTarget = 4;
+        public const float ZTarget = 0;
 
         public Model()
         {
             Controller = new Controller
             {
                 Robot = new Robot(),
-                Sensor = new Sensor(),
+                Sensor = Sensor.Insstance,
                 Camera = new Camera(),
                 DynamicObstacle = new DynamicObstacle(),
                 StaticObstacle = new StaticObstacle()
