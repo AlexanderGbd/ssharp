@@ -7,6 +7,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
     using System.Collections;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Text.RegularExpressions;
     using MahApps.Metro.Actions;
     using UnityEngine;
@@ -17,7 +18,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         private int port = 13000;
         private TcpClient client; 
         private static Client instance;
-        private String server;
+        private String server = "localhost";
         private NetworkStream stream;
 
         private Client()
@@ -37,10 +38,13 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         }
 
 
-        public void MoveDirectlyTo(float x, float y, float z, float a, float b, float c)
+        public void MoveDirectlyTo(double x, double y, double z, double a, double b, double c)
         {
             //string jsonString = string.Format("{0}{1}{2}{3}{4}{5}", x, y, z, a, b, c);
-            string jsonData = "{'x':" + x + ", 'y':" + y + ", 'z':" + z + ", 'a':" + a + ", 'b':" + b + ", 'c':" + c + "}";
+            CultureInfo ci = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
+            ci.NumberFormat.NumberDecimalSeparator = ".";
+
+            string jsonData = "{ \"x\": \"" + x.ToString(ci) + "\", \"y\": \"" + y.ToString(ci) + "\", \"z\": \"" + z.ToString(ci) + "\", \"a\": \"" + a.ToString(ci) + "\", \"b\": \"" + b.ToString(ci) + "\", \"c\": \"" + c.ToString(ci) + "\" }";
             try
             {
                 Send(jsonData);
@@ -84,6 +88,10 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             // String to store the response ASCII representation.
             responseData = String.Empty;
             StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+            while (!reader.EndOfStream)
+            {
+
+            }
             responseData = reader.ReadLine();
             
             Console.WriteLine("Received: {0}", responseData);

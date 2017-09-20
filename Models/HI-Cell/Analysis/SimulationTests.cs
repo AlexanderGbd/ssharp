@@ -1,5 +1,6 @@
 ﻿namespace SafetySharp.CaseStudies.HI_Cell.Analysis
 {
+    using System;
     using FluentAssertions;
     using Modeling;
     using NUnit.Framework;
@@ -7,6 +8,13 @@
     using SafetySharp.Modeling;
     class SimulationTests
     {
+        [Test]
+        public void FirstAPITest()
+        {
+            Client client = Client.Instance;
+            client.MoveDirectlyTo(0.5, 0, 0.2, Math.PI, 0, -Math.PI);
+        }
+
         /// <summary>
         ///   Simulates a path where no faults occur with the expectation that the robot reaches its target
         /// </summary>
