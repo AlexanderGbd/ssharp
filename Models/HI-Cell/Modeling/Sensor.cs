@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
+    using System.Threading;
     using ISSE.SafetyChecking.Modeling;
     using SafetySharp.Modeling;
 
@@ -10,9 +11,21 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
     {
         private static Sensor instance;
 
-        private Sensor() {}
+        private Sensor()
+        {
+            //Thread printing = new Thread(Printing);
+            //printing.Start();
+        }
 
-        public static Sensor Insstance
+        //public void Printing()
+        //{
+        //    while (true)
+        //    {
+        //        Console.WriteLine(APIPosition);
+        //    }
+        //}
+
+        public static Sensor getInstance
         {
             get
             {
@@ -25,16 +38,17 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
         ///   The fault that doesn't recognise an obstacle, thus causes the robot to collide with an obstacle.
         /// </summary>
-        //public readonly ISSE.SafetyChecking.Modeling.Fault SuppressDetecting = new ISSE.SafetyChecking.Modeling.PermanentFault();
         public readonly Fault SuppressDetecting = new PermanentFault();
 
         /// <summary>
         ///   The positions of the robot, the obstacles and the target
         ///   Note: ew Vector2(DynObstaclePosition.x, DynObstaclePosition.y)
-        ///   
         /// </summary>
-        public Vector3 APIPosition { get; set; }
-        private Vector3 RobPosition => RobotPosition;
+
+        //private Client client = Client.getInstance;
+        //public Vector3 APIPosition => client.CurrentPosition;
+
+        Vector3 RobPosition => RobotPosition;
         private Vector3 StatObstPosition => StatObstaclePosition;
         private Vector3 DynObstPosition => DynObstaclePosition;
         private Vector3 TargetPosition => new Vector3(Model.XTarget, Model.YTarget, 0);
@@ -71,19 +85,16 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public bool ScanForObstaclesInNextStep(double x, double y)
         {
-            //bool obstacleInXYDirection = ScanForDynamicObstacleInNextStep(x, y) || ScanForStaticObstacleInNextStep(x, y);
-            //bool obstacleInXyDirection = (int)DynObstPosition.x == (int)(RobPosition.x + x) && (int)DynObstPosition.y == (int)(RobPosition.y + y) ||
-            //                             (int)StatObstPosition.x == (int)(RobPosition.x - x) && (int)StatObstPosition.y == (int)(RobPosition.y - y);
-            return ScanForDynamicObstacleInNextStep(x, y) || ScanForStaticObstacleInNextStep(x, y) /*&& obstacleInXyDirection*/;
+            return ScanForDynamicObstacleInNextStep(x, y) || ScanForStaticObstacleInNextStep(x, y);
         }
 
         public bool ScanForDynamicObstacleInNextStep(double x, double y)
         {
-            return (int)DynObstPosition.x == (int)(RobPosition.x + x) && (int)DynObstPosition.y == (int)(RobPosition.y + y);
+            return Math.Abs(RobPosition.x + x - DynObstPosition.x) <= 1 && Math.Abs(RobPosition.y + y - DynObstPosition.y) <= 1;
         }
         public bool ScanForStaticObstacleInNextStep(double x, double y)
         {
-            return (int)StatObstPosition.x == (int)(RobPosition.x + x) && (int)StatObstPosition.y == (int)(RobPosition.y + y);
+            return StatObstPosition.x == RobPosition.x + x && StatObstPosition.y == RobPosition.y + y;
         }
 
         /// <summary>
@@ -116,7 +127,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         }
 
         public bool IsSamePositionAsTarg() {
-            return (int) TargetPosition[0] == (int) RobPosition.x && (int) TargetPosition[1] == (int) RobPosition.y;
+            return (int) TargetPosition.x == (int) RobPosition.x && (int) TargetPosition[1] == (int) RobPosition.y;
         }
 
         [FaultEffect(Fault = nameof(SuppressDetecting))]
@@ -132,7 +143,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         /// <summary>
         /// Updates the sensor's state
-        /// Note: ScanForObstaclesInNextStep(0, 1) || ScanForObstaclesInNextStep(1, 1) ||
         /// </summary>
         public override void Update()
         {
@@ -144,10 +154,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                                       || ScanForStaticObstacleInNextStep(-1, 1) || ScanForStaticObstacleInNextStep(1, -1);
             ObstDetected = (ScanForObstaclesInNextStep(1, 0) || ComparePositions());
             ObstInEnvironment = DynamicObstInEnvironment || StaticObstInEnvironment || ComparePositions();
-
-            //ObstInEnvironment = ScanForObstaclesInNextStep(1, 0) || ScanForObstaclesInNextStep(0, 1) || ScanForObstaclesInNextStep(1, 1)
-            //                    || ScanForObstaclesInNextStep(0, -1) || ScanForObstaclesInNextStep(-1, 0) || ScanForObstaclesInNextStep(-1, -1)
-            //                    || ScanForObstaclesInNextStep(-1, 1) || ScanForObstaclesInNextStep(1, -1) || ComparePositions();
         }
     }
 }

@@ -16,7 +16,7 @@
             Controller = new Controller
             {
                 Robot = new Robot(),
-                Sensor = Sensor.Insstance,
+                Sensor = Sensor.getInstance,
                 Camera = new Camera(),
                 DynamicObstacle = new DynamicObstacle(),
                 StaticObstacle = new StaticObstacle()
@@ -33,7 +33,7 @@
             Bind(nameof(DynamicObstacle.RobotPosition), nameof(Robot.GetPosition));
             Bind(nameof(Robot.DynamicObstInEnvironment), nameof(Sensor.DynamicObstInEnvironment));
             Bind(nameof(Robot.StaticObstInEnvironment), nameof(Sensor.StaticObstInEnvironment));
-
+            
             Bind(nameof(Robot.XCalculated), nameof(Controller.XCalculated));
             Bind(nameof(Robot.YCalculated), nameof(Controller.YCalculated));
             /*Bind(nameof(Robot.CameraPosition), nameof(Camera.Position));*/

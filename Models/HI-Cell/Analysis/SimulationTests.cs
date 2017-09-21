@@ -1,6 +1,7 @@
 ﻿namespace SafetySharp.CaseStudies.HI_Cell.Analysis
 {
     using System;
+    using System.Threading;
     using FluentAssertions;
     using Modeling;
     using NUnit.Framework;
@@ -11,9 +12,14 @@
         [Test]
         public void FirstAPITest()
         {
-            Client client = Client.Instance;
+            var sensor = Sensor.getInstance;
+            Client client = Client.getInstance;
             client.MoveDirectlyTo(0.5, 0.5, 0.5, Math.PI, 0, -Math.PI);
-            client.Receive();
+            while (true)
+            {
+                Console.WriteLine("Client Current Position: " + client.CurrentPosition/* + "    "+ client.CurrentPosition.x*/);
+               // Console.WriteLine("Sensor API-Position: "+sensor.APIPosition);
+            }
         }
 
         /// <summary>
