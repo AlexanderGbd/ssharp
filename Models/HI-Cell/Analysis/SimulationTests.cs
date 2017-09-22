@@ -12,13 +12,12 @@
         [Test]
         public void FirstAPITest()
         {
-            var sensor = Sensor.getInstance;
             Client client = Client.getInstance;
             client.MoveDirectlyTo(0.5, 0.5, 0.5, Math.PI, 0, -Math.PI);
             while (true)
             {
-                Console.WriteLine("Client Current Position: " + client.CurrentPosition/* + "    "+ client.CurrentPosition.x*/);
-               // Console.WriteLine("Sensor API-Position: "+sensor.APIPosition);
+                //Console.WriteLine("Client Current Position: " + client.CurrentPosition/* + "    "+ client.CurrentPosition.x*/);
+                // Console.WriteLine("Sensor API-Position: "+sensor.APIPosition);
             }
         }
 
@@ -83,7 +82,7 @@
             model = (Model)simulator.Model;
             simulator.FastForward(steps: 120);
 
-            model.Sensor.ObstDetected.Should().BeFalse();
+            model.Sensor.ObstInEnvironment.Should().BeFalse();
         }
 
         /// <summary>
@@ -99,7 +98,9 @@
             model = (Model)simulator.Model;
             simulator.FastForward(steps: 120);
 
-            if (model.Sensor.ObstDetected)
+            //if (model.Sensor.ObstDetected)
+            //    Assert.IsFalse(model.Robot.IsMoving);
+            if (model.Sensor.ObstInEnvironment)
                 Assert.IsFalse(model.Robot.IsMoving);
         }
 

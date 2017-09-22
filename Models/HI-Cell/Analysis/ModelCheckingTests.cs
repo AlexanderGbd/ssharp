@@ -103,7 +103,7 @@
             model.Faults.SuppressActivations();
             model.Sensor.SuppressDetecting.Activation = Activation.Forced;
 
-            var result = SafetySharpModelChecker.CheckInvariant(model, model.Robot.IsCollided && !model.Robot.ObstDetected);
+            var result = SafetySharpModelChecker.CheckInvariant(model, model.Robot.IsCollided && !model.Robot.ObstacleInEnvironment /*&& !model.Robot.ObstDetected*/);
             result.FormulaHolds.Should().BeFalse();
         }
     }

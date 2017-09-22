@@ -86,7 +86,7 @@
                     action: () =>
                     {
                         DynamicObstacle.Move();
-                        //client.MoveDirectlyTo(Model.XTarget, Model.YTarget, 0, 1, 1, 1);
+                        //Client.getInstance.MoveDirectlyTo(0.5, 0.5, 0.5, Math.PI, 0, -Math.PI); 
                         Robot.Move((int)CalculatePathForNextStep().x, (int)CalculatePathForNextStep().y);
                     })
                 .Transition(

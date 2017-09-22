@@ -95,6 +95,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                     CurrentPosition = new Vector3(x, y, z);
                     CurrentOrientation = new Vector3(a, b, c);
 
+                    Console.WriteLine("Current Position: "+CurrentPosition);
                     Console.WriteLine("Reached end of while loop");
                 }
             }

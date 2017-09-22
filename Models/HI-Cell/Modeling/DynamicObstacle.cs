@@ -10,7 +10,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public bool IsMoving { get; private set; }
         public bool HasStopped => !IsMoving;
         public extern bool IsDetected { get; }
-        //When the robot has already stopped, because of detecting the obstacle, the obstacle shouldn't hit the still standing robot
         public extern Vector3 RobotPosition { get; }
 
         public float GetXCoord()
@@ -36,59 +35,32 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             IsMoving = true;
             bool plusOperation = rnd.Next(2) == 1;
 
-            switch (rnd.Next(0, 4))
+            while (true)
             {
-                case 0:
-                    if ((plusOperation || (int)Position.x == 0) && (int)Position.x < 5 && !(IsDetected && (int)RobotPosition.x == (int)Position.x +1))
-                        Position.x = (Position.x + 1) % 5;
-                    else if (!(IsDetected && (int)RobotPosition.x == (int)Position.x - 1))
-                        Position.x = (Position.x - 1) % 5;
-                    break;
+                int xDelta = rnd.Next(-1, 2);
+                int yDelta = rnd.Next(-1, 2);
 
-                case 1:
-                    if ((plusOperation || (int)Position.y == 0) && (int)Position.y < 5 && !(IsDetected && (int)RobotPosition.y == (int)Position.y + 1))
-                        Position.y = (Position.y + 1) % 5;
-                    else if (!(IsDetected && (int)RobotPosition.y == (int)Position.y - 1))
-                        Position.y = (Position.y - 1) % 5;
-                    break;
-
-                case 2:
-                    if (plusOperation && (int)Position.x == 0 && (int)Position.x < 5 &&
-                        !(IsDetected && (int)RobotPosition.x == (int)Position.x + 1 && (int)RobotPosition.y == (int)Position.y + 1))
-                    {
-                        Position.x = (Position.x + 1) % 5;
-                        Position.y = (Position.y + 1) % 5;
-                    }
-                    else if (Position.x > 0 && Position.y > 0 &&
-                        !(IsDetected && (int)RobotPosition.x == (int)Position.x - 1 && (int)RobotPosition.y == (int)Position.y - 1))
-                    {
-                        Position.x = (Position.x - 1) % 5;
-                        Position.y = (Position.y - 1) % 5;
-                    }
-                    else
-                    {
-                        goto case  0;
-                    }
-                    break;
-
-                case 3:
-                    if (plusOperation && (int)Position.x < 5 && Position.y > 0 && (int)Position.y < 5 &&
-                        !(IsDetected && (int)RobotPosition.x == (int)Position.x + 1 && (int)RobotPosition.y == (int)Position.y - 1))
-                    {
-                        Position.x = (Position.x + 1) % 5;
-                        Position.y = (Position.y - 1) % 5;
-                    }
-                    else if (Position.x > 0 && !(IsDetected && (int)RobotPosition.x == (int)Position.x - 1 && (int)RobotPosition.y == (int)Position.y + 1))
-                    {
-                        Position.x = (Position.x - 1) % 5;
-                        Position.y = (Position.y + 1) % 5;
-                    }
-                    else
-                    {
-                        goto case 0;
-                    }
+                if (TryMoveTo(xDelta, yDelta))
                     break;
             }
+        }
+
+        /// <summary>
+        /// Try moving to the next position without hitting the robot, which stands still, after having detected an obstacle
+        /// </summary>
+        public bool TryMoveTo(int xDelta, int yDelta)
+        {
+            int xTarget = (int)Position.x + xDelta;
+            int yTarget = (int)Position.y + yDelta;
+
+            if (xTarget > 4 || xTarget < 0 || yTarget > 4 || yTarget < 0)
+                return false;
+            if (xTarget == (int)RobotPosition.x && yTarget == (int)RobotPosition.y)
+                return false;
+            
+            Position.x = xTarget;
+            Position.y = yTarget;
+            return true;
         }
 
         public void Stop()

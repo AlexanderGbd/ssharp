@@ -1,11 +1,9 @@
 ﻿namespace SafetySharp.CaseStudies.Visualizations
 {
     using System;
-    using System.Windows.Media.Animation;
     using HI_Cell.Modeling;
     using Infrastructure;
     using System.Windows;
-    using System.Windows.Input;
     using Modeling;
     using SafetySharp.Analysis;
     using System.Windows.Controls;
@@ -80,20 +78,20 @@
                 Exception.Text = "EXCEPTION WAS NOT THROWN!";
 
             //Dynamic Obstacle
-            float obstacleX = _model.DynamicObstacle.GetXCoord();
-            float obstacleY = _model.DynamicObstacle.GetYCoord();
+            int obstacleX = (int) _model.DynamicObstacle.GetXCoord();
+            int obstacleY = (int) _model.DynamicObstacle.GetYCoord();
             Canvas.SetLeft(DynamicObstacle, obstacleX * 100);
-            Canvas.SetTop(DynamicObstacle, obstacleY * 100);
+            Canvas.SetTop(DynamicObstacle, MapYCoordinate(obstacleY) * 100);
             
             Console.WriteLine("Dynamic Obstacle x-Coordinate: "+ Canvas.GetLeft(DynamicObstacle));
             Console.WriteLine("Dynamic Obstacle y-Coordinate: "+ Canvas.GetTop(DynamicObstacle)  + "\n");
             
             //Robot
-            float xPos = _model.Robot.GetXCoord();
-            float yPos = _model.Robot.GetYCoord();
+            int xPos = (int) _model.Robot.GetXCoord();
+            int yPos = (int) _model.Robot.GetYCoord();
 
             Canvas.SetLeft(Robot, xPos * 100);
-            Canvas.SetTop(Robot, yPos * 100);
+            Canvas.SetTop(Robot, MapYCoordinate(yPos) * 100);
 
             Console.WriteLine("Robot x-coordinate: "+ Canvas.GetLeft(Robot));
             Console.WriteLine("Robot y-coordinate: "+ Canvas.GetTop(Robot) + "\n");
@@ -148,6 +146,22 @@
             Counter++;
         }
 
+        /// <summary>
+        /// Maps the y coordinate from the logic layer onto the visualization layer, so that (0, 0) is in the bottom left corner, instead of the top left corner
+        /// </summary>
+        /// <returns></returns>
+        public int MapYCoordinate(int y)
+        {
+            switch (y)
+            {
+                case 0: return 4;
+                case 1: return 3;
+                case 2: return 2;
+                case 3: return 1;
+                case 4: return 0;
+            }
+            return y;
+        }
 
         //private void MoveRobotAnimation(int newCoordinate, TimeSpan duration)
         //{ 

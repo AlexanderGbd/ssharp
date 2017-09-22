@@ -12,18 +12,19 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
     {
 
         //private Vector2 Position => CameraPosition;
-        private Vector3 Position = new Vector3(0, 4, 0);
+        private Vector3 Position = new Vector3(0, 0, 0);
         public bool IsMoving { get; private set; }
         public bool HasStopped => !IsMoving;
         public bool IsCollided => SamePositionAsObst;
+        public bool PassedTarget = false;
 
         public bool SamePositionAsObst => IsSamePositionAsObst;
         public bool SamePositionAsTarg => IsSamePositionAsTarg;
-        public bool ObstDetected => ObstacleDetected;
+        //public bool ObstDetected => ObstacleDetected;
 
         public extern bool IsSamePositionAsObst { get; }
         public extern bool IsSamePositionAsTarg { get; }
-        public extern bool ObstacleDetected { get; }
+        //public extern bool ObstacleDetected { get; }
         public extern bool ObstacleInEnvironment { get; }
         public extern bool DynamicObstInEnvironment { get; }
         public extern bool StaticObstInEnvironment { get; }
@@ -54,27 +55,27 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             //Console.WriteLine(ObstacleInEnvironment + "\n");
         }
 
-       
 
-        ///// <summary>
-        /////   Moves the robot. Increases the direction by a maximum of one.
-        ///// </summary>
-        //public virtual void Move(bool moveX, bool moveY)
-        //{
-        //    IsMoving = true;
 
-        //    if (moveX) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
-        //    {
-        //        Position.x++;
-        //    }
-        //    if (moveY) /*&& !SamePositionAsObst && !ObstDetected && !HasStopped*/
-        //    {
-        //        Position.y++;
-        //    }
+        /// <summary>
+        ///   Moves the robot when the stop fault occurs. Increases the direction by a maximum of one.
+        /// </summary>
+        public virtual void MoveOnStopFault(bool moveX, bool moveY)
+        {
+            IsMoving = true;
 
-        //    if (IsSamePositionAsTarg)
-        //        Stop();
-        //}
+            if (moveX) 
+            {
+                Position.x++;
+            }
+            if (moveY)
+            {
+                Position.y++;
+            }
+
+            if (IsSamePositionAsTarg)
+                Stop();
+        }
 
         /// <summary>
         /// Moves the robot dynamically. Increases the directions by a maximum of one
@@ -106,12 +107,19 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public override void Update()
         {
-            if (ObstDetected || ObstacleInEnvironment)
+            if (ObstacleInEnvironment)
                 IsMoving = false;
-            else if (!SamePositionAsObst && !ObstDetected && !ObstacleInEnvironment && IsMoving)
-                //Move(true, false);
-                Move((int) XCalculated, (int) YCalculated);
-            CheckConstraints();                             //Moved to the beginning of this method at first, because after the move method the robot is at the same position as the target, but still IsMoving = true => exception is thrown
+            else if (!SamePositionAsObst && !ObstacleInEnvironment && IsMoving)
+            {
+                if (!(IsMoving && SamePositionAsTarg) && !PassedTarget)
+                    Move((int)XCalculated, (int)YCalculated);
+                else
+                {
+                    MoveOnStopFault(true, false);
+                    PassedTarget = true;
+                }
+            }
+            CheckConstraints();                             
         }
 
         [FaultEffect(Fault = nameof(SuppressMoving)), Priority(2)]
@@ -154,7 +162,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             {
                 () => !ObstacleInEnvironment || !IsCollided,
                 () => !IsMoving || !IsCollided,
-                () => !IsMoving || !SamePositionAsTarg || !ObstacleDetected,         
+                () => !IsMoving || !SamePositionAsTarg || !ObstacleInEnvironment,         
                 () => !IsCollided || SamePositionAsObst,
                 () => !IsSamePositionAsTarg || HasStopped           
             };

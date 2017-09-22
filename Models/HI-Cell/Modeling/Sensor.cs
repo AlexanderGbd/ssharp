@@ -17,20 +17,20 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             //printing.Start();
         }
 
-        //public void Printing()
-        //{
-        //    while (true)
-        //    {
-        //        Console.WriteLine(APIPosition);
-        //    }
-        //}
+        public void Printing()
+        {
+            while (true)
+            {
+                Console.WriteLine(APIPosition);
+            }
+        }
 
         public static Sensor getInstance
         {
             get
             {
                 if (instance == null)
-                    return new Sensor();
+                    instance = new Sensor();
                 return instance;
             }
         }
@@ -40,20 +40,14 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// </summary>
         public readonly Fault SuppressDetecting = new PermanentFault();
 
-        /// <summary>
-        ///   The positions of the robot, the obstacles and the target
-        ///   Note: ew Vector2(DynObstaclePosition.x, DynObstaclePosition.y)
-        /// </summary>
-
-        //private Client client = Client.getInstance;
-        //public Vector3 APIPosition => client.CurrentPosition;
+        public Vector3 APIPosition => Client.getInstance.CurrentPosition;
 
         Vector3 RobPosition => RobotPosition;
         private Vector3 StatObstPosition => StatObstaclePosition;
         private Vector3 DynObstPosition => DynObstaclePosition;
         private Vector3 TargetPosition => new Vector3(Model.XTarget, Model.YTarget, 0);
 
-        public bool ObstDetected { get; private set; }
+        //public bool ObstDetected { get; private set; }
         public bool IsDetecting { get; private set; } = true;
         public bool ObstInEnvironment { get; private set; }
         public bool DynamicObstInEnvironment { get; private set; }
@@ -83,18 +77,18 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                     (int) StatObstPosition.x == (int) RobPosition.x && (int) StatObstPosition.y == (int) RobPosition.y;
         }
 
-        public bool ScanForObstaclesInNextStep(double x, double y)
+        public bool ScanForObstaclesInNextStep(int x, int y)
         {
             return ScanForDynamicObstacleInNextStep(x, y) || ScanForStaticObstacleInNextStep(x, y);
         }
 
-        public bool ScanForDynamicObstacleInNextStep(double x, double y)
+        public bool ScanForDynamicObstacleInNextStep(int x, int y)
         {
-            return Math.Abs(RobPosition.x + x - DynObstPosition.x) <= 1 && Math.Abs(RobPosition.y + y - DynObstPosition.y) <= 1;
+            return (int)DynObstPosition.x == (int)(RobPosition.x + x) && (int)DynObstPosition.y == (int)(RobPosition.y + y);
         }
-        public bool ScanForStaticObstacleInNextStep(double x, double y)
+        public bool ScanForStaticObstacleInNextStep(int x, int y)
         {
-            return StatObstPosition.x == RobPosition.x + x && StatObstPosition.y == RobPosition.y + y;
+            return (int)StatObstPosition.x == (int)(RobPosition.x + x) && (int)StatObstPosition.y == (int)(RobPosition.y + y);
         }
 
         /// <summary>
@@ -135,7 +129,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             public override void Update()
             {
-                ObstDetected = false;
                 ObstInEnvironment = false;
                 IsDetecting = false;
             }
@@ -146,14 +139,37 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// </summary>
         public override void Update()
         {
-            DynamicObstInEnvironment = ScanForDynamicObstacleInNextStep(1, 0) || ScanForDynamicObstacleInNextStep(0, 1) || ScanForDynamicObstacleInNextStep(1, 1) 
-                                        || ScanForDynamicObstacleInNextStep(0, -1) || ScanForDynamicObstacleInNextStep(-1, 0) || ScanForDynamicObstacleInNextStep(-1, -1)
-                                        || ScanForDynamicObstacleInNextStep(-1, 1) || ScanForDynamicObstacleInNextStep(1, -1);
-            StaticObstInEnvironment = ScanForStaticObstacleInNextStep(1, 0) || ScanForStaticObstacleInNextStep(0, 1) || ScanForStaticObstacleInNextStep(1, 1)
-                                      || ScanForStaticObstacleInNextStep(0, -1) || ScanForStaticObstacleInNextStep(-1, 0) || ScanForStaticObstacleInNextStep(-1, -1)
-                                      || ScanForStaticObstacleInNextStep(-1, 1) || ScanForStaticObstacleInNextStep(1, -1);
-            ObstDetected = (ScanForObstaclesInNextStep(1, 0) || ComparePositions());
-            ObstInEnvironment = DynamicObstInEnvironment || StaticObstInEnvironment || ComparePositions();
+            DynamicObstInEnvironment = DynamicObstacleInEnvironment();
+            StaticObstInEnvironment = StaticObstacleInEnvironment();
+            ObstInEnvironment = DynamicObstInEnvironment || StaticObstInEnvironment;
+        }
+
+        public bool DynamicObstacleInEnvironment()
+        {
+            bool detected = false;
+            for (int i = -1; i < 2; i++)
+            {
+                for (int j = -1; j < 2; j++)
+                {
+                    if (ScanForDynamicObstacleInNextStep(i, j))
+                        detected = true;
+                }
+            }
+            return detected;
+        }
+
+        public bool StaticObstacleInEnvironment()
+        {
+            bool detected = false;
+            for (int i = -1; i < 2; i++)
+            {
+                for (int j = -1; j < 2; j++)
+                {
+                    if (ScanForStaticObstacleInNextStep(i, j))
+                        detected = true;
+                }
+            }
+            return detected;
         }
     }
 }
