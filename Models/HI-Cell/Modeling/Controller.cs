@@ -7,9 +7,9 @@
 
     public class Controller : Component
     {
-        //private Client client = Client.Instance;
         public float XCalculated => CalculatePathForNextStep().x;
         public float YCalculated => CalculatePathForNextStep().y;
+
         public enum State {
             /// <summary>
             ///     Indicates that the sensor detected an obstacle
@@ -85,57 +85,58 @@
                     guard: !Sensor.ObstInEnvironment && !Robot.IsSamePositionAsObst,
                     action: () =>
                     {
-                        DynamicObstacle.Move();
-                        //Client.getInstance.MoveDirectlyTo(0.5, 0.5, 0.5, Math.PI, 0, -Math.PI); 
-                        Robot.Move((int)CalculatePathForNextStep().x, (int)CalculatePathForNextStep().y);
+                        //DynamicObstacle.Move();
+                        Client.getInstance.MoveDirectlyTo(Model.XTarget / 10, Model.YTarget / 10, Model.ZTarget / 10, Math.PI, 0, -Math.PI); 
+                        //Robot.Move((int)CalculatePathForNextStep().x, (int)CalculatePathForNextStep().y);
                     })
-                .Transition(
-                    from: State.IsMoving,
-                    to: State.ObstacleDetected,
-                    guard: Sensor.ObstInEnvironment && !Sensor.SamePositionAsTarg,    
-                    action: Robot.Stop
-                    )
-                .Transition(
-                    from: State.IsMoving,
-                    to: State.Collided,
-                    guard: Robot.IsSamePositionAsObst,
-                    action: () => {
-                        Robot.Stop();
-                        DynamicObstacle.Stop();
+                //.Transition(
+                //    from: State.IsMoving,
+                //    to: State.ObstacleDetected,
+                //    guard: Sensor.ObstInEnvironment && !Sensor.SamePositionAsTarg,    
+                //    action: Robot.Stop
+                //    )
+                //.Transition(
+                //    from: State.IsMoving,
+                //    to: State.Collided,
+                //    guard: Robot.IsSamePositionAsObst,
+                //    action: () => {
+                //        Robot.Stop(); 
+                //        DynamicObstacle.Stop();
 
-                    })
+                //    })
                 .Transition(
                     from: State.IsMoving,
                     to: State.StoppedAtTarget,
                     guard: Robot.IsSamePositionAsTarg,
-                    action: () => {
-                        Robot.Stop();
-                        DynamicObstacle.Stop();
-                    })
-                .Transition(
-                    from: State.ObstacleDetected,
-                    to: State.IsMoving,
-                    guard: !Sensor.ObstInEnvironment && !Sensor.IsSamePositionAsTarg(),
                     action: () =>
                     {
-                        Robot.Move((int) CalculatePathForNextStep().x, (int) CalculatePathForNextStep().y);
-                        //client.MoveDirectlyTo(Model.XTarget, Model.YTarget, 0, 1, 1, 1);
+                        //Robot.Stop(); From now on done by the rapi
+                        //DynamicObstacle.Stop();
                     })
-                .Transition(
-                    from: State.ObstacleDetected,
-                    to: State.StoppedAtTarget,
-                    guard: Sensor.SamePositionAsTarg,
-                    action: () =>
-                    {
-                        Robot.Stop();
-                    })
+                //.Transition(
+                //    from: State.ObstacleDetected,
+                //    to: State.IsMoving,
+                //    guard: !Sensor.ObstInEnvironment && !Sensor.IsSamePositionAsTarg(),
+                //    action: () =>
+                //    {
+                //        //Robot.Move((int) CalculatePathForNextStep().x, (int) CalculatePathForNextStep().y);
+                //        Client.getInstance.MoveDirectlyTo(Model.XTarget / 10, Model.YTarget / 10, Model.ZTarget / 10, Math.PI, 0, -Math.PI); 
+                //    })
+                //.Transition(
+                //    from: State.ObstacleDetected,
+                //    to: State.StoppedAtTarget,
+                //    guard: Sensor.SamePositionAsTarg,
+                //    action: () =>
+                //    {
+                //        Robot.Stop();
+                //    })
                 ;
         }
 
         /// <summary>
         /// Calculates the coordinates for the robot's next movement
         /// </summary>
-        public Vector2 CalculatePathForNextStep()
+        public Vector3 CalculatePathForNextStep()
         {
             Vector3 coordinates = new Vector3(0, 0, 0);
             float xTarget = Model.XTarget;
@@ -146,6 +147,7 @@
             //float yStatObst = StaticObstacle.GetYCoord();
             float xRobot = Robot.GetXCoord();
             float yRobot = Robot.GetYCoord();
+            float zRobot = Robot.GetZCoord();
 
             if (!Robot.SamePositionAsTarg)
             {

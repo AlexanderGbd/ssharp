@@ -21,6 +21,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         private static Client instance;
         private String server = "localhost";
         private NetworkStream stream;
+        public Thread receiver;
         public Vector3 CurrentPosition { get; set; }
         public Vector3 CurrentOrientation { get; set; }
 
@@ -74,6 +75,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public void Receive()
         {
+            Robot robot = Robot.getInstance;
+            int offset = 10;
             Console.WriteLine("Started Receiving...");
             responseData = String.Empty;
             StreamReader reader = new StreamReader(stream, Encoding.UTF8);
@@ -81,18 +84,30 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             {
                 while (true)
                 {
+                    if (!client.Connected)
+                    {
+                        throw new IOException();
+                    }
                     responseData = reader.ReadLine();
-
+                    
                     JObject obj = JObject.Parse(responseData);
-                    float x = float.Parse(obj.GetValue("x").ToString(), CultureInfo.InvariantCulture.NumberFormat);
-                    float y = float.Parse(obj.GetValue("y").ToString(), CultureInfo.InvariantCulture.NumberFormat);
-                    float z = float.Parse(obj.GetValue("z").ToString(), CultureInfo.InvariantCulture.NumberFormat);
+                    float x = float.Parse(obj.GetValue("x").ToString(), CultureInfo.InvariantCulture.NumberFormat) * offset;
+                    float y = float.Parse(obj.GetValue("y").ToString(), CultureInfo.InvariantCulture.NumberFormat) * offset;
+                    float z = float.Parse(obj.GetValue("z").ToString(), CultureInfo.InvariantCulture.NumberFormat) * offset;
                     float a = float.Parse(obj.GetValue("a").ToString(), CultureInfo.InvariantCulture.NumberFormat);
                     float b = float.Parse(obj.GetValue("b").ToString(), CultureInfo.InvariantCulture.NumberFormat);
                     float c = float.Parse(obj.GetValue("c").ToString(), CultureInfo.InvariantCulture.NumberFormat);
 
                     Console.WriteLine("Received data: \n{0} {1} {2} {3} {4} {5}", x, y, z, a, b, c);
+                    if (Math.Abs(x - robot.GetXCoord()) < 0.00001 && Math.Abs(y - robot.GetYCoord()) < 0.00001 &&
+                        Math.Abs(z - robot.GetZCoord()) < 0.00001)
+                    {
+                        robot.Stop();
+                    }
+                    //if (robot.HasStopped && !robot.SamePositionAsTarg)
+                    //    Sensor.getInstance.ObstInEnvironment = true;
                     CurrentPosition = new Vector3(x, y, z);
+                    Robot.getInstance.Position = CurrentPosition;
                     CurrentOrientation = new Vector3(a, b, c);
 
                     Console.WriteLine("Current Position: "+CurrentPosition);
@@ -106,6 +121,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             finally
             {
                 reader.Close();
+                stream.Close();
+                Environment.Exit(0);
             }
         }
 
@@ -116,10 +133,10 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             Connected = true;
             Console.WriteLine("Connected to Robotics API!");
 
-            Thread receiver = new Thread(Receive);
+            receiver = new Thread(Receive);
             receiver.Priority = ThreadPriority.AboveNormal;
+            receiver.IsBackground = true;
             receiver.Start();
-            //receiver.IsBackground = true;
         }
 
         public void Close()

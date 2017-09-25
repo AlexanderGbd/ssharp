@@ -162,12 +162,5 @@
             }
             return y;
         }
-
-        //private void MoveRobotAnimation(int newCoordinate, TimeSpan duration)
-        //{ 
-        //    DoubleAnimation animation = new DoubleAnimation(newCoordinate, duration);
-        //    Robot.BeginAnimation(Canvas.LeftProperty, animation);
-        //}
-
-        }
+    }
 }

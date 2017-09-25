@@ -10,21 +10,23 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     public partial class Robot : Component
     {
+        private static Robot instance;
 
         //private Vector2 Position => CameraPosition;
-        private Vector3 Position = new Vector3(0, 0, 0);
-        public bool IsMoving { get; private set; }
+        public Vector3 Position /* = new Vector3(0, 0, 0)*/;
+
+        //public Vector3 APIPosition;
+        
+        public bool IsMoving { get; set; }
         public bool HasStopped => !IsMoving;
         public bool IsCollided => SamePositionAsObst;
         public bool PassedTarget = false;
 
         public bool SamePositionAsObst => IsSamePositionAsObst;
         public bool SamePositionAsTarg => IsSamePositionAsTarg;
-        //public bool ObstDetected => ObstacleDetected;
 
         public extern bool IsSamePositionAsObst { get; }
         public extern bool IsSamePositionAsTarg { get; }
-        //public extern bool ObstacleDetected { get; }
         public extern bool ObstacleInEnvironment { get; }
         public extern bool DynamicObstInEnvironment { get; }
         public extern bool StaticObstInEnvironment { get; }
@@ -32,7 +34,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public extern float XCalculated { get; }
         public extern float YCalculated { get; }
 
-        /*public extern Vector2 CameraPosition { get; }*/
         public bool MonitorText;
 
         public List<Func<bool>> Constraints;
@@ -47,14 +48,22 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public readonly Fault SuppressStop = new PermanentFault();
 
 
-        public Robot()
+        private Robot()
         {
             SetConstraints();
 
             //Problem at the beginning: the binding between the ports is done, AFTER this constructor was avoked...
-            //Console.WriteLine(ObstacleInEnvironment + "\n");
         }
 
+        public static Robot getInstance
+        {
+            get
+            {
+                if (instance == null)
+                    instance = new Robot();
+                return instance;
+            }
+        }
 
 
         /// <summary>
@@ -103,6 +112,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public virtual void Stop()
         {
             IsMoving = false;
+            Client.getInstance.receiver.Abort();
         }
 
         public override void Update()
@@ -149,9 +159,15 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             return Position.y;
         }
 
+        public float GetZCoord()
+        {
+            return Position.y;
+        }
+
         public Vector3 GetPosition() {
             return Position;
         }
+
     }
 
     public partial class Robot
@@ -177,7 +193,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             if (!ValidateConstraints())
             {
-                //throw new Exception();
                 MonitorText = true;
             }
             else

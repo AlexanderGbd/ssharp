@@ -8,14 +8,14 @@
 		///   The target's position
 		/// </summary>
 		public const float XTarget = 4;
-        public const float YTarget = 0;
+        public const float YTarget = 4;
         public const float ZTarget = 0;
 
         public Model()
         {
             Controller = new Controller
             {
-                Robot = new Robot(),
+                Robot = Robot.getInstance,
                 Sensor = Sensor.getInstance,
                 Camera = new Camera(),
                 DynamicObstacle = new DynamicObstacle(),
@@ -27,12 +27,12 @@
             Bind(nameof(Sensor.RobotPosition), nameof(Robot.GetPosition));
             Bind(nameof(Robot.IsSamePositionAsObst), nameof(Sensor.IsSamePositionAsObst));
             Bind(nameof(Robot.IsSamePositionAsTarg), nameof(Sensor.IsSamePositionAsTarg));
-            //Bind(nameof(Robot.ObstacleDetected), nameof(Sensor.ObstDetected));
             Bind(nameof(Robot.ObstacleInEnvironment), nameof(Sensor.ObstInEnvironment));
             Bind(nameof(DynamicObstacle.IsDetected), nameof(Sensor.ObstInEnvironment));
             Bind(nameof(DynamicObstacle.RobotPosition), nameof(Robot.GetPosition));
             Bind(nameof(Robot.DynamicObstInEnvironment), nameof(Sensor.DynamicObstInEnvironment));
             Bind(nameof(Robot.StaticObstInEnvironment), nameof(Sensor.StaticObstInEnvironment));
+            //Bind(nameof(Robot.APIPosition), nameof(Sensor.APIPosition));
             
             Bind(nameof(Robot.XCalculated), nameof(Controller.XCalculated));
             Bind(nameof(Robot.YCalculated), nameof(Controller.YCalculated));

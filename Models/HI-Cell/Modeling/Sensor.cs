@@ -17,13 +17,13 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             //printing.Start();
         }
 
-        public void Printing()
-        {
-            while (true)
-            {
-                Console.WriteLine(APIPosition);
-            }
-        }
+        //public void Printing()
+        //{
+        //    while (true)
+        //    {
+        //        Console.WriteLine(APIPosition);
+        //    }
+        //}
 
         public static Sensor getInstance
         {
@@ -42,14 +42,14 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public Vector3 APIPosition => Client.getInstance.CurrentPosition;
 
-        Vector3 RobPosition => RobotPosition;
+        public Vector3 RobPosition => APIPosition /*RobotPosition*/ /*Robot.getInstance.GetPosition()*/;
         private Vector3 StatObstPosition => StatObstaclePosition;
         private Vector3 DynObstPosition => DynObstaclePosition;
         private Vector3 TargetPosition => new Vector3(Model.XTarget, Model.YTarget, 0);
 
-        //public bool ObstDetected { get; private set; }
         public bool IsDetecting { get; private set; } = true;
         public bool ObstInEnvironment { get; private set; }
+        public bool ObstacleDteceted;
         public bool DynamicObstInEnvironment { get; private set; }
         public bool StaticObstInEnvironment { get; private set; }
 
@@ -147,11 +147,11 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public bool DynamicObstacleInEnvironment()
         {
             bool detected = false;
-            for (int i = -1; i < 2; i++)
+            for (int x = -1; x < 2; x++)
             {
-                for (int j = -1; j < 2; j++)
+                for (int y = -1; y < 2; y++)
                 {
-                    if (ScanForDynamicObstacleInNextStep(i, j))
+                    if (ScanForDynamicObstacleInNextStep(x, y))
                         detected = true;
                 }
             }
@@ -161,11 +161,11 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public bool StaticObstacleInEnvironment()
         {
             bool detected = false;
-            for (int i = -1; i < 2; i++)
+            for (int x = -1; x < 2; x++)
             {
-                for (int j = -1; j < 2; j++)
+                for (int y = -1; y < 2; y++)
                 {
-                    if (ScanForStaticObstacleInNextStep(i, j))
+                    if (ScanForStaticObstacleInNextStep(x, y))
                         detected = true;
                 }
             }

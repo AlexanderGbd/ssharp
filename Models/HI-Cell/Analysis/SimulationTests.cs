@@ -13,8 +13,8 @@
         public void FirstAPITest()
         {
             Client client = Client.getInstance;
-            client.MoveDirectlyTo(0.5, 0.5, 0.5, Math.PI, 0, -Math.PI);
-            while (true)
+            client.MoveDirectlyTo(0.4, 0.4, 0.4, Math.PI, 0, -Math.PI);
+            while (Math.Abs(Sensor.getInstance.APIPosition.x - 4) > 0.00001 && Math.Abs(Sensor.getInstance.APIPosition.y - 4) > 0.00001 /*!Sensor.getInstance.SamePositionAsTarg*/)
             {
                 //Console.WriteLine("Client Current Position: " + client.CurrentPosition/* + "    "+ client.CurrentPosition.x*/);
                 // Console.WriteLine("Sensor API-Position: "+sensor.APIPosition);
