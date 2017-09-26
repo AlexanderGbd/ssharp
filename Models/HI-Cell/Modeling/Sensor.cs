@@ -49,7 +49,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public bool IsDetecting { get; private set; } = true;
         public bool ObstInEnvironment { get; private set; }
-        public bool ObstacleDteceted;
         public bool DynamicObstInEnvironment { get; private set; }
         public bool StaticObstInEnvironment { get; private set; }
 

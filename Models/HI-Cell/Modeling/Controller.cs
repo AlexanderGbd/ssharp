@@ -110,7 +110,7 @@
                     guard: Robot.IsSamePositionAsTarg,
                     action: () =>
                     {
-                        //Robot.Stop(); From now on done by the rapi
+                        Robot.Stop();
                         //DynamicObstacle.Stop();
                     })
                 //.Transition(
@@ -147,7 +147,7 @@
             //float yStatObst = StaticObstacle.GetYCoord();
             float xRobot = Robot.GetXCoord();
             float yRobot = Robot.GetYCoord();
-            float zRobot = Robot.GetZCoord();
+            //float zRobot = Robot.GetZCoord();
 
             if (!Robot.SamePositionAsTarg)
             {

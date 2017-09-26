@@ -1,6 +1,7 @@
 ﻿namespace SafetySharp.CaseStudies.Visualizations
 {
     using System;
+    using System.Diagnostics;
     using HI_Cell.Modeling;
     using Infrastructure;
     using System.Windows;
@@ -11,11 +12,15 @@
     public partial class HRICell
     {
         public static int Counter = 0;
+        //private Stopwatch watch;
 
         private Model _model;
 
+        //private Robot robot = HI_Cell.Modeling.Robot.getInstance;
+
         public HRICell()
         {
+            //watch = new Stopwatch();
             InitializeComponent();
 
             // Initialize visualization resources
@@ -53,6 +58,7 @@
 
         private void OnModelStateReset()
         {
+            //Client.Running = true;
             _model = (Model)SimulationControls.Model;
 
             if (SimulationControls.Simulator.IsReplay) {
@@ -67,6 +73,9 @@
 
         private void UpdateModelState()
         {
+            //watch.Stop();
+            //Console.WriteLine(">Time range: " + watch.ElapsedMilliseconds + "< \n");
+            //watch.Restart();
             Console.WriteLine("\nDas ist der "+Counter+". Durchgang: ");
 
             if (_model.Robot.MonitorText)
@@ -85,16 +94,17 @@
             
             Console.WriteLine("Dynamic Obstacle x-Coordinate: "+ Canvas.GetLeft(DynamicObstacle));
             Console.WriteLine("Dynamic Obstacle y-Coordinate: "+ Canvas.GetTop(DynamicObstacle)  + "\n");
-            
-            //Robot
-            int xPos = (int) _model.Robot.GetXCoord();
-            int yPos = (int) _model.Robot.GetYCoord();
 
+            //Robot
+            int xPos = (int) _model.Robot.GetXCoord() /*robot.GetXCoord()*/;
+            int yPos = (int) _model.Robot.GetYCoord() /*robot.GetYCoord()*/;
+ 
             Canvas.SetLeft(Robot, xPos * 100);
             Canvas.SetTop(Robot, MapYCoordinate(yPos) * 100);
 
             Console.WriteLine("Robot x-coordinate: "+ Canvas.GetLeft(Robot));
-            Console.WriteLine("Robot y-coordinate: "+ Canvas.GetTop(Robot) + "\n");
+            Console.WriteLine("Robot y-coordinate: "+ Canvas.GetTop(Robot));
+            Console.WriteLine("Robot z-coordinate: "+ (int)_model.Robot.GetZCoord()*100 + "\n");
 
             SuppressMoving.IsChecked = _model.Robot.SuppressMoving.IsActivated;
             SuppressStop.IsChecked = _model.Robot.SuppressStop.IsActivated;

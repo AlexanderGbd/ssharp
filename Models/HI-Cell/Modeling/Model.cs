@@ -15,7 +15,7 @@
         {
             Controller = new Controller
             {
-                Robot = Robot.getInstance,
+                Robot = new Robot(),
                 Sensor = Sensor.getInstance,
                 Camera = new Camera(),
                 DynamicObstacle = new DynamicObstacle(),

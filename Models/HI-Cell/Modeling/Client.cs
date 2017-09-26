@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
     using System.Globalization;
+    using System.Runtime.InteropServices.ComTypes;
     using System.Threading;
     using Newtonsoft.Json.Linq;
     using UnityEngine;
@@ -14,6 +15,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     public class Client
     {
+        public static bool Running = true;
+
+        private Model _model;
         private bool Connected = false;
         private String responseData;
         private int port = 13000;
@@ -44,7 +48,12 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public void MoveDirectlyTo(double x, double y, double z, double a, double b, double c)
         {
-            CultureInfo ci = (CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
+            //if (!Connected)
+            //    Connect(server, port);
+            //if (!Running)
+            //    Running = true;
+
+            CultureInfo ci = (CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
             ci.NumberFormat.NumberDecimalSeparator = ".";
 
             string jsonData = "{ \"x\": \"" + x.ToString(ci) + "\", \"y\": \"" + y.ToString(ci) + "\", \"z\": \"" + z.ToString(ci) + "\", \"a\": \"" + a.ToString(ci) + "\", \"b\": \"" + b.ToString(ci) + "\", \"c\": \"" + c.ToString(ci) + "\" }";
@@ -75,14 +84,14 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public void Receive()
         {
-            Robot robot = Robot.getInstance;
+            //Robot robot = Robot.getInstance;
             int offset = 10;
             Console.WriteLine("Started Receiving...");
             responseData = String.Empty;
             StreamReader reader = new StreamReader(stream, Encoding.UTF8);
             try
             {
-                while (true)
+                while (Running)
                 {
                     if (!client.Connected)
                     {
@@ -99,30 +108,32 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                     float c = float.Parse(obj.GetValue("c").ToString(), CultureInfo.InvariantCulture.NumberFormat);
 
                     Console.WriteLine("Received data: \n{0} {1} {2} {3} {4} {5}", x, y, z, a, b, c);
-                    if (Math.Abs(x - robot.GetXCoord()) < 0.00001 && Math.Abs(y - robot.GetYCoord()) < 0.00001 &&
-                        Math.Abs(z - robot.GetZCoord()) < 0.00001)
+                    if (Math.Abs(x - CurrentPosition.x) < 0.00001 && Math.Abs(y - CurrentPosition.y) < 0.00001 &&
+                        Math.Abs(z - CurrentPosition.z) < 0.00001)
                     {
-                        robot.Stop();
+                        _model.Robot.Stop(); /*robot.Stop(); */
                     }
                     //if (robot.HasStopped && !robot.SamePositionAsTarg)
                     //    Sensor.getInstance.ObstInEnvironment = true;
                     CurrentPosition = new Vector3(x, y, z);
-                    Robot.getInstance.Position = CurrentPosition;
+                    //Robot.getInstance.Position = CurrentPosition;
                     CurrentOrientation = new Vector3(a, b, c);
 
-                    Console.WriteLine("Current Position: "+CurrentPosition);
+                    Console.WriteLine("Current Position: " + CurrentPosition);
                     Console.WriteLine("Reached end of while loop");
                 }
             }
             catch (IOException e)
             {
+                Console.WriteLine("Disconnected");
                 Console.WriteLine(e);
+                Environment.Exit(0);
             }
             finally
             {
                 reader.Close();
-                stream.Close();
-                Environment.Exit(0);
+                //stream.Close();
+                Console.WriteLine("Disconnected");
             }
         }
 

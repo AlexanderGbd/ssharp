@@ -69,7 +69,7 @@
     <DockPanel>
 
         <infrastructure:SimulationControls x:Name="SimulationControls" DockPanel.Dock="Top" />
-        <Canvas x:Name="canvas" Background="#FFDFDCEC"  Width="500" Height="500">
+        <Canvas x:Name="canvas" Background="#FFDFDCEC"  Width="800" Height="500">
             <!--Margin="-539,0,-44,-119.5"-->
             <Ellipse x:Name="Robot" Height="100" Width="100" Fill="Black" Canvas.Top="400" ToolTip="Robot" RenderTransformOrigin="0.5,0.5" Canvas.Left="0">
                 <Ellipse.ContextMenu>
@@ -89,8 +89,8 @@
                     </TransformGroup>
                 </Ellipse.RenderTransform>
             </Ellipse>
-            <Rectangle x:Name="Target" Fill="#FF7A7A97" Height="100" Stroke="#FF191717" Width="100" Canvas.Left="400" Canvas.Top="400" ToolTip="Target" Opacity="0.5"/>
-            <Rectangle x:Name="StaticObstacle" Fill="#FFBF0C0C" Stroke="#FF191717" Width="100" Height="100" Canvas.Left="100" Canvas.Top="200" ToolTip="Static Obstacle"/>
+            <Rectangle x:Name="Target" Fill="#FF7A7A97" Height="100" Stroke="#FF191717" Width="100" Canvas.Left="400" ToolTip="Target" Opacity="0.5" Canvas.Top="0"/>
+            <Rectangle x:Name="StaticObstacle" Fill="#FFBF0C0C" Stroke="#FF191717" Width="100" Height="100" Canvas.Left="600" Canvas.Top="100" ToolTip="Static Obstacle" Opacity="0.7"/>
             <Ellipse x:Name="DynamicObstacle" Height="100" Width="100" Fill="#FFEAB26D" Canvas.Left="300" Canvas.Top="200" ToolTip="Danamic Obstacle" RenderTransformOrigin="0.5,0.5">
                 <Ellipse.RenderTransform>
                     <TransformGroup>
@@ -117,7 +117,7 @@
                 <TextBlock x:Name="ControllerScreen" TextWrapping="Wrap" TextAlignment="Center" Text="Not Moving"
                                Foreground="Blue" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </DockPanel>
-            <TextBlock x:Name="Exception" Height="125" Canvas.Left="306" TextWrapping="Wrap" Canvas.Top="10" Width="184" FontSize="24" FontFamily="Showcard Gothic" RenderTransformOrigin="0.5,0.776" Foreground="#FFF00B0B"><Run Background="#FF0E0C0C" Text="TextBlock"/></TextBlock>
+            <TextBlock x:Name="Exception" Height="75" Canvas.Left="284" TextWrapping="Wrap" Canvas.Top="425" Width="216" FontSize="24" FontFamily="Showcard Gothic" RenderTransformOrigin="0.5,0.776" Foreground="#FFF00B0B"><Run Background="#FF0E0C0C" Text="TextBlock"/></TextBlock>
         </Canvas>
     </DockPanel>
 </UserControl>

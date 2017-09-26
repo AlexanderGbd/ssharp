@@ -10,12 +10,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     public partial class Robot : Component
     {
-        private static Robot instance;
+        //private static Robot instance;
 
-        //private Vector2 Position => CameraPosition;
-        public Vector3 Position /* = new Vector3(0, 0, 0)*/;
-
-        //public Vector3 APIPosition;
+        public Vector3 Position = new Vector3(0, 0, 0);
         
         public bool IsMoving { get; set; }
         public bool HasStopped => !IsMoving;
@@ -48,22 +45,22 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public readonly Fault SuppressStop = new PermanentFault();
 
 
-        private Robot()
+        public Robot()
         {
             SetConstraints();
 
             //Problem at the beginning: the binding between the ports is done, AFTER this constructor was avoked...
         }
 
-        public static Robot getInstance
-        {
-            get
-            {
-                if (instance == null)
-                    instance = new Robot();
-                return instance;
-            }
-        }
+        //public static Robot getInstance
+        //{
+        //    get
+        //    {
+        //        if (instance == null)
+        //            instance = new Robot();
+        //        return instance;
+        //    }
+        //}
 
 
         /// <summary>
@@ -112,7 +109,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public virtual void Stop()
         {
             IsMoving = false;
-            Client.getInstance.receiver.Abort();
+            //Client.getInstance.receiver.Abort();
+            //Client.Running = false;
         }
 
         public override void Update()
@@ -121,15 +119,17 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                 IsMoving = false;
             else if (!SamePositionAsObst && !ObstacleInEnvironment && IsMoving)
             {
-                if (!(IsMoving && SamePositionAsTarg) && !PassedTarget)
-                    Move((int)XCalculated, (int)YCalculated);
+                if (!(IsMoving && SamePositionAsTarg) && !PassedTarget) { 
+                    //Move((int)XCalculated, (int)YCalculated);
+                    }
                 else
                 {
                     MoveOnStopFault(true, false);
                     PassedTarget = true;
                 }
             }
-            CheckConstraints();                             
+            CheckConstraints();
+            Position = Client.getInstance.CurrentPosition;
         }
 
         [FaultEffect(Fault = nameof(SuppressMoving)), Priority(2)]
