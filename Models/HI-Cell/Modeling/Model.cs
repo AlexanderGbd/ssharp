@@ -27,6 +27,7 @@
             Bind(nameof(Sensor.RobotPosition), nameof(Robot.GetPosition));
             Bind(nameof(Robot.IsSamePositionAsObst), nameof(Sensor.IsSamePositionAsObst));
             Bind(nameof(Robot.IsSamePositionAsTarg), nameof(Sensor.IsSamePositionAsTarg));
+            Bind(nameof(Robot.ObstacleDetectedDuringMovement), nameof(Sensor.ObstacleDetectedDuringMovement));
             Bind(nameof(Robot.ObstacleInEnvironment), nameof(Sensor.ObstInEnvironment));
             Bind(nameof(DynamicObstacle.IsDetected), nameof(Sensor.ObstInEnvironment));
             Bind(nameof(DynamicObstacle.RobotPosition), nameof(Robot.GetPosition));

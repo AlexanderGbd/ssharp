@@ -48,6 +48,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         private Vector3 TargetPosition => new Vector3(Model.XTarget, Model.YTarget, 0);
 
         public bool IsDetecting { get; private set; } = true;
+        public bool ObstacleDetectedDuringMovement { get; private set; }
         public bool ObstInEnvironment { get; private set; }
         public bool DynamicObstInEnvironment { get; private set; }
         public bool StaticObstInEnvironment { get; private set; }
@@ -98,10 +99,10 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             return (int) DynObstPosition.x == (int) RobPosition.x + 1 || (int) StatObstPosition.x == (int) RobPosition.x + 1;
         }
 
-        /// <summary>
-		///   Gets the value indicating, that the robot has the same position as its target
-		/// </summary>
-        public bool SamePositionAsTarg => (int) TargetPosition.x == (int) RobPosition.x && (int) TargetPosition.y == (int) RobPosition.y;
+  //      /// <summary>
+		/////   Gets the value indicating, that the robot has the same position as its target
+		///// </summary>
+  //      public bool SamePositionAsTarg => (int) TargetPosition.x == (int) RobPosition.x && (int) TargetPosition.y == (int) RobPosition.y;
 
         /// <summary>
         ///   Gets the distance between the robot and the dynamic obstacle
@@ -120,7 +121,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         }
 
         public bool IsSamePositionAsTarg() {
-            return (int) TargetPosition.x == (int) RobPosition.x && (int) TargetPosition[1] == (int) RobPosition.y;
+            //return (int) TargetPosition.x == (int) RobPosition.x && (int) TargetPosition[1] == (int) RobPosition.y;
+            return Client.getInstance.SamePositionAsTarget;
         }
 
         [FaultEffect(Fault = nameof(SuppressDetecting))]
@@ -129,6 +131,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             public override void Update()
             {
                 ObstInEnvironment = false;
+                ObstacleDetectedDuringMovement = false;
                 IsDetecting = false;
             }
         }
@@ -138,6 +141,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// </summary>
         public override void Update()
         {
+            ObstacleDetectedDuringMovement = Client.getInstance.ObstacleDetectedDuringMovement;
             DynamicObstInEnvironment = DynamicObstacleInEnvironment();
             StaticObstInEnvironment = StaticObstacleInEnvironment();
             ObstInEnvironment = DynamicObstInEnvironment || StaticObstInEnvironment;

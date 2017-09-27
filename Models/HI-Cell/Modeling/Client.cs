@@ -15,10 +15,10 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     public class Client
     {
-        public static bool Running = true;
+        public static bool Running;
 
         private Model _model;
-        private bool Connected = false;
+        public bool Connected = false;
         private String responseData;
         private int port = 13000;
         private TcpClient client; 
@@ -28,6 +28,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public Thread receiver;
         public Vector3 CurrentPosition { get; set; }
         public Vector3 CurrentOrientation { get; set; }
+        public bool SamePositionAsTarget;
+        public bool ObstacleDetectedDuringMovement;
+        public bool RobotIsMoving;
 
         private Client()
         {
@@ -50,9 +53,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             //if (!Connected)
             //    Connect(server, port);
-            //if (!Running)
-            //    Running = true;
-
             CultureInfo ci = (CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
             ci.NumberFormat.NumberDecimalSeparator = ".";
 
@@ -84,7 +84,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public void Receive()
         {
-            //Robot robot = Robot.getInstance;
+            //Running = true;
             int offset = 10;
             Console.WriteLine("Started Receiving...");
             responseData = String.Empty;
@@ -107,14 +107,35 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                     float b = float.Parse(obj.GetValue("b").ToString(), CultureInfo.InvariantCulture.NumberFormat);
                     float c = float.Parse(obj.GetValue("c").ToString(), CultureInfo.InvariantCulture.NumberFormat);
 
+                    RobotIsMoving = true;
+
                     Console.WriteLine("Received data: \n{0} {1} {2} {3} {4} {5}", x, y, z, a, b, c);
-                    if (Math.Abs(x - CurrentPosition.x) < 0.00001 && Math.Abs(y - CurrentPosition.y) < 0.00001 &&
-                        Math.Abs(z - CurrentPosition.z) < 0.00001)
+
+                    //Position hasn't changed since last value
+                    if (Math.Abs(x - CurrentPosition.x) < 0.0001 && Math.Abs(y - CurrentPosition.y) < 0.0001 &&
+                        Math.Abs(z - CurrentPosition.z) < 0.0001)
                     {
-                        _model.Robot.Stop(); /*robot.Stop(); */
+                        RobotIsMoving = false;
+                        //Running = false;
+                        //Did the robot stop because he reached its target or because of an obstacle?
+                        if (Math.Abs(CurrentPosition.x - Model.XTarget) < 0.0001 && Math.Abs(CurrentPosition.y - Model.YTarget) < 0.0001 /*&& Math.Abs(CurrentPosition.z - Model.ZTarget) < 0.0001*/)
+                        {
+                            SamePositionAsTarget = true;
+                            Console.WriteLine("> REACHED third if-condition in Receive()-method!!! <\n");
+                        }
+                        else
+                        {
+                            SamePositionAsTarget = false;
+                            ObstacleDetectedDuringMovement = true;
+                        }
                     }
-                    //if (robot.HasStopped && !robot.SamePositionAsTarg)
-                    //    Sensor.getInstance.ObstInEnvironment = true;
+                    //if (Math.Abs(x - StaticObstacle.Position.x) < 0.0001 && Math.Abs(y - StaticObstacle.Position.y) < 0.0001
+                    //    && Math.Abs(z - StaticObstacle.Position.z) < 0.0001)
+                    if ((int) x == (int) StaticObstacle.Position.x && (int) y == (int) StaticObstacle.Position.y)
+                    {
+                        ObstacleDetectedDuringMovement = true;
+                    }
+                    
                     CurrentPosition = new Vector3(x, y, z);
                     //Robot.getInstance.Position = CurrentPosition;
                     CurrentOrientation = new Vector3(a, b, c);
@@ -142,6 +163,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             client = new TcpClient(server, port);
             stream = client.GetStream();
             Connected = true;
+            Running = true;
             Console.WriteLine("Connected to Robotics API!");
 
             receiver = new Thread(Receive);
@@ -155,6 +177,11 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             stream.Close();
             client.Close();
             Connected = false;
+        }
+
+        public void Reconnect()
+        {
+            Connect(server, port);
         }
     }
 }

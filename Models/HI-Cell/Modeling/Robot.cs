@@ -27,6 +27,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public extern bool ObstacleInEnvironment { get; }
         public extern bool DynamicObstInEnvironment { get; }
         public extern bool StaticObstInEnvironment { get; }
+        public extern bool ObstacleDetectedDuringMovement { get; }
 
         public extern float XCalculated { get; }
         public extern float YCalculated { get; }
@@ -109,27 +110,33 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public virtual void Stop()
         {
             IsMoving = false;
+            Console.WriteLine(">> ObstacleDetectedDuringMovement: " + ObstacleDetectedDuringMovement + "<<\n");
             //Client.getInstance.receiver.Abort();
             //Client.Running = false;
         }
 
         public override void Update()
         {
-            if (ObstacleInEnvironment)
-                IsMoving = false;
-            else if (!SamePositionAsObst && !ObstacleInEnvironment && IsMoving)
-            {
-                if (!(IsMoving && SamePositionAsTarg) && !PassedTarget) { 
-                    //Move((int)XCalculated, (int)YCalculated);
-                    }
-                else
-                {
-                    MoveOnStopFault(true, false);
-                    PassedTarget = true;
-                }
-            }
+            //if (ObstacleInEnvironment)
+            //    IsMoving = false;
+            //else if (!SamePositionAsObst && !ObstacleInEnvironment && IsMoving)
+            //{
+            //    if (!(IsMoving && SamePositionAsTarg) && !PassedTarget) { 
+            //        //Move((int)XCalculated, (int)YCalculated);
+            //        }
+            //    else
+            //    {
+            //        MoveOnStopFault(true, false);
+            //        PassedTarget = true;
+            //    }
+            //}
+
+            var client = Client.getInstance;
+            IsMoving = client.RobotIsMoving;
+            //SamePositionAsTarg = sensor.SamePositionAsTarget;
             CheckConstraints();
-            Position = Client.getInstance.CurrentPosition;
+            Console.WriteLine(">> IsMoving: " + IsMoving + " <<\n");
+            Position = client.CurrentPosition;
         }
 
         [FaultEffect(Fault = nameof(SuppressMoving)), Priority(2)]
@@ -139,15 +146,30 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
             }
 
+            //public override void Update()
+            //{
+            //    IsMoving = false;
+            //    CheckConstraints();
+            //}
         }
 
         [FaultEffect(Fault = nameof(SuppressStop)), Priority(1)]
         public class SuppressStopEffect : Robot
         {
-        public override void Stop()
+            public override void Stop()
             {
                 IsMoving = true;
             }
+
+            public override void Update()
+            {
+                var client = Client.getInstance;
+                IsMoving = true;
+                CheckConstraints();
+                Console.WriteLine(">> IsMoving: " + IsMoving + " <<\n");
+                Position = client.CurrentPosition;
+            }
+
         }
 
         public float GetXCoord() {

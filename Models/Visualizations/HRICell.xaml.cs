@@ -12,12 +12,9 @@
     public partial class HRICell
     {
         public static int Counter = 0;
-        //private Stopwatch watch;
 
         private Model _model;
-
-        //private Robot robot = HI_Cell.Modeling.Robot.getInstance;
-
+        
         public HRICell()
         {
             //watch = new Stopwatch();
@@ -58,7 +55,7 @@
 
         private void OnModelStateReset()
         {
-            //Client.Running = true;
+            //Client.getInstance.Reconnect();
             _model = (Model)SimulationControls.Model;
 
             if (SimulationControls.Simulator.IsReplay) {
@@ -73,9 +70,6 @@
 
         private void UpdateModelState()
         {
-            //watch.Stop();
-            //Console.WriteLine(">Time range: " + watch.ElapsedMilliseconds + "< \n");
-            //watch.Restart();
             Console.WriteLine("\nDas ist der "+Counter+". Durchgang: ");
 
             if (_model.Robot.MonitorText)

@@ -1,6 +1,7 @@
 ﻿namespace SafetySharp.CaseStudies.HI_Cell.Analysis
 {
     using System;
+    using System.Diagnostics;
     using System.Threading;
     using FluentAssertions;
     using Modeling;
@@ -9,7 +10,7 @@
     using SafetySharp.Modeling;
     class SimulationTests
     {
-        [Test]
+        //[Test]
         public void FirstAPITest()
         {
             Client client = Client.getInstance;
@@ -31,7 +32,15 @@
 
             var simulator = new SafetySharpSimulator(model);
             model = (Model)simulator.Model;
-            simulator.FastForward(steps: 120);
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+
+            simulator.FastForward(steps: 12000);
+            watch.Stop();
+            Console.WriteLine("Milliseconds: "+watch.ElapsedMilliseconds);
+
+            //while (!model.Robot.IsSamePositionAsTarg)
+            //{}
 
             model.Robot.SamePositionAsTarg.Should().BeTrue();
         }
@@ -47,7 +56,7 @@
 
             var simulator = new SafetySharpSimulator(model);
             model = (Model)simulator.Model;
-            simulator.FastForward(steps: 120);
+            simulator.FastForward(steps: 12000);
 
             model.Robot.IsMoving.Should().BeFalse();
         }
@@ -64,7 +73,7 @@
 
             var simulator = new SafetySharpSimulator(model);
             model = (Model)simulator.Model;
-            simulator.FastForward(steps: 120);
+            simulator.FastForward(steps: 12000);
 
             model.Robot.IsMoving.Should().BeTrue();
         }
@@ -73,14 +82,14 @@
         ///   Simulates a path where only the robot's 'detecting' fault occurs with the expectation that the robot does in fact not detect an obstacle.
         /// </summary>
         [Test]
-        public void RobotDoesntDetectObstacleWhenItShouldDo() {
+        public void RobotDoesntDetectObstacleWhenItShouldDo() {         //Irrelevant for now, because of RAPI, which currently is collision-free 
             var model = new Model();
             model.Faults.SuppressActivations();
             model.Sensor.SuppressDetecting.ForceActivation();
 
             var simulator = new SafetySharpSimulator(model);
             model = (Model)simulator.Model;
-            simulator.FastForward(steps: 120);
+            simulator.FastForward(steps: 10000);
 
             model.Sensor.ObstInEnvironment.Should().BeFalse();
         }
@@ -89,7 +98,7 @@
         ///   Checks that the robot stops when it would hit an obstacle in the next step
         /// </summary>
         [Test]
-        public void RobotStopsWhenItWouldHitAnObstacleInTheNextStep()
+        public void RobotStopsWhenItWouldHitAnObstacleInTheNextStep()   //Irrelevant for now, because of RAPI
         {
             var model = new Model();
             model.Faults.SuppressActivations();
@@ -98,8 +107,6 @@
             model = (Model)simulator.Model;
             simulator.FastForward(steps: 120);
 
-            //if (model.Sensor.ObstDetected)
-            //    Assert.IsFalse(model.Robot.IsMoving);
             if (model.Sensor.ObstInEnvironment)
                 Assert.IsFalse(model.Robot.IsMoving);
         }
