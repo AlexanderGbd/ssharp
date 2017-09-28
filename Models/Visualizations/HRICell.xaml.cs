@@ -1,12 +1,10 @@
 ﻿namespace SafetySharp.CaseStudies.Visualizations
 {
     using System;
-    using System.Diagnostics;
     using HI_Cell.Modeling;
     using Infrastructure;
     using System.Windows;
     using Modeling;
-    using SafetySharp.Analysis;
     using System.Windows.Controls;
 
     public partial class HRICell
@@ -17,10 +15,7 @@
         
         public HRICell()
         {
-            //watch = new Stopwatch();
             InitializeComponent();
-
-            // Initialize visualization resources
 
             // Initialize the simulation environment
             SimulationControls.ModelStateChanged += (o, e) => UpdateModelState();
@@ -30,6 +25,7 @@
             // Initialize the visualization state
             UpdateModelState();
 
+            ObstDetected.Opacity = 0;
             Warning.Opacity = 0;
             SimulationControls.MaxSpeed = 3.0;
             SimulationControls.ChangeSpeed(8);
@@ -55,7 +51,6 @@
 
         private void OnModelStateReset()
         {
-            //Client.getInstance.Reconnect();
             _model = (Model)SimulationControls.Model;
 
             if (SimulationControls.Simulator.IsReplay) {
@@ -79,6 +74,8 @@
             }
             else
                 Exception.Text = "EXCEPTION WAS NOT THROWN!";
+            if (_model.Sensor.ObstacleDetectedDuringMovement)
+                ObstDetected.Opacity = 1;
 
             //Dynamic Obstacle
             int obstacleX = (int) _model.DynamicObstacle.GetXCoord();
@@ -90,8 +87,8 @@
             Console.WriteLine("Dynamic Obstacle y-Coordinate: "+ Canvas.GetTop(DynamicObstacle)  + "\n");
 
             //Robot
-            int xPos = (int) _model.Robot.GetXCoord() /*robot.GetXCoord()*/;
-            int yPos = (int) _model.Robot.GetYCoord() /*robot.GetYCoord()*/;
+            int xPos = (int) _model.Robot.GetXCoord();
+            int yPos = (int) _model.Robot.GetYCoord();
  
             Canvas.SetLeft(Robot, xPos * 100);
             Canvas.SetTop(Robot, MapYCoordinate(yPos) * 100);

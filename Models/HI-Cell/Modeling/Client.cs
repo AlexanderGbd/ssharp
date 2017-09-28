@@ -2,12 +2,10 @@
 using System.IO;
 using System.Text;
 using System.Net.Sockets;
-using Newtonsoft.Json;
 
 namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
     using System.Globalization;
-    using System.Runtime.InteropServices.ComTypes;
     using System.Threading;
     using Newtonsoft.Json.Linq;
     using UnityEngine;
@@ -51,8 +49,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public void MoveDirectlyTo(double x, double y, double z, double a, double b, double c)
         {
-            //if (!Connected)
-            //    Connect(server, port);
             CultureInfo ci = (CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
             ci.NumberFormat.NumberDecimalSeparator = ".";
 
@@ -65,7 +61,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             {
                 Console.WriteLine("{0}", e);
             }
-  
         }
 
         public void MoveCollisionFreeTo(float x, float y, float z, float a, float b, float c)
@@ -84,7 +79,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public void Receive()
         {
-            //Running = true;
             int offset = 10;
             Console.WriteLine("Started Receiving...");
             responseData = String.Empty;
@@ -116,12 +110,10 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                         Math.Abs(z - CurrentPosition.z) < 0.0001)
                     {
                         RobotIsMoving = false;
-                        //Running = false;
                         //Did the robot stop because he reached its target or because of an obstacle?
-                        if (Math.Abs(CurrentPosition.x - Model.XTarget) < 0.0001 && Math.Abs(CurrentPosition.y - Model.YTarget) < 0.0001 /*&& Math.Abs(CurrentPosition.z - Model.ZTarget) < 0.0001*/)
+                        if (Math.Abs(CurrentPosition.x - Model.XTarget) < 0.0001 && Math.Abs(CurrentPosition.y - Model.YTarget) < 0.0001 && Math.Abs(CurrentPosition.z - Model.ZTarget) < 0.0001)
                         {
                             SamePositionAsTarget = true;
-                            Console.WriteLine("> REACHED third if-condition in Receive()-method!!! <\n");
                         }
                         else
                         {
@@ -129,15 +121,15 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                             ObstacleDetectedDuringMovement = true;
                         }
                     }
+                    //Precisely would be:
                     //if (Math.Abs(x - StaticObstacle.Position.x) < 0.0001 && Math.Abs(y - StaticObstacle.Position.y) < 0.0001
                     //    && Math.Abs(z - StaticObstacle.Position.z) < 0.0001)
-                    if ((int) x == (int) StaticObstacle.Position.x && (int) y == (int) StaticObstacle.Position.y)
+                    if ((int) x == (int) StaticObstacle.Position.x && (int) y == (int) StaticObstacle.Position.y && (int)z == (int) StaticObstacle.Position.z)
                     {
                         ObstacleDetectedDuringMovement = true;
                     }
                     
                     CurrentPosition = new Vector3(x, y, z);
-                    //Robot.getInstance.Position = CurrentPosition;
                     CurrentOrientation = new Vector3(a, b, c);
 
                     Console.WriteLine("Current Position: " + CurrentPosition);
@@ -153,7 +145,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             finally
             {
                 reader.Close();
-                //stream.Close();
                 Console.WriteLine("Disconnected");
             }
         }

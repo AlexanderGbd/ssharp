@@ -10,8 +10,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     public partial class Robot : Component
     {
-        //private static Robot instance;
-
         public Vector3 Position = new Vector3(0, 0, 0);
         
         public bool IsMoving { get; set; }
@@ -49,21 +47,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         public Robot()
         {
             SetConstraints();
-
-            //Problem at the beginning: the binding between the ports is done, AFTER this constructor was avoked...
         }
-
-        //public static Robot getInstance
-        //{
-        //    get
-        //    {
-        //        if (instance == null)
-        //            instance = new Robot();
-        //        return instance;
-        //    }
-        //}
-
-
+        
         /// <summary>
         ///   Moves the robot when the stop fault occurs. Increases the direction by a maximum of one.
         /// </summary>
@@ -111,8 +96,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             IsMoving = false;
             Console.WriteLine(">> ObstacleDetectedDuringMovement: " + ObstacleDetectedDuringMovement + "<<\n");
-            //Client.getInstance.receiver.Abort();
-            //Client.Running = false;
         }
 
         public override void Update()
@@ -133,7 +116,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
             var client = Client.getInstance;
             IsMoving = client.RobotIsMoving;
-            //SamePositionAsTarg = sensor.SamePositionAsTarget;
             CheckConstraints();
             Console.WriteLine(">> IsMoving: " + IsMoving + " <<\n");
             Position = client.CurrentPosition;

@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 {
-    using System.Threading;
     using ISSE.SafetyChecking.Modeling;
     using SafetySharp.Modeling;
 
@@ -11,19 +10,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
     {
         private static Sensor instance;
 
-        private Sensor()
-        {
-            //Thread printing = new Thread(Printing);
-            //printing.Start();
-        }
-
-        //public void Printing()
-        //{
-        //    while (true)
-        //    {
-        //        Console.WriteLine(APIPosition);
-        //    }
-        //}
+        private Sensor() { }
 
         public static Sensor getInstance
         {
@@ -42,7 +29,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
         public Vector3 APIPosition => Client.getInstance.CurrentPosition;
 
-        public Vector3 RobPosition => APIPosition /*RobotPosition*/ /*Robot.getInstance.GetPosition()*/;
+        public Vector3 RobPosition => APIPosition /*RobotPosition*/;
         private Vector3 StatObstPosition => StatObstaclePosition;
         private Vector3 DynObstPosition => DynObstaclePosition;
         private Vector3 TargetPosition => new Vector3(Model.XTarget, Model.YTarget, 0);
@@ -91,6 +78,24 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             return (int)StatObstPosition.x == (int)(RobPosition.x + x) && (int)StatObstPosition.y == (int)(RobPosition.y + y);
         }
 
+        ///<summary>
+        /// Scan - methods for 3d space
+        /// </summary
+        public bool ScanForObstaclesInNextStep(int x, int y, int z)
+        {
+            return ScanForDynamicObstacleInNextStep(x, y, z) || ScanForStaticObstacleInNextStep(x, y, z);
+        }
+
+        public bool ScanForDynamicObstacleInNextStep(int x, int y, int z)
+        {
+            return (int)DynObstPosition.x == (int)(RobPosition.x + x) && (int)DynObstPosition.y == (int)(RobPosition.y + y) && (int)DynObstPosition.z == (int)(RobPosition.z + z);
+        }
+        public bool ScanForStaticObstacleInNextStep(int x, int y, int z)
+        {
+            return (int)StatObstPosition.x == (int)(RobPosition.x + x) && (int)StatObstPosition.y == (int)(RobPosition.y + y) && (int)StatObstPosition.z == (int)(RobPosition.z + z);
+        }
+
+
         /// <summary>
         /// Scans only the x-direction currently
         /// </summary>
@@ -98,11 +103,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             return (int) DynObstPosition.x == (int) RobPosition.x + 1 || (int) StatObstPosition.x == (int) RobPosition.x + 1;
         }
-
-  //      /// <summary>
-		/////   Gets the value indicating, that the robot has the same position as its target
-		///// </summary>
-  //      public bool SamePositionAsTarg => (int) TargetPosition.x == (int) RobPosition.x && (int) TargetPosition.y == (int) RobPosition.y;
 
         /// <summary>
         ///   Gets the distance between the robot and the dynamic obstacle
@@ -170,6 +170,13 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                 {
                     if (ScanForStaticObstacleInNextStep(x, y))
                         detected = true;
+
+                    //3-dimensional:
+                    //for (int z = 0; z < 2; z++)
+                    //{
+                    //    if (ScanForStaticObstacleInNextStep(x, y, z))
+                    //        detected = true;
+                    //}
                 }
             }
             return detected;

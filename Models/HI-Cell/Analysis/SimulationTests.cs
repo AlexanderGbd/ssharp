@@ -10,12 +10,16 @@
     using SafetySharp.Modeling;
     class SimulationTests
     {
+        /// <summary>
+        /// The robotics api has to be running while executing the tests
+        /// </summary
+
         //[Test]
         public void FirstAPITest()
         {
             Client client = Client.getInstance;
             client.MoveDirectlyTo(0.4, 0.4, 0.4, Math.PI, 0, -Math.PI);
-            while (Math.Abs(Sensor.getInstance.APIPosition.x - 4) > 0.00001 && Math.Abs(Sensor.getInstance.APIPosition.y - 4) > 0.00001 /*!Sensor.getInstance.SamePositionAsTarg*/)
+            while (Math.Abs(Sensor.getInstance.APIPosition.x - 4) > 0.00001 && Math.Abs(Sensor.getInstance.APIPosition.y - 4) > 0.00001)
             {
                 //Console.WriteLine("Client Current Position: " + client.CurrentPosition/* + "    "+ client.CurrentPosition.x*/);
                 // Console.WriteLine("Sensor API-Position: "+sensor.APIPosition);
@@ -38,9 +42,6 @@
             simulator.FastForward(steps: 12000);
             watch.Stop();
             Console.WriteLine("Milliseconds: "+watch.ElapsedMilliseconds);
-
-            //while (!model.Robot.IsSamePositionAsTarg)
-            //{}
 
             model.Robot.SamePositionAsTarg.Should().BeTrue();
         }

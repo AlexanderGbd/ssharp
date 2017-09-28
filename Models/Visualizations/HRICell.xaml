@@ -12,51 +12,19 @@
     <UserControl.Resources>
         <Storyboard x:Key="MoveRobot">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="Robot">
-
-                <!--
-                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
-                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="164"/>
-                <EasingDoubleKeyFrame KeyTime="0:0:2" Value="322"/>
-                <EasingDoubleKeyFrame KeyTime="0:0:3" Value="482"/>
-                <EasingDoubleKeyFrame KeyTime="0:0:4" Value="624"/>
-                -->
             </DoubleAnimationUsingKeyFrames>
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="Robot">
                 <EasingDoubleKeyFrame KeyTime="0"/>
-                <!--
-                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
-                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0"/>
-                <EasingDoubleKeyFrame KeyTime="0:0:2" Value="0"/>
-                <EasingDoubleKeyFrame KeyTime="0:0:3" Value="0"/>
-                <EasingDoubleKeyFrame KeyTime="0:0:4" Value="0"/>
-                -->
             </DoubleAnimationUsingKeyFrames>
-            <!-- 
-             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="Target">
-                <EasingDoubleKeyFrame KeyTime="0:0:3" Value="1"/>
-                <EasingDoubleKeyFrame KeyTime="0:0:4" Value="0.5"/>
-            </DoubleAnimationUsingKeyFrames>
-            -->
         </Storyboard>
         <Storyboard x:Key="MoveObstacle">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.Y)" Storyboard.TargetName="DynamicObstacle">
                 <EasingDoubleKeyFrame KeyTime="0"/>
                 <EasingDoubleKeyFrame KeyTime="0:0:1"/>
-                <!--
-                <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
-                <EasingDoubleKeyFrame KeyTime="0:0:1" Value="79.5"/>
-                <EasingDoubleKeyFrame KeyTime="0:0:2" Value="159"/>
-                -->
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
 
     </UserControl.Resources>
-    <!--
-    <UserControl.Triggers>
-        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-            <BeginStoryboard Storyboard="{StaticResource Storyboard1}"/>
-        </EventTrigger>
-    </UserControl.Triggers>  -->
     <UserControl.Triggers>
         <EventTrigger RoutedEvent="FrameworkElement.Loaded">
             <BeginStoryboard Storyboard="{StaticResource MoveRobot}"/>
@@ -64,14 +32,11 @@
         </EventTrigger>
     </UserControl.Triggers>
 
-    <!--DockPanel LastChildFill="true"-->
-    <!--MouseLeftButtonDown="Canvas_MouseLeftButtonDown"-->
     <DockPanel>
 
         <infrastructure:SimulationControls x:Name="SimulationControls" DockPanel.Dock="Top" />
         <Canvas x:Name="canvas" Background="#FFDFDCEC"  Width="800" Height="500">
-            <!--Margin="-539,0,-44,-119.5"-->
-            <Ellipse x:Name="Robot" Height="100" Width="100" Fill="Black" Canvas.Top="400" ToolTip="Robot" RenderTransformOrigin="0.5,0.5" Canvas.Left="0">
+            <Ellipse x:Name="Robot" Height="100" Width="100" Fill="Black" Canvas.Top="400" ToolTip="Robot" RenderTransformOrigin="0.5,0.5" Canvas.Left="600">
                 <Ellipse.ContextMenu>
                     <ContextMenu StaysOpen="true">
                         <MenuItem x:Name="SuppressMoving" Header="Suppress 'Moving'" IsCheckable="True" Click="OnSuppressMoving" />
@@ -118,6 +83,7 @@
                                Foreground="Blue" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </DockPanel>
             <TextBlock x:Name="Exception" Height="75" Canvas.Left="284" TextWrapping="Wrap" Canvas.Top="425" Width="216" FontSize="24" FontFamily="Showcard Gothic" RenderTransformOrigin="0.5,0.776" Foreground="#FFF00B0B"><Run Background="#FF0E0C0C" Text="TextBlock"/></TextBlock>
+            <TextBlock x:Name="ObstDetected" Height="92" Canvas.Left="10" TextWrapping="Wrap" Canvas.Top="148.5" Width="194" FontSize="20" FontFamily="Showcard Gothic" Foreground="#FF4C8315" Text="An Obstacle was detected during the movement" FontWeight="Bold"/>
         </Canvas>
     </DockPanel>
 </UserControl>
