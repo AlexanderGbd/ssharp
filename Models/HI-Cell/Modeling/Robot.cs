@@ -128,11 +128,15 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
             }
 
-            //public override void Update()
-            //{
-            //    IsMoving = false;
-            //    CheckConstraints();
-            //}
+            public override void Update()
+            {
+                var client = Client.getInstance;
+                client.RobotIsMoving = false;
+                IsMoving = false;
+                Console.WriteLine(">> IsMoving: " + IsMoving + " <<\n");
+                Position = client.CurrentPosition;
+                CheckConstraints();
+            }
         }
 
         [FaultEffect(Fault = nameof(SuppressStop)), Priority(1)]
@@ -148,7 +152,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                 var client = Client.getInstance;
                 IsMoving = true;
                 CheckConstraints();
-                Console.WriteLine(">> IsMoving: " + IsMoving + " <<\n");
                 Position = client.CurrentPosition;
             }
 
@@ -174,6 +177,10 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
 
     }
 
+
+    /// <summary>
+    /// Partial class takes over the monitoring task
+    /// </summary>
     public partial class Robot
     {
         private void SetConstraints()

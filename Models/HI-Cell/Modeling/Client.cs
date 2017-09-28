@@ -15,7 +15,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
     {
         public static bool Running;
 
-        private Model _model;
         public bool Connected = false;
         private String responseData;
         private int port = 13000;
@@ -46,7 +45,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             }
         }
 
-
+        /// <summary>
+        /// Sends the desired target coordinates to the rapi, to which the it shall move
+        /// </summary>
         public void MoveDirectlyTo(double x, double y, double z, double a, double b, double c)
         {
             CultureInfo ci = (CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
@@ -77,6 +78,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             writer.Flush();
         }
 
+        /// <summary>
+        /// Gets the current coordinates of the robot's position from the rapi
+        /// </summary>
         public void Receive()
         {
             int offset = 10;
@@ -101,8 +105,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                     float b = float.Parse(obj.GetValue("b").ToString(), CultureInfo.InvariantCulture.NumberFormat);
                     float c = float.Parse(obj.GetValue("c").ToString(), CultureInfo.InvariantCulture.NumberFormat);
 
-                    RobotIsMoving = true;
-
                     Console.WriteLine("Received data: \n{0} {1} {2} {3} {4} {5}", x, y, z, a, b, c);
 
                     //Position hasn't changed since last value
@@ -118,7 +120,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                         else
                         {
                             SamePositionAsTarget = false;
-                            ObstacleDetectedDuringMovement = true;
+                            //This condition, because "CurrentPosition" is used for detecting 
+                            if (RobotIsMoving)
+                                ObstacleDetectedDuringMovement = true;
                         }
                     }
                     //Precisely would be:
@@ -126,11 +130,16 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                     //    && Math.Abs(z - StaticObstacle.Position.z) < 0.0001)
                     if ((int) x == (int) StaticObstacle.Position.x && (int) y == (int) StaticObstacle.Position.y && (int)z == (int) StaticObstacle.Position.z)
                     {
-                        ObstacleDetectedDuringMovement = true;
+                        //This condition, because "CurrentPosition" is used for detecting 
+                        if (RobotIsMoving)
+                            ObstacleDetectedDuringMovement = true;
                     }
-                    
-                    CurrentPosition = new Vector3(x, y, z);
-                    CurrentOrientation = new Vector3(a, b, c);
+
+                    if (RobotIsMoving)
+                    {
+                        CurrentPosition = new Vector3(x, y, z);
+                        CurrentOrientation = new Vector3(a, b, c);
+                    }
 
                     Console.WriteLine("Current Position: " + CurrentPosition);
                     Console.WriteLine("Reached end of while loop");
@@ -149,6 +158,11 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             }
         }
 
+        /// <summary>
+        /// Connects he client to the rapi
+        /// </summary>
+        /// <param name="server"> Name of the server </param>
+        /// <param name="port"> Port-address </param>
         public void Connect(String server, int port)
         {
             client = new TcpClient(server, port);
@@ -160,6 +174,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             receiver = new Thread(Receive);
             receiver.Priority = ThreadPriority.AboveNormal;
             receiver.IsBackground = true;
+
+            RobotIsMoving = true;
             receiver.Start();
         }
 

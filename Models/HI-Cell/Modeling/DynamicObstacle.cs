@@ -39,8 +39,9 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
             {
                 int xDelta = rnd.Next(-1, 2);
                 int yDelta = rnd.Next(-1, 2);
+                //int zDelta = rnd.Next(-1, 2);
 
-                if (TryMoveTo(xDelta, yDelta))
+                if (TryMoveTo(xDelta, yDelta /*, zDelta*/))
                     break;
             }
         }
@@ -48,18 +49,20 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         /// <summary>
         /// Try moving to the next position without hitting the robot, which stands still, after having detected an obstacle
         /// </summary>
-        public bool TryMoveTo(int xDelta, int yDelta)
+        public bool TryMoveTo(int xDelta, int yDelta /*, int zDelta*/)
         {
             int xTarget = (int)Position.x + xDelta;
             int yTarget = (int)Position.y + yDelta;
+            //int zTarget = (int)Position.z + zDelta;
 
-            if (xTarget > 4 || xTarget < 0 || yTarget > 4 || yTarget < 0)
+            if (xTarget > 4 || xTarget < 0 || yTarget > 4 || yTarget < 0    /*|| zTarget > 4 || zTarget < 0*/)
                 return false;
-            if (xTarget == (int)RobotPosition.x && yTarget == (int)RobotPosition.y)
+            if (xTarget == (int)RobotPosition.x && yTarget == (int)RobotPosition.y      /*&& zTarget == (int)RobotPosition.z*/)
                 return false;
             
             Position.x = xTarget;
             Position.y = yTarget;
+            //Position.z = zTarget;
             return true;
         }
 

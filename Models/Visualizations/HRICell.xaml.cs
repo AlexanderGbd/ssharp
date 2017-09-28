@@ -74,6 +74,7 @@
             }
             else
                 Exception.Text = "EXCEPTION WAS NOT THROWN!";
+
             if (_model.Sensor.ObstacleDetectedDuringMovement)
                 ObstDetected.Opacity = 1;
 
@@ -95,7 +96,6 @@
 
             Console.WriteLine("Robot x-coordinate: "+ Canvas.GetLeft(Robot));
             Console.WriteLine("Robot y-coordinate: "+ Canvas.GetTop(Robot));
-            Console.WriteLine("Robot z-coordinate: "+ (int)_model.Robot.GetZCoord()*100 + "\n");
 
             SuppressMoving.IsChecked = _model.Robot.SuppressMoving.IsActivated;
             SuppressStop.IsChecked = _model.Robot.SuppressStop.IsActivated;

@@ -68,7 +68,6 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             return ScanForDynamicObstacleInNextStep(x, y) || ScanForStaticObstacleInNextStep(x, y);
         }
-
         public bool ScanForDynamicObstacleInNextStep(int x, int y)
         {
             return (int)DynObstPosition.x == (int)(RobPosition.x + x) && (int)DynObstPosition.y == (int)(RobPosition.y + y);
@@ -77,6 +76,8 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             return (int)StatObstPosition.x == (int)(RobPosition.x + x) && (int)StatObstPosition.y == (int)(RobPosition.y + y);
         }
+
+
 
         ///<summary>
         /// Scan - methods for 3d space
@@ -94,6 +95,7 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
         {
             return (int)StatObstPosition.x == (int)(RobPosition.x + x) && (int)StatObstPosition.y == (int)(RobPosition.y + y) && (int)StatObstPosition.z == (int)(RobPosition.z + z);
         }
+
 
 
         /// <summary>
@@ -156,6 +158,13 @@ namespace SafetySharp.CaseStudies.HI_Cell.Modeling
                 {
                     if (ScanForDynamicObstacleInNextStep(x, y))
                         detected = true;
+
+                    //3-dimensional:
+                    //for (int z = 0; z < 2; z++)
+                    //{
+                    //    if (ScanForDynamicObstacleInNextStep(x, y, z))
+                    //        detected = true;
+                    //}
                 }
             }
             return detected;

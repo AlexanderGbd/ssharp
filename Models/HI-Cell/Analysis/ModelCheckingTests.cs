@@ -48,7 +48,6 @@
                 Console.WriteLine("Shouldn't be here!!!");
                 result = new SafetySharpInvariantAnalysisResult();
             }
-            //var result = ModelChecker.CheckInvariant(model, G(noFaults).Implies(!F(model.Robot.IsCollided)));
             result.FormulaHolds.Should().BeTrue();
         }
 
@@ -103,7 +102,7 @@
             model.Faults.SuppressActivations();
             model.Sensor.SuppressDetecting.Activation = Activation.Forced;
 
-            var result = SafetySharpModelChecker.CheckInvariant(model, model.Robot.IsCollided && !model.Robot.ObstacleInEnvironment /*&& !model.Robot.ObstDetected*/);
+            var result = SafetySharpModelChecker.CheckInvariant(model, model.Robot.IsCollided && !model.Robot.ObstacleInEnvironment);
             result.FormulaHolds.Should().BeFalse();
         }
     }
