@@ -24,11 +24,13 @@ namespace SafetySharp.CaseStudies.SmallModels.Model2
 {
 	using System;
 	using Analysis;
+	using ISSE.SafetyChecking;
 	using ISSE.SafetyChecking.MinimalCriticalSetAnalysis;
 	using ISSE.SafetyChecking.Modeling;
 	using ModelChecking;
 	using Modeling;
 	using NUnit.Framework;
+	using ISSE.SafetyChecking.Formula;
 
 	public class ExampleComponent : Component
 	{
@@ -106,10 +108,53 @@ namespace SafetySharp.CaseStudies.SmallModels.Model2
 		public void CalculateProbability()
 		{
 			var model = new ExampleModelBase();
-			
+
+			var tc = SafetySharpModelChecker.TraversalConfiguration;
+			tc.WriteGraphvizModels = true;
+			tc.AllowFaultsOnInitialTransitions = false;
+			tc.UseAtomarPropositionsAsStateLabels = true;
+			tc.UseCompactStateStorage = true;
+			SafetySharpModelChecker.TraversalConfiguration = tc;
+
 			var result = SafetySharpModelChecker.CalculateProbabilityToReachStateBounded(model, model.ModelComponent.Value==3, 50);
 			Console.Write($"Probability of hazard: {result}");
+			
+			var is3Formula = new ExecutableStateFormula(() => model.ModelComponent.Value == 3);
+			var loopRequestBug = new ExecutableStateFormula(() => model.ModelComponent.LoopRequestBug);
+			var formula2OnceLoopRequestBug = new BinaryFormula(is3Formula,BinaryOperator.And, new UnaryFormula(loopRequestBug,UnaryOperator.Once));
+			var result2 = SafetySharpModelChecker.CalculateProbabilityToReachStateBounded(model, formula2OnceLoopRequestBug, 50);
+			Console.WriteLine($"Probability of {formula2OnceLoopRequestBug}: {result2}");
 		}
+
+		[Test]
+		public void Simulate()
+		{
+			var model = new ExampleModelBase();
+
+			var tc = SafetySharpModelChecker.TraversalConfiguration;
+			tc.AllowFaultsOnInitialTransitions = false;
+			tc.UseOptionProbabilitiesInSimulation = false;
+			SafetySharpProbabilisticSimulator.Configuration = tc;
+
+			var is3Formula = new ExecutableStateFormula(() => model.ModelComponent.Value == 3);
+			var f1Formula = new FaultFormula(model.ModelComponent.F1);
+			var loopRequestBugFormula = new ExecutableStateFormula(() => model.ModelComponent.LoopRequestBug);
+
+			SafetySharpProbabilisticSimulator simulator = new SafetySharpProbabilisticSimulator(model, is3Formula,f1Formula, loopRequestBugFormula);
+
+			for (var i = 0; i < 100; i++)
+			{
+				simulator.SimulateSteps(5);
+				var noIs3 = simulator.GetCountOfSatisfiedOnTrace(is3Formula);
+				var noF1 = simulator.GetCountOfSatisfiedOnTrace(f1Formula);
+				var probabilityOfTrace = simulator.TraceProbability;
+				Console.WriteLine($"No of Is3: {noIs3}");
+				Console.WriteLine($"No of f1 {noF1}: {noF1}");
+				Console.WriteLine($"Probability of trace: {probabilityOfTrace}");
+				Console.WriteLine();
+			}
+		}
+
 
 
 		[Test]

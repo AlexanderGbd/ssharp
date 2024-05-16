@@ -19,10 +19,13 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+//
+// SPDX-License-Identifier: MIT
 
 namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 {
 	using System;
+	using System.Collections.Generic;
 	using ExecutableModel;
 	using Modeling;
 	using Utilities;
@@ -40,43 +43,27 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 		private readonly LtmcChoiceResolver _ltmcChoiceResolver;
 
 		private readonly LtmcTransitionSetBuilder<TExecutableModel> _transitions;
-
-		private readonly bool _activateIndependentFaultsAtStepBeginning;
+		
+		private readonly bool _allowFaultsOnInitialTransitions;
 
 		/// <summary>
 		///   Initializes a new instance.
 		/// </summary>
 		/// <param name="runtimeModelCreator">A factory function that creates the model instance that should be executed.</param>
 		/// <param name="configuration">The analysis configuration that should be used.</param>
-		/// <param name="stateHeaderBytes">
-		///   The number of bytes that should be reserved at the beginning of each state vector for the model checker tool.
-		/// </param>
-		internal LtmcExecutedModel(CoupledExecutableModelCreator<TExecutableModel> runtimeModelCreator, int stateHeaderBytes, AnalysisConfiguration configuration)
-			: base(runtimeModelCreator, stateHeaderBytes)
+		internal LtmcExecutedModel(CoupledExecutableModelCreator<TExecutableModel> runtimeModelCreator, AnalysisConfiguration configuration)
+			: base(runtimeModelCreator, 0, configuration)
 		{
 			var formulas = RuntimeModel.Formulas.Select(formula => FormulaCompilationVisitor<TExecutableModel>.Compile(RuntimeModel, formula)).ToArray();
-			_transitions = new LtmcTransitionSetBuilder<TExecutableModel>(RuntimeModel, configuration.SuccessorCapacity, formulas);
+			_transitions = new LtmcTransitionSetBuilder<TExecutableModel>(TemporaryStateStorage, configuration.SuccessorCapacity, formulas);
 
-			bool useForwardOptimization;
-			switch (configuration.MomentOfIndependentFaultActivation)
-			{
-				case MomentOfIndependentFaultActivation.AtStepBeginning:
-				case MomentOfIndependentFaultActivation.OnFirstMethodWithoutUndo:
-					useForwardOptimization = false;
-					break;
-				case MomentOfIndependentFaultActivation.OnFirstMethodWithUndo:
-					useForwardOptimization = true;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+			var useForwardOptimization = configuration.EnableStaticPruningOptimization;
 
 			_ltmcChoiceResolver = new LtmcChoiceResolver(useForwardOptimization);
 			ChoiceResolver = _ltmcChoiceResolver;
 			RuntimeModel.SetChoiceResolver(ChoiceResolver);
 
-			_activateIndependentFaultsAtStepBeginning =
-				configuration.MomentOfIndependentFaultActivation == MomentOfIndependentFaultActivation.AtStepBeginning;
+			_allowFaultsOnInitialTransitions = configuration.AllowFaultsOnInitialTransitions;
 		}
 
 		/// <summary>
@@ -108,25 +95,32 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 			foreach (var fault in RuntimeModel.NondeterministicFaults)
 				fault.Reset();
 
-			if (_activateIndependentFaultsAtStepBeginning)
+			if (!_allowFaultsOnInitialTransitions)
 			{
-				// Note: Faults get activated and their effects occur, but they are not notified yet of their activation.
 				foreach (var fault in RuntimeModel.NondeterministicFaults)
 				{
-					fault.TryActivate();
+					fault.Activation=Activation.Suppressed;
 				}
+			}
+			
+			// Note: Faults get activated and their effects occur, but they are not notified yet of their activation.
+			foreach (var fault in RuntimeModel.OnStartOfStepFaults)
+			{
+				fault.TryActivate();
+			}
+			foreach (var fault in RuntimeModel.OnCustomFaults)
+			{
+				if (fault.HasCustomDemand())
+					fault.TryActivate();
+				else
+					fault.Activation = Activation.Suppressed;
 			}
 
 			RuntimeModel.ExecuteInitialStep();
-
-			if (!_activateIndependentFaultsAtStepBeginning)
+			
+			for (var i = 0; i < RuntimeModel.NondeterministicFaults.Length; i++)
 			{
-				// force activation of non-transient faults
-				foreach (var fault in RuntimeModel.NondeterministicFaults)
-				{
-					if (!(fault is Modeling.TransientFault))
-						fault.TryActivate();
-				}
+				RuntimeModel.NondeterministicFaults[i].RestoreActivation(SavedActivations[i]);
 			}
 		}
 
@@ -139,26 +133,25 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 
 			foreach (var fault in RuntimeModel.NondeterministicFaults)
 				fault.Reset();
-
-			if (_activateIndependentFaultsAtStepBeginning)
+			
+			// Note: Faults get activated and their effects occur, but they are not notified yet of their activation.
+			foreach (var fault in RuntimeModel.OnStartOfStepFaults)
 			{
-				// Note: Faults get activated and their effects occur, but they are not notified yet of their activation.
-				foreach (var fault in RuntimeModel.NondeterministicFaults)
-				{
+				fault.TryActivate();
+			}
+			foreach (var fault in RuntimeModel.OnCustomFaults)
+			{
+				if (fault.HasCustomDemand())
 					fault.TryActivate();
-				}
+				else
+					fault.Activation = Activation.Suppressed;
 			}
 
 			RuntimeModel.ExecuteStep();
 
-			if (!_activateIndependentFaultsAtStepBeginning)
+			for (var i = 0; i < RuntimeModel.NondeterministicFaults.Length; i++)
 			{
-				// force activation of non-transient faults
-				foreach (var fault in RuntimeModel.NondeterministicFaults)
-				{
-					if (!(fault is Modeling.TransientFault))
-						fault.TryActivate();
-				}
+				RuntimeModel.NondeterministicFaults[i].RestoreActivation(SavedActivations[i]);
 			}
 		}
 		
@@ -185,6 +178,7 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 		protected override void BeginExecution()
 		{
 			_transitions.Clear();
+			TemporaryStateStorage.Clear();
 		}
 
 		/// <summary>

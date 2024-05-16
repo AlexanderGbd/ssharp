@@ -32,13 +32,13 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 	using System.Globalization;
 	using System.Runtime.CompilerServices;
 	using Modeling;
-	using AnalysisModelTraverser;
 	using AnalysisModel;
 	using ExecutedModel;
 	using Formula;
 	using GenericDataStructures;
+	using Utilities;
 
-	public class DiscreteTimeMarkovChain : IModelWithStateLabelingInLabelingVector
+	public class DiscreteTimeMarkovChain
 	{
 		public string[] StateFormulaLabels { get; set; }
 
@@ -64,6 +64,8 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 		public long States => ProbabilityMatrix.Rows-1; //Note: returns 0 if initial distribution added and -1 if nothing was added. So check for 0 is not enough
 
 		public long Transitions { get; private set; } = 0; //without entries of initial distribution
+
+		public long InitialTransitions { get; private set; } = 0;
 
 		public int RowOfInitialStates = 0;
 
@@ -93,6 +95,7 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 		{
 			// initial state probabilities are also saved in the ProbabilityMatrix
 			ProbabilityMatrix.AddColumnValueToCurrentRow(new SparseDoubleMatrix.ColumnValue(StateToColumn(markovChainState), probability));
+			InitialTransitions++;
 		}
 
 		internal void FinishInitialDistribution()
@@ -208,9 +211,16 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 			}
 		}
 		
-		public Func<int, bool> CreateFormulaEvaluator(Formula formula)
+		public Func<long, bool> CreateFormulaEvaluator(Formula formula)
 		{
-			return LabelingVectorFormulaEvaluatorCompilationVisitor.Compile(this,formula);
+			var stateFormulaEvaluator = StateFormulaSetEvaluatorCompilationVisitor.Compile(StateFormulaLabels, formula);
+			Func<long, bool> evaluator = transitionTarget =>
+			{
+				Assert.That(transitionTarget<int.MaxValue,"need to exchange int by long");
+				var stateFormulaSet = StateLabeling[(int)transitionTarget];
+				return stateFormulaEvaluator(stateFormulaSet);
+			};
+			return evaluator;
 		}
 
 		internal UnderlyingDigraph CreateUnderlyingDigraph()

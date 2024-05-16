@@ -33,8 +33,9 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 	using ExecutedModel;
 	using Formula;
 	using GenericDataStructures;
+	using Utilities;
 
-	public class MarkovDecisionProcess : IModelWithStateLabelingInLabelingVector
+	public class MarkovDecisionProcess
 	{
 
 		private bool _optimized = true;
@@ -55,10 +56,14 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 
 		private const int _sizeOfState = sizeof(int);
 		private const int _sizeOfTransition = sizeof(int) + sizeof(double);  //sizeof(SparseDoubleMatrix.ColumnValue)
-
+		
 		internal SparseDoubleMatrix RowsWithDistributions { get; }
 
 		public LabelVector StateLabeling { get; }
+
+		// NmdpToMdpByNewStates increases the Depth of the models. So a former bound of 5 must be
+		// a bound of 5*FactorForBoundedAnalysis to give the correct result
+		public int FactorForBoundedAnalysis { get; set; } = 1;
 
 		public MarkovDecisionProcess(ModelCapacity modelCapacity)
 		{
@@ -117,35 +122,6 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 		{
 			_rowCountOfCurrentState = 0;
 			StateToRowsL[StateToRowsEntryOfInitialDistributions] = RowsWithDistributions.Rows; //set beginning row of state to the next free row
-		}
-		
-		internal void StartWithNewInitialDistribution()
-		{
-			RowsWithDistributions.SetRow(RowsWithDistributions.Rows); //just append one row in the matrix
-			_rowCountOfCurrentState++;
-		}
-
-		private void AddTransitionToInitialDistributionUnoptimized(int markovChainState, double probability)
-		{
-			RowsWithDistributions.AddColumnValueToCurrentRow(new SparseDoubleMatrix.ColumnValue(StateToColumn(markovChainState), probability));
-		}
-		
-		private void AddTransitionToInitialDistributionOptimized(int markovChainState, double probability)
-		{
-			RowsWithDistributions.MergeOrAddColumnValueToCurrentRow(new SparseDoubleMatrix.ColumnValue(StateToColumn(markovChainState), probability));
-		}
-
-		internal void AddTransitionToInitialDistribution(int markovChainState, double probability)
-		{
-			if (_optimized)
-				AddTransitionToInitialDistributionOptimized(markovChainState, probability);
-			else
-				AddTransitionToInitialDistributionUnoptimized(markovChainState, probability);
-		}
-
-		internal void FinishInitialDistribution()
-		{
-			RowsWithDistributions.FinishRow();
 		}
 
 		internal void FinishInitialDistributions()
@@ -324,13 +300,19 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 		{
 			return StateToRowsL[state + 1] + StateToRowsRowCount[state + 1];
 		}
-		
 
-		public Func<int, bool> CreateFormulaEvaluator(Formula formula)
+		public Func<long, bool> CreateFormulaEvaluator(Formula formula)
 		{
-			return LabelingVectorFormulaEvaluatorCompilationVisitor.Compile(this, formula);
+			var stateFormulaEvaluator = StateFormulaSetEvaluatorCompilationVisitor.Compile(StateFormulaLabels, formula);
+			Func<long, bool> evaluator = transitionTarget =>
+			{
+				Requires.That(transitionTarget<=int.MaxValue,"MDP currently cannot handle more than int.MaxValue states");
+				var stateFormulaSet = StateLabeling[(int)transitionTarget];
+				return stateFormulaEvaluator(stateFormulaSet);
+			};
+			return evaluator;
 		}
-		
+
 		internal UnderlyingDigraph CreateUnderlyingDigraph()
 		{
 			return new UnderlyingDigraph(this);
@@ -421,13 +403,19 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 			{
 				if (state >= _mdp.States)
 					return false;
-				CurrentState = state;
+				CurrentState = (int)state;
 				_rowLOfCurrentState = _mdp.StateToRowL(state);
 				_rowHOfCurrentState = _mdp.StateToRowH(state);
 				RowOfCurrentDistribution = _rowLOfCurrentState-1; //select 1 entry before the actual first entry. So MoveNextDistribution can move to the right entry.
 				return true;
 			}
-			
+
+			public bool SelectSourceState(long state)
+			{
+				Requires.That(state <= int.MaxValue, "MDP currently cannot handle more than int.MaxValue states");
+				return SelectSourceState((int)state);
+			}
+
 			/// <summary>
 			/// Advances the enumerator to the next element of the collection.
 			/// </summary>
@@ -464,6 +452,12 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 				// TODO: Refactor Enumerator. Create separate enumerators for States, Distributions, and Transitions. One
 				RowOfCurrentDistribution = distribution;
 				_matrixEnumerator.MoveRow(RowOfCurrentDistribution);
+			}
+
+			public void MoveToDistribution(long distribution)
+			{
+				Requires.That(distribution <= int.MaxValue, "MDP currently cannot handle more than int.MaxValue distributions");
+				MoveToDistribution((int)distribution);
 			}
 
 

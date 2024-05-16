@@ -60,7 +60,7 @@ function ExecuteTest($test,$resultDir)
 function ExecuteTestValuation($testValuation,$tests)
 {
     $resultDir = $testValuation.ResultDir
-    New-Item -ItemType directory -Force -Path $resultDir
+    New-Item -ItemType directory -Force -Path $resultDir    
     Invoke-Expression $testValuation.Script
 
     Foreach ($file in $testValuation.FilesOfTestValuation) {

@@ -39,8 +39,7 @@ namespace Tests.SimpleExecutableModel.Analysis.Probabilistic
 		{
 		}
 
-		[Fact]
-		public void Check()
+		private void Check(AnalysisConfiguration configuration)
 		{
 			var m = new Model();
 			Probability probabilityOfFinal1;
@@ -48,19 +47,39 @@ namespace Tests.SimpleExecutableModel.Analysis.Probabilistic
 			var finally1 = new BoundedUnaryFormula(new SimpleStateInRangeFormula(1), UnaryOperator.Finally, 1);
 
 			var markovChainGenerator = new SimpleMarkovChainFromExecutableModelGenerator(m);
-			markovChainGenerator.Configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
-			markovChainGenerator.Configuration.WriteGraphvizModels = true;
-			markovChainGenerator.Configuration.DefaultTraceOutput = Output.TextWriterAdapter();
+			markovChainGenerator.Configuration = configuration;
 			markovChainGenerator.AddFormulaToCheck(finally1);
-			var dtmc = markovChainGenerator.GenerateMarkovChain();
-			var typeOfModelChecker = typeof(BuiltinDtmcModelChecker);
-			var modelChecker = (DtmcModelChecker)Activator.CreateInstance(typeOfModelChecker, dtmc, Output.TextWriterAdapter());
+			var ltmc = markovChainGenerator.GenerateLabeledMarkovChain();
+			var modelChecker = new ConfigurationDependentLtmcModelChecker(configuration, ltmc, Output.TextWriterAdapter());
 			using (modelChecker)
 			{
 				probabilityOfFinal1 = modelChecker.CalculateProbability(finally1);
 			}
 
 			probabilityOfFinal1.Is(0.325, 0.000001).ShouldBe(true);
+		}
+
+		[Fact]
+		public void CheckBuiltinDtmc()
+		{
+			var configuration = AnalysisConfiguration.Default;
+			configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			configuration.DefaultTraceOutput = Output.TextWriterAdapter();
+			configuration.WriteGraphvizModels = true;
+			configuration.LtmcModelChecker = ISSE.SafetyChecking.LtmcModelChecker.BuiltInDtmc;
+			Check(configuration);
+		}
+
+		[Fact]
+		public void CheckBuiltinLtmc()
+		{
+			var configuration = AnalysisConfiguration.Default;
+			configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			configuration.DefaultTraceOutput = Output.TextWriterAdapter();
+			configuration.WriteGraphvizModels = true;
+			configuration.UseCompactStateStorage = true;
+			configuration.LtmcModelChecker = ISSE.SafetyChecking.LtmcModelChecker.BuiltInLtmc;
+			Check(configuration);
 		}
 
 		[Fact]
@@ -75,7 +94,6 @@ namespace Tests.SimpleExecutableModel.Analysis.Probabilistic
 
 			var markovChainGenerator = new SimpleMarkovChainFromExecutableModelGenerator(m);
 			markovChainGenerator.Configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
-			markovChainGenerator.Configuration.MomentOfIndependentFaultActivation = MomentOfIndependentFaultActivation.AtStepBeginning;
 			markovChainGenerator.Configuration.WriteGraphvizModels = true;
 			markovChainGenerator.Configuration.DefaultTraceOutput = Output.TextWriterAdapter();
 			markovChainGenerator.AddFormulaToCheck(finallyState1WithFault1);
@@ -94,8 +112,8 @@ namespace Tests.SimpleExecutableModel.Analysis.Probabilistic
 		{
 			public override Fault[] Faults { get; } = new Fault[]
 			{
-				new TransientFault { Identifier = 0, ProbabilityOfOccurrence = new Probability(0.5) },
-				new TransientFault { Identifier = 1, ProbabilityOfOccurrence = new Probability(0.5) }
+				new TransientFault { Identifier = 0, ProbabilityOfOccurrence = new Probability(0.5), DemandType = Fault.DemandTypes.OnStartOfStep },
+				new TransientFault { Identifier = 1, ProbabilityOfOccurrence = new Probability(0.5), DemandType = Fault.DemandTypes.OnStartOfStep  }
 			};
 
 			public override bool[] LocalBools { get; } = new bool[0];

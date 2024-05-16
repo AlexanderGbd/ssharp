@@ -159,7 +159,7 @@ namespace ISSE.SafetyChecking.GenericDataStructures
 
 		internal void SetRow(int row)
 		{
-			Assert.InRange(row, 0, _spaceLimitNumberOfRows);
+			Requires.InRange(row,nameof(row), 0, _spaceLimitNumberOfRows);
 			AssertNotSealed();
 			if (_rowMemory[row] != -1 || _rowColumnCountMemory[row] != -1)
 			{
@@ -189,7 +189,7 @@ namespace ISSE.SafetyChecking.GenericDataStructures
 			Assert.InRange(TotalColumnValueEntries, 0, _spaceLimitNumberOfEntries);
 			AssertNotSealed();
 			if (TotalColumnValueEntries >= _spaceLimitNumberOfEntries || TotalColumnValueEntries < 0)
-				throw new OutOfMemoryException("Unable to store entry. Try increasing the transition capacity.");
+				throw new OutOfMemoryException($"Unable to store entry (limit is {_spaceLimitNumberOfEntries} entries. Try increasing the transition capacity.");
 
 			var nextColumnValueIndex = TotalColumnValueEntries;
 			_columnValueMemory[nextColumnValueIndex] = columnValue;

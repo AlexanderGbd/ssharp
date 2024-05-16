@@ -39,11 +39,7 @@ namespace SafetySharp.CompilerServices
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool Activate(Fault fault)
 		{
-			if (fault == null)
-				return false;
-
-			fault.TryActivate();
-			return fault.IsActivated;
+			return ISSE.SafetyChecking.ExecutedModel.FaultHelper.Activate(fault);
 		}
 
 		/// <summary>
@@ -54,7 +50,7 @@ namespace SafetySharp.CompilerServices
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void UndoActivation(Fault fault)
 		{
-			fault?.UndoActivation();
+			ISSE.SafetyChecking.ExecutedModel.FaultHelper.UndoActivation(fault);
 		}
 	}
 }

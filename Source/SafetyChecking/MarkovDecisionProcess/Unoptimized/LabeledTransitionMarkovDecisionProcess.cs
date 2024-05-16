@@ -28,16 +28,18 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 	using System.Collections.Generic;
 	using System.Diagnostics;
 	using System.Globalization;
+	using System.Linq;
 	using Modeling;
 	using Utilities;
 	using AnalysisModel;
 	using ExecutableModel;
+	using Formula;
+	using GenericDataStructures;
 
-
-	internal unsafe partial class LabeledTransitionMarkovDecisionProcess : DisposableObject
+	public unsafe partial class LabeledTransitionMarkovDecisionProcess : DisposableObject
 	{
 		public static readonly int TransitionSize = sizeof(TransitionTargetElement);
-		private const int AvgGraphNodesPerSucceedingState = 7;
+		private const int AvgGraphNodesPerSucceedingState = 8;
 
 		// TODO: Optimization potential for custom model checker: Add every state only once. Save the transitions and evaluate reachability formulas more efficient by only expanding "states" to "states x stateformulaset" where the state labels of interests are in "stateformulaset"
 
@@ -73,7 +75,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 			_maxNumberOfContinuationGraphElements = _maxNumberOfTransitionTargets * AvgGraphNodesPerSucceedingState;
 
 			Requires.InRange(_maxNumberOfTransitionTargets, nameof(_maxNumberOfTransitionTargets), 1024, Int32.MaxValue - 1);
-			Requires.InRange(_maxNumberOfContinuationGraphElements, nameof(_maxNumberOfContinuationGraphElements), 1024, Int32.MaxValue - 1);
+			Requires.InRange(_maxNumberOfContinuationGraphElements, nameof(_maxNumberOfContinuationGraphElements), 1024, Int64.MaxValue - 1);
 
 			_stateStorageStateToRootOfContinuationGraphBuffer.Resize((long)maxNumberOfStates * sizeof(long), zeroMemory: false);
 			_stateStorageStateToRootOfContinuationGraphMemory = (long*)_stateStorageStateToRootOfContinuationGraphBuffer.Pointer;
@@ -111,21 +113,21 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 			public StateFormulaSet Formulas;
 		}
 
-		public int TransitionTargets => _transitionTargetCount;
+		public long TransitionTargets => _transitionTargetCount;
 
 		private long GetPlaceForNewContinuationGraphElements(int number)
 		{
 			var locationOfFirstNewEntry = InterlockedExtensions.AddFetch(ref _continuationGraphElementCount,number);
-			if (locationOfFirstNewEntry >= _maxNumberOfContinuationGraphElements)
-				throw new OutOfMemoryException("Unable to store transitions. Try increasing the transition capacity.");
+			if (locationOfFirstNewEntry + number >= _maxNumberOfContinuationGraphElements)
+				throw new OutOfMemoryException($"Unable to store continuation graph element (limit is {_maxNumberOfContinuationGraphElements} entries)");
 			return locationOfFirstNewEntry;
 		}
 
-		private int GetPlaceForNewTransitionTargetElement()
+		private long GetPlaceForNewTransitionTargetElement()
 		{
 			var locationOfNewEntry = InterlockedExtensions.IncrementReturnOld(ref _transitionTargetCount);
 			if (locationOfNewEntry >= _maxNumberOfTransitionTargets)
-				throw new OutOfMemoryException("Unable to store distribution.");
+				throw new OutOfMemoryException($"Unable to transition target (limit is {_maxNumberOfTransitionTargets} entries)");
 			return locationOfNewEntry;
 		}
 
@@ -200,12 +202,36 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 		}
 
 
-		public TransitionTargetElement GetTransitionTarget(int position)
+		public TransitionTargetElement GetTransitionTarget(long position)
 		{
 			return _transitionTarget[position];
 		}
+		
+		public Func<int, bool> CreateFormulaEvaluator(Formula formula)
+		{
+			var stateFormulaEvaluator = StateFormulaSetEvaluatorCompilationVisitor.Compile(StateFormulaLabels, formula);
+			Func<int, bool> evaluator = transitionTarget =>
+			{
+				var stateFormulaSet = _transitionTarget[transitionTarget].Formulas;
+				return stateFormulaEvaluator(stateFormulaSet);
+			};
+			return evaluator;
+		}
 
-		public TreeTraversal GetTreeTraverser(long parentContinuationId)
+		[Conditional("DEBUG")]
+		internal void AssertIsDense()
+		{
+			var size = SourceStates.Count;
+			using (var enumerator = SourceStates.GetEnumerator())
+			{
+				while (enumerator.MoveNext())
+				{
+					Assert.That(enumerator.Current < size, "Markov chain must be dense");
+				}
+			}
+		}
+
+		internal TreeTraversal GetTreeTraverser(long parentContinuationId)
 		{
 			return new TreeTraversal(this, parentContinuationId);
 		}
@@ -331,12 +357,165 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 			}
 		}
 
+		internal UnderlyingDigraph CreateUnderlyingDigraph()
+		{
+			return new UnderlyingDigraph(this);
+		}
 
-		public DirectChildrenEnumerator GetDirectChildrenEnumerator(long parentContinuationId)
+		internal DirectChildrenEnumerator GetDirectChildrenEnumerator(long parentContinuationId)
 		{
 			return new DirectChildrenEnumerator(this, parentContinuationId);
 		}
 		
+		internal class UnderlyingDigraph
+		{
+			public BidirectionalGraph<EdgeType> _baseGraph { get; }
+
+			private readonly long _transitionTargetNo;
+
+			private readonly int _stateNo;
+
+			private readonly long _cidNo;
+
+			private LabeledTransitionMarkovDecisionProcess _ltmdp;
+
+			public UnderlyingDigraph(LabeledTransitionMarkovDecisionProcess ltmdp)
+			{
+				//Assumption "every node is reachable" is fulfilled due to the construction
+				_ltmdp = ltmdp;
+				_transitionTargetNo = ltmdp.TransitionTargets;
+				_cidNo = ltmdp.ContinuationGraphSize;
+				_stateNo = ltmdp.SourceStates.Count;
+				_baseGraph = new BidirectionalGraph<EdgeType>();
+
+				var initialCid = _ltmdp.GetRootContinuationGraphLocationOfInitialState();
+				AddNodesOfContinuationId(initialCid);
+
+				foreach (var sourceState in _ltmdp.SourceStates)
+				{
+					var stateRootCid = _ltmdp.GetRootContinuationGraphLocationOfState(sourceState);
+					AddNodesOfContinuationId(stateRootCid);
+					AddStateToRootCidTransition(sourceState, stateRootCid);
+				}
+				AddTransitionTargets();
+			}
+
+
+			private void AddNodesOfContinuationId(long continuationId)
+			{
+				var choice = _ltmdp.GetContinuationGraphElement(continuationId);
+
+				var cidNode = CidToNodeIndex(continuationId);
+
+				if (choice.IsChoiceTypeUnsplitOrFinal)
+				{
+					var transitionTargetIndex = choice.To;
+					var transitionTargetNode = TransitionTargetToNodeIndex(transitionTargetIndex);
+					_baseGraph.AddVerticesAndEdge(new Edge<EdgeType>(cidNode, transitionTargetNode, EdgeType.Deterministic));
+					return;
+				}
+				if (choice.IsChoiceTypeForward)
+				{
+					// no recursive descent here
+					var forwardToCid = choice.To;
+					var forwardToCidNode = CidToNodeIndex(forwardToCid);
+					_baseGraph.AddVerticesAndEdge(new Edge<EdgeType>(cidNode, forwardToCidNode, EdgeType.Deterministic));
+					return;
+				}
+				
+				// Assume that no child has probability of 0
+				var type = choice.IsChoiceTypeProbabilitstic ? EdgeType.Probabilistic:EdgeType.NonDeterministic;
+
+				for (var childCid = choice.From; childCid <= choice.To; childCid++)
+				{
+					var childCidNode = CidToNodeIndex(childCid);
+					_baseGraph.AddVerticesAndEdge(new Edge<EdgeType>(cidNode, childCidNode, type));
+					AddNodesOfContinuationId(childCid);
+				}
+			}
+
+			private void AddStateToRootCidTransition(int sourceState, long stateRootCid)
+			{
+				var sourceStateNode = StateToNodeIndex(sourceState);
+				var cidNode = CidToNodeIndex(stateRootCid);
+				_baseGraph.AddVerticesAndEdge(new Edge<EdgeType>(sourceStateNode, cidNode, EdgeType.Deterministic));
+			}
+
+			private void AddTransitionTargets()
+			{
+				for (var i = 0L; i < _transitionTargetNo; i++)
+				{
+					var transitionTarget = _ltmdp.GetTransitionTarget(i);
+					var transitionTargetNode = TransitionTargetToNodeIndex(i);
+					var transitionTargetStateNode = StateToNodeIndex(transitionTarget.TargetState);
+					_baseGraph.AddVerticesAndEdge(new Edge<EdgeType>(transitionTargetNode, transitionTargetStateNode, EdgeType.Deterministic));
+				}
+			}
+
+			public long? TryGetTransitionTargetIndex(long node)
+			{
+				Assert.That(node >= 0 && node < _transitionTargetNo + _stateNo + _cidNo, "Out of index");
+				if (node < _transitionTargetNo)
+				{
+					return node;
+				}
+				return null;
+			}
+
+			private long TransitionTargetToNodeIndex(long transition)
+			{
+				Assert.That(transition >= 0 && transition < _transitionTargetNo, "Out of range");
+				return transition;
+			}
+
+			private long StateToNodeIndex(int state)
+			{
+				Assert.That(state >= 0 && state < _stateNo, "Out of range");
+				return _transitionTargetNo + state;
+			}
+
+			private long CidToNodeIndex(long cid)
+			{
+				Assert.That(cid >= 0 && cid<_cidNo, "Out of range");
+				return _transitionTargetNo + _stateNo +cid;
+			}
+
+			internal bool BackwardTraversal(IEnumerable<long> targetTransitionTargets, Action<long> actionOnResultingTransitionTarget, Func<long, bool> transitionTargetsToIgnore)
+			{
+				var transitionTargetNodes = targetTransitionTargets.Select(TransitionTargetToNodeIndex);
+
+				Func<long, bool> ignoreNodeFunc =
+					node =>
+					{
+						var transitionTarget = TryGetTransitionTargetIndex(node);
+						if (transitionTarget == null)
+							return false;
+						return transitionTargetsToIgnore(transitionTarget.Value);
+					};
+
+				var ancestors = _baseGraph.GetAncestors(transitionTargetNodes, ignoreNodeFunc);
+				foreach (var ancestor in ancestors)
+				{
+					var transitionTargetOfAncestor = TryGetTransitionTargetIndex(ancestor.Key);
+					if (transitionTargetOfAncestor != null)
+					{
+						actionOnResultingTransitionTarget(transitionTargetOfAncestor.Value);
+					}
+				}
+				// return, if root cid of initial state
+				var initialCid = _ltmdp.GetRootContinuationGraphLocationOfInitialState();
+				var initialCidNode = CidToNodeIndex(initialCid);
+				return ancestors.ContainsKey(initialCidNode);
+			}
+
+			public enum EdgeType : byte
+			{
+				Probabilistic,
+				NonDeterministic,
+				Deterministic
+			}
+		}
+
 		internal struct DirectChildrenEnumerator
 		{
 			public long ParentContinuationId { get; }

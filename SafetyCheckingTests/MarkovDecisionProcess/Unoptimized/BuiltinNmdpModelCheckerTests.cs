@@ -37,7 +37,8 @@ namespace Tests.MarkovDecisionProcess.Unoptimized
 	using Xunit.Abstractions;
 	using Shouldly;
 	using ISSE.SafetyChecking.MarkovDecisionProcess;
-	using Examples;
+	using NmdpExamples;
+
 	public class BuiltinNmdpModelCheckerTests
 	{
 		/// <summary>

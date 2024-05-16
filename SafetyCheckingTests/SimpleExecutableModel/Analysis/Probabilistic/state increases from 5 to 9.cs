@@ -39,8 +39,7 @@ namespace Tests.SimpleExecutableModel.Analysis.Probabilistic
 		{
 		}
 
-		[Fact]
-		public void Check()
+		private void CheckOnceWithAtormarOperand(AnalysisConfiguration configuration)
 		{
 			var m = new Model();
 			Probability probability;
@@ -51,11 +50,37 @@ namespace Tests.SimpleExecutableModel.Analysis.Probabilistic
 			var final9Once7Formula = new UnaryFormula(is9Once7Formula, UnaryOperator.Finally);
 
 			var markovChainGenerator = new SimpleMarkovChainFromExecutableModelGenerator(m);
+			markovChainGenerator.Configuration = configuration;
+			markovChainGenerator.AddFormulaToCheck(final9Once7Formula);
+			var ltmc = markovChainGenerator.GenerateLabeledMarkovChain();
+			var modelChecker = new ConfigurationDependentLtmcModelChecker(configuration, ltmc, Output.TextWriterAdapter());
+			using (modelChecker)
+			{
+				probability = modelChecker.CalculateProbability(final9Once7Formula);
+			}
+
+			probability.Is(0.4*0.4+0.6, 0.00000001).ShouldBe(true);
+		}
+
+
+		[Fact]
+		public void CheckOnceWithNonAtomarOperand()
+		{
+			var m = new Model();
+			Probability probability;
+			
+			var once7MoreComplex = new BinaryFormula(Model.IsInState7, BinaryOperator.And, Model.IsInState7);
+			var once7Formula = new UnaryFormula(once7MoreComplex, UnaryOperator.Once);
+			var is9Once7Formula = new BinaryFormula(Model.IsInState9, BinaryOperator.And, once7Formula);
+			var final9Once7Formula = new UnaryFormula(is9Once7Formula, UnaryOperator.Finally);
+
+			var markovChainGenerator = new SimpleMarkovChainFromExecutableModelGenerator(m);
 			markovChainGenerator.Configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
-			markovChainGenerator.Configuration.RetraversalNormalizations = RetraversalNormalizations.EmbedObserversIntoModel;
+			markovChainGenerator.Configuration.UseAtomarPropositionsAsStateLabels = true;
 			markovChainGenerator.Configuration.DefaultTraceOutput = Output.TextWriterAdapter();
 			markovChainGenerator.Configuration.WriteGraphvizModels = true;
 			markovChainGenerator.Configuration.UseCompactStateStorage = true;
+			markovChainGenerator.Configuration.EnableEarlyTermination = true;
 			markovChainGenerator.AddFormulaToCheck(final9Once7Formula);
 			var dtmc = markovChainGenerator.GenerateMarkovChain();
 			var typeOfModelChecker = typeof(BuiltinDtmcModelChecker);
@@ -65,7 +90,40 @@ namespace Tests.SimpleExecutableModel.Analysis.Probabilistic
 				probability = modelChecker.CalculateProbability(final9Once7Formula);
 			}
 
-			probability.Is(0.4*0.4+0.6, 0.00000001).ShouldBe(true);
+			probability.Is(0.4 * 0.4 + 0.6, 0.00000001).ShouldBe(true);
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void CheckBuiltinDtmc(bool withAtomarOperand)
+		{
+			var configuration = AnalysisConfiguration.Default;
+			configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			configuration.DefaultTraceOutput = Output.TextWriterAdapter();
+			configuration.WriteGraphvizModels = true;
+			configuration.LtmcModelChecker = ISSE.SafetyChecking.LtmcModelChecker.BuiltInDtmc;
+			if(withAtomarOperand)
+				CheckOnceWithAtormarOperand(configuration);
+			else
+				CheckOnceWithNonAtomarOperand();
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void CheckBuiltinLtmc(bool withAtomarOperand)
+		{
+			var configuration = AnalysisConfiguration.Default;
+			configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			configuration.DefaultTraceOutput = Output.TextWriterAdapter();
+			configuration.WriteGraphvizModels = true;
+			configuration.UseCompactStateStorage = true;
+			configuration.LtmcModelChecker = ISSE.SafetyChecking.LtmcModelChecker.BuiltInLtmc;
+			if (withAtomarOperand)
+				CheckOnceWithAtormarOperand(configuration);
+			else
+				CheckOnceWithNonAtomarOperand();
 		}
 
 		public class Model : SimpleModelBase

@@ -86,12 +86,28 @@ namespace ISSE.SafetyChecking.Modeling
 		/// <summary>
 		///   Gets or sets an identifier for the fault.
 		/// </summary>
-		internal int Identifier { get; set; } = -1;
+		public int Identifier { get; set; } = -1;
 
 		/// <summary>
 		///   Gets a value indicating whether the fault is used.
 		/// </summary>
 		internal bool IsUsed => Identifier != -1;
+		
+		/// <summary>
+		///   Gets or sets the demand type of the fault.
+		/// </summary>
+		public DemandTypes DemandType { get; set; }
+
+		/// <summary>
+		///   The delegate which is used to determine if there is a demand in the current step.
+		///   Only used when DemandType is DemandTypes.OnCustom.
+		/// </summary>
+		public Func<bool> HasCustomDemand { get; set; } = null;
+
+		/// <summary>
+		///   Returns true if there was a demand in the step.
+		/// </summary>
+		public bool StepDemand { get; set; } = false;
 
 		/// <summary>
 		///   Gets a value indicating whether the fault is activated and has some effect on the state of the system, therefore inducing
@@ -121,6 +137,11 @@ namespace ISSE.SafetyChecking.Modeling
 
 				_activationIsUnknown = value == Activation.Nondeterministic;
 			}
+		}
+
+		internal void RestoreActivation(Activation activation)
+		{
+			_activation = activation;
 		}
 
 		/// <summary>
@@ -236,6 +257,7 @@ namespace ISSE.SafetyChecking.Modeling
 				}
 
 				_activationIsUnknown = false;
+				StepDemand = true;
 			}
 		}
 
@@ -244,11 +266,12 @@ namespace ISSE.SafetyChecking.Modeling
 		/// </summary>
 		public void Reset()
 		{
+			StepDemand = false;
+			_canUndoActivation = false;
 			if (_activation != Activation.Nondeterministic)
 				return;
 
 			_activationIsUnknown = true;
-			_canUndoActivation = false;
 			IsActivated = false;
 		}
 
@@ -264,5 +287,13 @@ namespace ISSE.SafetyChecking.Modeling
 		///   method is not allowed to have any side effects, as otherwise S#'s fault activation mechanism will be completely broken.
 		/// </summary>
 		protected abstract Activation CheckActivation();
+
+
+		public enum DemandTypes : byte
+		{
+			OnCustom,
+			OnStartOfStep,
+			OnMethodCall
+		}
 	}
 }

@@ -29,6 +29,7 @@ using System.Threading.Tasks;
 namespace SafetySharp.CaseStudies.RailroadCrossing.Analysis
 {
 	using FluentAssertions;
+	using ISSE.SafetyChecking.ExecutedModel;
 	using ISSE.SafetyChecking.Modeling;
 	using Modeling;
 	using NUnit.Framework;
@@ -40,6 +41,7 @@ namespace SafetySharp.CaseStudies.RailroadCrossing.Analysis
 		[Test]
 		public void Calculate()
 		{
+			SafetySharpModelChecker.TraversalConfiguration.ModelCapacity = new ModelCapacityByModelSize(3300000L, 1000000000L);
 			var model = new Model();
 			model.Channel.MessageDropped.ProbabilityOfOccurrence = new Probability(0.0001);
 			model.CrossingController.Motor.BarrierMotorStuck.ProbabilityOfOccurrence = new Probability(0.001);
@@ -48,6 +50,8 @@ namespace SafetySharp.CaseStudies.RailroadCrossing.Analysis
 			model.TrainController.Brakes.BrakesFailure.ProbabilityOfOccurrence = new Probability(0.00002);
 			model.TrainController.Odometer.OdometerPositionOffset.ProbabilityOfOccurrence = new Probability(0.02);
 			model.TrainController.Odometer.OdometerSpeedOffset.ProbabilityOfOccurrence = new Probability(0.02);
+			
+			model.Channel.MessageDropped.ProbabilityOfOccurrence = null;
 
 			var result = SafetySharpModelChecker.CalculateProbabilityRangeToReachStateBounded(model, model.PossibleCollision,50);
 			Console.Write($"Probability of hazard in 50 steps: {result}");

@@ -29,6 +29,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 	using System.Linq;
 	using AnalysisModel;
 	using Formula;
+	using Modeling;
 
 	/// <summary>
 	///   Represents an <see cref="AnalysisModel" /> that computes its state by executing a <see cref="ExecutedModel{TExecutableModel}" /> with
@@ -42,47 +43,33 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 
 		private readonly LtmdpStepGraph _stepGraph;
 
-		private readonly bool _activateIndependentFaultsAtStepBeginning;
+		private readonly bool _allowFaultsOnInitialTransitions;
 
 		/// <summary>
 		///   Initializes a new instance.
 		/// </summary>
 		/// <param name="runtimeModelCreator">A factory function that creates the model instance that should be executed.</param>
 		/// <param name="configuration">The analysis configuration that should be used.</param>
-		/// <param name="stateHeaderBytes">
 		///   The number of bytes that should be reserved at the beginning of each state vector for the model checker tool.
 		/// </param>
-		internal LtmdpExecutedModel(CoupledExecutableModelCreator<TExecutableModel> runtimeModelCreator, int stateHeaderBytes, AnalysisConfiguration configuration)
-			: base(runtimeModelCreator,stateHeaderBytes)
+		internal LtmdpExecutedModel(CoupledExecutableModelCreator<TExecutableModel> runtimeModelCreator, AnalysisConfiguration configuration)
+			: base(runtimeModelCreator, 0, configuration)
 		{
 			var formulas = RuntimeModel.Formulas.Select(formula => FormulaCompilationVisitor<TExecutableModel>.Compile(RuntimeModel, formula)).ToArray();
 
 			_stepGraph = new LtmdpStepGraph();
 
-			_cachedLabeledStates = new LtmdpCachedLabeledStates<TExecutableModel>(RuntimeModel, configuration.SuccessorCapacity, _stepGraph, formulas);
+			_cachedLabeledStates = new LtmdpCachedLabeledStates<TExecutableModel>(TemporaryStateStorage, configuration.SuccessorCapacity, _stepGraph, formulas);
 
-			bool useForwardOptimization;
-			switch (configuration.MomentOfIndependentFaultActivation)
-			{
-				case MomentOfIndependentFaultActivation.AtStepBeginning:
-				case MomentOfIndependentFaultActivation.OnFirstMethodWithoutUndo:
-					useForwardOptimization = false;
-					break;
-				case MomentOfIndependentFaultActivation.OnFirstMethodWithUndo:
-					useForwardOptimization = true;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+			var useForwardOptimization = configuration.EnableStaticPruningOptimization;
 
 			_ltmdpChoiceResolver = new LtmdpChoiceResolver(_stepGraph, useForwardOptimization);
 			ChoiceResolver = _ltmdpChoiceResolver;
 			RuntimeModel.SetChoiceResolver(ChoiceResolver);
 
-			_activateIndependentFaultsAtStepBeginning =
-				configuration.MomentOfIndependentFaultActivation == MomentOfIndependentFaultActivation.AtStepBeginning;
+			_allowFaultsOnInitialTransitions = configuration.AllowFaultsOnInitialTransitions;
 		}
-
+		
 		/// <summary>
 		///   Gets the size of a single transition of the model in bytes.
 		/// </summary>
@@ -112,25 +99,32 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 			foreach (var fault in RuntimeModel.NondeterministicFaults)
 				fault.Reset();
 
-			if (_activateIndependentFaultsAtStepBeginning)
+			if (!_allowFaultsOnInitialTransitions)
 			{
-				// Note: Faults get activated and their effects occur, but they are not notified yet of their activation.
 				foreach (var fault in RuntimeModel.NondeterministicFaults)
 				{
-					fault.TryActivate();
+					fault.Activation=Activation.Suppressed;
 				}
+			}
+			
+			// Note: Faults get activated and their effects occur, but they are not notified yet of their activation.
+			foreach (var fault in RuntimeModel.OnStartOfStepFaults)
+			{
+				fault.TryActivate();
+			}
+			foreach (var fault in RuntimeModel.OnCustomFaults)
+			{
+				if (fault.HasCustomDemand())
+					fault.TryActivate();
+				else
+					fault.Activation = Activation.Suppressed;
 			}
 
 			RuntimeModel.ExecuteInitialStep();
 
-			if (!_activateIndependentFaultsAtStepBeginning)
+			for (var i = 0; i < RuntimeModel.NondeterministicFaults.Length; i++)
 			{
-				// force activation of non-transient faults
-				foreach (var fault in RuntimeModel.NondeterministicFaults)
-				{
-					if (!(fault is Modeling.TransientFault))
-						fault.TryActivate();
-				}
+				RuntimeModel.NondeterministicFaults[i].RestoreActivation(SavedActivations[i]);
 			}
 		}
 
@@ -141,28 +135,28 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 		{
 			//TODO: _resetRewards();
 
+
 			foreach (var fault in RuntimeModel.NondeterministicFaults)
 				fault.Reset();
 
-			if (_activateIndependentFaultsAtStepBeginning)
+			// Note: Faults get activated and their effects occur, but they are not notified yet of their activation.
+			foreach (var fault in RuntimeModel.OnStartOfStepFaults)
 			{
-				// Note: Faults get activated and their effects occur, but they are not notified yet of their activation.
-				foreach (var fault in RuntimeModel.NondeterministicFaults)
-				{
+				fault.TryActivate();
+			}
+			foreach (var fault in RuntimeModel.OnCustomFaults)
+			{
+				if (fault.HasCustomDemand())
 					fault.TryActivate();
-				}
+				else
+					fault.Activation = Activation.Suppressed;
 			}
 
 			RuntimeModel.ExecuteStep();
 
-			if (!_activateIndependentFaultsAtStepBeginning)
+			for (var i = 0; i < RuntimeModel.NondeterministicFaults.Length; i++)
 			{
-				// force activation of non-transient faults
-				foreach (var fault in RuntimeModel.NondeterministicFaults)
-				{
-					if (!(fault is Modeling.TransientFault))
-						fault.TryActivate();
-				}
+				RuntimeModel.NondeterministicFaults[i].RestoreActivation(SavedActivations[i]);
 			}
 		}
 
@@ -189,6 +183,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 		protected override void BeginExecution()
 		{
 			_cachedLabeledStates.Clear();
+			TemporaryStateStorage.Clear();
 			_stepGraph.Clear();
 		}
 

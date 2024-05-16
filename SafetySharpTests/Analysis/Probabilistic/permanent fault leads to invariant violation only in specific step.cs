@@ -45,17 +45,17 @@ namespace Tests.Analysis.Probabilistic
 
 			var markovChainGenerator = new SafetySharpMarkovChainFromExecutableModelGenerator(TestModel.InitializeModel(c));
 			markovChainGenerator.Configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			markovChainGenerator.Configuration.LtmcModelChecker = (ISSE.SafetyChecking.LtmcModelChecker)Arguments[0];
 			markovChainGenerator.AddFormulaToCheck(finallyInvariantViolated);
-			var dtmc = markovChainGenerator.GenerateMarkovChain();
-			var typeOfModelChecker = (Type)Arguments[0];
-			var modelChecker = (DtmcModelChecker)Activator.CreateInstance(typeOfModelChecker, dtmc, Output.TextWriterAdapter());
+			var ltmc = markovChainGenerator.GenerateLabeledMarkovChain();
+			var modelChecker = new ConfigurationDependentLtmcModelChecker(markovChainGenerator.Configuration, ltmc, Output.TextWriterAdapter());
 			using (modelChecker)
 			{
 				probabilityOfInvariantViolation = modelChecker.CalculateProbability(finallyInvariantViolated);
 			}
 
-			// 1.0-(1.0-0.1)^11 = 0.68618940391
-			probabilityOfInvariantViolation.Is(0.68618940391, 0.00001).ShouldBe(true);
+			// 1.0-(1.0-0.1)^10 = 0.6513215599
+			probabilityOfInvariantViolation.Is(0.6513215599, 0.00001).ShouldBe(true);
 		}
 
 		private class C : Component

@@ -23,6 +23,7 @@
 namespace Tests.SimpleExecutableModel.Analysis.Probabilistic
 {
 	using System;
+	using ISSE.SafetyChecking;
 	using ISSE.SafetyChecking.DiscreteTimeMarkovChain;
 	using ISSE.SafetyChecking.ExecutedModel;
 	using ISSE.SafetyChecking.Formula;
@@ -37,8 +38,7 @@ namespace Tests.SimpleExecutableModel.Analysis.Probabilistic
 		{
 		}
 
-		[Fact]
-		protected void Check()
+		private Probability Check(AnalysisConfiguration configuration)
 		{
 			var m = new Model();
 			Probability probabilityOfInvariantViolation;
@@ -46,19 +46,67 @@ namespace Tests.SimpleExecutableModel.Analysis.Probabilistic
 			var finallyInvariantViolated = new UnaryFormula(Model.InvariantViolated, UnaryOperator.Finally);
 
 			var markovChainGenerator = new SimpleMarkovChainFromExecutableModelGenerator(m);
-			markovChainGenerator.Configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			markovChainGenerator.Configuration = configuration;
 			markovChainGenerator.AddFormulaToCheck(finallyInvariantViolated);
-			var dtmc = markovChainGenerator.GenerateMarkovChain();
-			dtmc.ExportToGv(Output.TextWriterAdapter());
-			var typeOfModelChecker = typeof(BuiltinDtmcModelChecker);
-			var modelChecker = (DtmcModelChecker)Activator.CreateInstance(typeOfModelChecker, dtmc, Output.TextWriterAdapter());
+			var ltmc = markovChainGenerator.GenerateLabeledMarkovChain();
+			var modelChecker = new ConfigurationDependentLtmcModelChecker(configuration, ltmc, Output.TextWriterAdapter());
 			using (modelChecker)
 			{
 				probabilityOfInvariantViolation = modelChecker.CalculateProbability(finallyInvariantViolated);
 			}
 
-			// 1.0-(1.0-0.1)^11 = 0.68618940391
-			probabilityOfInvariantViolation.Is(0.68618940391, 0.00001).ShouldBe(true);
+			return probabilityOfInvariantViolation;
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void CheckBuiltinDtmc(bool faultsPossibleOnInitialTransition)
+		{
+			var configuration = AnalysisConfiguration.Default;
+			configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			configuration.DefaultTraceOutput = Output.TextWriterAdapter();
+			configuration.WriteGraphvizModels = true;
+			configuration.LtmcModelChecker = ISSE.SafetyChecking.LtmcModelChecker.BuiltInDtmc;
+			configuration.AllowFaultsOnInitialTransitions = faultsPossibleOnInitialTransition;
+			var probabilityOfInvariantViolation = Check(configuration);
+
+			if (faultsPossibleOnInitialTransition)
+			{
+				// 1.0-(1.0-0.1)^11 = 0.68618940391
+				probabilityOfInvariantViolation.Is(0.68618940391, 0.00001).ShouldBe(true);
+			}
+			else
+			{
+				// 1.0-(1.0-0.1)^10 = 0.6513215599
+				probabilityOfInvariantViolation.Is(0.6513215599, 0.00001).ShouldBe(true);
+			}
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public void CheckBuiltinLtmc(bool faultsPossibleOnInitialTransition)
+		{
+			var configuration = AnalysisConfiguration.Default;
+			configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			configuration.DefaultTraceOutput = Output.TextWriterAdapter();
+			configuration.WriteGraphvizModels = true;
+			configuration.LtmcModelChecker = ISSE.SafetyChecking.LtmcModelChecker.BuiltInLtmc;
+			configuration.UseCompactStateStorage = true;
+			configuration.AllowFaultsOnInitialTransitions = faultsPossibleOnInitialTransition;
+			var probabilityOfInvariantViolation = Check(configuration);
+
+			if (faultsPossibleOnInitialTransition)
+			{
+				// 1.0-(1.0-0.1)^11 = 0.68618940391
+				probabilityOfInvariantViolation.Is(0.68618940391, 0.00001).ShouldBe(true);
+			}
+			else
+			{
+				// 1.0-(1.0-0.1)^10 = 0.6513215599
+				probabilityOfInvariantViolation.Is(0.6513215599, 0.00001).ShouldBe(true);
+			}
 		}
 
 		private class Model : SimpleModelBase

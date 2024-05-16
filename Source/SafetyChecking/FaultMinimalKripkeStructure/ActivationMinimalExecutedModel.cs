@@ -29,6 +29,7 @@ namespace ISSE.SafetyChecking.FaultMinimalKripkeStructure
 	using ExecutedModel;
 	using System.Linq;
 	using Formula;
+	using Modeling;
 
 	/// <summary>
 	///   Represents an <see cref="AnalysisModel" /> that computes its state by executing a <see cref="SafetySharpRuntimeModel" /> with
@@ -38,6 +39,7 @@ namespace ISSE.SafetyChecking.FaultMinimalKripkeStructure
 	{
 		private readonly Func<bool>[] _stateConstraints;
 		private readonly ActivationMinimalTransitionSetBuilder<TExecutableModel> _transitions;
+		private readonly bool _allowFaultsOnInitialTransitions;
 
 		/// <summary>
 		///   Initializes a new instance.
@@ -62,30 +64,21 @@ namespace ISSE.SafetyChecking.FaultMinimalKripkeStructure
 		///   The number of bytes that should be reserved at the beginning of each state vector for the model checker tool.
 		/// </param>
 		internal ActivationMinimalExecutedModel(CoupledExecutableModelCreator<TExecutableModel> runtimeModelCreator, int stateHeaderBytes, Func<bool>[] formulas, AnalysisConfiguration configuration)
-			: base(runtimeModelCreator, stateHeaderBytes)
+			: base(runtimeModelCreator, stateHeaderBytes, configuration)
 		{
 			formulas = formulas ?? RuntimeModel.Formulas.Select(formula => FormulaCompilationVisitor<TExecutableModel>.Compile(RuntimeModel,formula)).ToArray();
 
-			_transitions = new ActivationMinimalTransitionSetBuilder<TExecutableModel>(RuntimeModel, configuration.SuccessorCapacity, formulas);
+			_transitions = new ActivationMinimalTransitionSetBuilder<TExecutableModel>(TemporaryStateStorage, configuration.SuccessorCapacity, formulas);
 			_stateConstraints = RuntimeModel.StateConstraints;
 
-			bool useForwardOptimization;
-			switch (configuration.MomentOfIndependentFaultActivation)
-			{
-				case MomentOfIndependentFaultActivation.AtStepBeginning:
-				case MomentOfIndependentFaultActivation.OnFirstMethodWithoutUndo:
-					useForwardOptimization = false;
-					break;
-				case MomentOfIndependentFaultActivation.OnFirstMethodWithUndo:
-					useForwardOptimization = true;
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+			var useForwardOptimization = configuration.EnableStaticPruningOptimization;
 
 			ChoiceResolver = new NondeterministicChoiceResolver(useForwardOptimization);
-			
+			FaultSet.CheckFaultCount(RuntimeModel.Faults.Length);
+
 			RuntimeModel.SetChoiceResolver(ChoiceResolver);
+
+			_allowFaultsOnInitialTransitions = configuration.AllowFaultsOnInitialTransitions;
 		}
 
 		/// <summary>
@@ -114,8 +107,24 @@ namespace ISSE.SafetyChecking.FaultMinimalKripkeStructure
 		{
 			foreach (var fault in RuntimeModel.NondeterministicFaults)
 				fault.Reset();
+			
+			if (!_allowFaultsOnInitialTransitions)
+			{
+				foreach (var fault in RuntimeModel.NondeterministicFaults)
+				{
+					fault.Activation = Activation.Suppressed;
+				}
+			}
 
 			RuntimeModel.ExecuteInitialStep();
+			
+			if (!_allowFaultsOnInitialTransitions)
+			{
+				for (var i = 0; i < RuntimeModel.NondeterministicFaults.Length; i++)
+				{
+					RuntimeModel.NondeterministicFaults[i].RestoreActivation(SavedActivations[i]);
+				}
+			}
 		}
 
 		/// <summary>
@@ -151,6 +160,7 @@ namespace ISSE.SafetyChecking.FaultMinimalKripkeStructure
 		protected override void BeginExecution()
 		{
 			_transitions.Clear();
+			TemporaryStateStorage.Clear();
 		}
 
 		/// <summary>

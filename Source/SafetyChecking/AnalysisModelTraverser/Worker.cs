@@ -65,6 +65,11 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 		}
 
 		/// <summary>
+		///   Extra bytes in state vector for traversal parameters.
+		/// </summary>
+		internal int TraversalModifierStateVectorSize { get; private set; } = 0;
+
+		/// <summary>
 		///   Gets the model that is analyzed by the worker.
 		/// </summary>
 		public AnalysisModel Model { get; }
@@ -133,9 +138,6 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 		/// </summary>
 		internal void Reset()
 		{
-			Model.Reset();
-			_stateStack.Clear();
-
 			// We have to initialize the following arrays here for two reasons:
 			// 1) The context is not yet completely initialized when the worker's constructor executes
 			// 2) We sometimes want to change some traversal parameters between multiple traversals
@@ -143,6 +145,20 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 			_batchedTransitionActions = _context.TraversalParameters.BatchedTransitionActions.Select(a => a.Invoke()).ToArray();
 			_transitionModifiers = _context.TraversalParameters.TransitionModifiers.Select(a => a.Invoke()).ToArray();
 			_stateActions = _context.TraversalParameters.StateActions.Select(a => a.Invoke()).ToArray();
+
+			var currentOffsetInStateVectorForExtraBytes = Model.ModelStateVectorSize;
+			TraversalModifierStateVectorSize = 0;
+			foreach (var transitionModifier in _transitionModifiers)
+			{
+				transitionModifier.ExtraBytesOffset = currentOffsetInStateVectorForExtraBytes;
+				TraversalModifierStateVectorSize += transitionModifier.ExtraBytesInStateVector;
+				currentOffsetInStateVectorForExtraBytes += transitionModifier.ExtraBytesInStateVector;
+				transitionModifier.RelevantStateVectorSize = currentOffsetInStateVectorForExtraBytes;
+			}
+			Assert.That(TraversalModifierStateVectorSize%4 ==0,"TraversalModifierStateVectorSize should be a multiple of 4");
+
+			Model.Reset(TraversalModifierStateVectorSize);
+			_stateStack.Clear();
 		}
 
 		/// <summary>
@@ -227,12 +243,14 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 			var traceLength = addAdditionalState ? indexedPath.Length + 1 : indexedPath.Length;
 			var path = new byte[traceLength][];
 
+			var stateVectorSize = Model.ModelStateVectorSize + TraversalModifierStateVectorSize;
+
 			if (addAdditionalState)
-				path[path.Length - 1] = new byte[Model.StateVectorSize];
+				path[path.Length - 1] = new byte[stateVectorSize];
 
 			for (var i = 0; i < indexedPath.Length; ++i)
 			{
-				path[i] = new byte[Model.StateVectorSize];
+				path[i] = new byte[stateVectorSize];
 				Marshal.Copy(new IntPtr((int*)_context.States[indexedPath[i]]), path[i], 0, path[i].Length);
 			}
 

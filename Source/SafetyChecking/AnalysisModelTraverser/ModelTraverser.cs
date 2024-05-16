@@ -32,11 +32,12 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 	using AnalysisModel;
 	using ExecutedModel;
 	using Utilities;
+	using System.Globalization;
 
 	/// <summary>
 	///   A base class for model traversers that travserse an <see cref="AnalysisModel" /> to carry out certain actions.
 	/// </summary>
-	internal abstract class ModelTraverser: DisposableObject
+	internal sealed class ModelTraverser : DisposableObject
 	{
 		public const int DeriveTransitionSizeFromModel = -1;
 
@@ -51,7 +52,7 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 		/// <param name="createModel">Creates the model that should be checked.</param>
 		/// <param name="output">The callback that should be used to output messages.</param>
 		/// <param name="configuration">The analysis configuration that should be used.</param>
-		internal ModelTraverser(AnalysisModelCreator createModel, AnalysisConfiguration configuration, int transitionSize)
+		internal ModelTraverser(AnalysisModelCreator createModel, AnalysisConfiguration configuration, int transitionSize, bool createStutteringState)
 		{
 			Requires.NotNull(createModel, nameof(createModel));
 			var stopwatch = new Stopwatch();
@@ -84,14 +85,18 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 				transitionSize = firstModel.TransitionSize;
 			}
 
-			var modelCapacity = configuration.ModelCapacity.DeriveModelByteSize(firstModel.StateVectorSize, transitionSize);
+			if (configuration.WriteStateVectorLayout)
+				firstModel.WriteStateVectorLayout(configuration.DefaultTraceOutput);
+
+			var modelCapacity = configuration.ModelCapacity.DeriveModelByteSize(firstModel.ModelStateVectorSize, transitionSize);
 			Context.ModelCapacity = modelCapacity;
 			if (configuration.UseCompactStateStorage)
 				_states = new CompactStateStorage(modelCapacity.SizeOfState, modelCapacity.NumberOfStates);
 			else
 				_states = new SparseStateStorage(modelCapacity.SizeOfState, modelCapacity.NumberOfStates);
 			Context.States = _states;
-			Context.StutteringStateIndex = _states.ReserveStateIndex();
+			if (createStutteringState)
+				Context.StutteringStateIndex = _states.ReserveStateIndex();
 			_initializationTime = stopwatch.Elapsed;
 			stopwatch.Stop();
 		}
@@ -109,9 +114,10 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 		/// <summary>
 		///   Traverses the model.
 		/// </summary>
-		protected void TraverseModel()
+		private void TraverseModel()
 		{
 			Reset();
+			Context.Output?.WriteLine($"State vector of transition modifiers vector has {_workers.First().TraversalModifierStateVectorSize} bytes."); // valid only after Reset()
 
 			_workers[0].ComputeInitialStates();
 			if (_loadBalancer.IsTerminated)
@@ -138,7 +144,7 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 			if (!Context.Configuration.ProgressReportsOnly)
 			{
 				Context.Output?.WriteLine($"Traverse model using {AnalyzedModels.Count()} CPU cores.");
-				Context.Output?.WriteLine($"State vector has {AnalyzedModels.First().StateVectorSize} bytes.");
+				Context.Output?.WriteLine($"State vector of model has {AnalyzedModels.First().ModelStateVectorSize} bytes.");
 			}
 
 			try
@@ -155,13 +161,23 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 
 				if (!Context.Configuration.ProgressReportsOnly)
 				{
+					var stateCount = Context.StateCount.ToString("N0", CultureInfo.InvariantCulture);
+					var transitionCount = Context.TransitionCount.ToString("N0", CultureInfo.InvariantCulture);
+					var computedTransitionCount = Context.ComputedTransitionCount.ToString("N0", CultureInfo.InvariantCulture);
+					var statesPerSecond = ((long)(Context.TransitionCount / stopwatch.Elapsed.TotalSeconds)).ToString("N0", CultureInfo.InvariantCulture);
+					var transitionsPerSecond = ((long)(Context.StateCount / stopwatch.Elapsed.TotalSeconds)).ToString("N0", CultureInfo.InvariantCulture);
+
 					Context.Output?.WriteLine(String.Empty);
 					Context.Output?.WriteLine("===============================================");
 					Context.Output?.WriteLine($"Initialization time: {_initializationTime}");
 					Context.Output?.WriteLine($"Model traversal time: {stopwatch.Elapsed}");
-					
-					Context.Output?.WriteLine($"{(long)(Context.StateCount / stopwatch.Elapsed.TotalSeconds):n0} states per second");
-					Context.Output?.WriteLine($"{(long)(Context.TransitionCount / stopwatch.Elapsed.TotalSeconds):n0} transitions per second");
+
+					Context.Output?.WriteLine($"Saved states: {stateCount}");
+					Context.Output?.WriteLine($"Saved transitions: {transitionCount}");
+					Context.Output?.WriteLine($"Computed transitions: {computedTransitionCount}");
+
+					Context.Output?.WriteLine($"{statesPerSecond} states per second");
+					Context.Output?.WriteLine($"{transitionsPerSecond} transitions per second");
 
 					Context.Output?.WriteLine("===============================================");
 					Context.Output?.WriteLine(String.Empty);
@@ -174,13 +190,15 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 		/// <summary>
 		///   Rethrows any exception thrown during the traversal process, if any.
 		/// </summary>
-		protected void RethrowTraversalException()
+		private void RethrowTraversalException()
 		{
 			if (Context.Exception == null)
 				return;
 
 			if (Context.Exception is ModelException)
 				throw new AnalysisException(Context.Exception.InnerException, Context.CounterExample);
+			if (Context.Exception is OutOfMemoryException)
+				throw Context.Exception;
 			ExceptionDispatchInfo.Capture(Context.Exception).Throw();
 		}
 
@@ -191,11 +209,11 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 		{
 			Context.Reset();
 
-			_states.Clear();
-			_loadBalancer.Reset();
-
 			foreach (var worker in _workers)
 				worker.Reset();
+
+			_states.Clear(_workers[0].TraversalModifierStateVectorSize);
+			_loadBalancer.Reset();
 		}
 
 		/// <summary>
@@ -204,6 +222,10 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 		/// <param name="disposing">If true, indicates that the object is disposed; otherwise, the object is finalized.</param>
 		protected override void OnDisposing(bool disposing)
 		{
+			// StateStorage must be freed manually. Reason is that invariant checker does not free up the
+			// space, because it might be necessary for other usages of the ModelTraversers (e.g. StateGraphGenerator
+			// which keeps the States for the StateGraph)
+
 			if (!disposing)
 				return;
 

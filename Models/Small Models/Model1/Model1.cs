@@ -35,7 +35,7 @@ namespace SafetySharp.CaseStudies.SmallModels.Model1
 	{
 		public ExampleComponent()
 		{
-			F1 = new TransientFault();
+			F1 = new TransientFault() { DemandType = Fault.DemandTypes.OnStartOfStep }; ;
 			F1.ProbabilityOfOccurrence = new Probability(0.3);
 		}
 
@@ -78,6 +78,7 @@ namespace SafetySharp.CaseStudies.SmallModels.Model1
 
 			var tc = SafetySharpModelChecker.TraversalConfiguration;
 			tc.WriteGraphvizModels = true;
+			tc.AllowFaultsOnInitialTransitions = false;
 			SafetySharpModelChecker.TraversalConfiguration = tc;
 
 			var result = SafetySharpModelChecker.CalculateProbabilityToReachStateBounded(model, isHazardActive, 50);
@@ -91,7 +92,6 @@ namespace SafetySharp.CaseStudies.SmallModels.Model1
 
 			var tc = SafetySharpModelChecker.TraversalConfiguration;
 			tc.WriteGraphvizModels = true;
-			tc.MomentOfIndependentFaultActivation = MomentOfIndependentFaultActivation.AtStepBeginning;
 			SafetySharpModelChecker.TraversalConfiguration = tc;
 
 			var result = SafetySharpModelChecker.CalculateProbabilityRangeToReachStateBounded(model, model.ModelComponent.HazardActive, 50);

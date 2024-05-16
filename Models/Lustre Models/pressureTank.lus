@@ -1,0 +1,41 @@
+const
+	max_time=9;
+	max_level=60;
+	min_sensed_pressure=40;
+
+node TANK(fault_k1, fault_k2, fault_sensor: bool) returns (level: int);
+var
+	sensor, switch, k1, k2, timer: bool; -- these are the contacts
+	c1_c2 : bool;
+	time: int;
+let	
+	sensor = true -> 
+		if (level >= min_sensed_pressure and not fault_sensor) then false
+		else true;
+		
+	switch = true -> false;
+	
+	c1_c2 = pre(switch) or (false -> pre(k1));
+				
+	k1 = false -> (pre(timer) and c1_c2) or (pre(k1) and fault_k1);
+	
+	k2 = false -> (pre(sensor) and c1_c2) or (pre(k2) and fault_k2); 
+	
+	time = 0 ->
+		-- timer is energized
+		if pre(sensor) and c1_c2 then
+			if pre(time) >= max_time then max_time else pre(time) + 1
+		-- timer is not energized
+		else
+			0;
+	
+	timer = time < max_time;
+		
+	level = 0 ->
+		-- pump is energized
+		if k2 then
+		   if pre(level) >= max_level then max_level else pre(level) + 5
+		-- pump is not energized
+		else
+			0;	
+tel

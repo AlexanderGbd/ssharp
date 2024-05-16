@@ -32,9 +32,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="JetBrains.Annotations, Version=10.0.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
-      <HintPath>..\..\Dependencies\JetBrains.Annotations.10.0.0\lib\net20\JetBrains.Annotations.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="JetBrains.Annotations, Version=11.1.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
+      <HintPath>..\..\Dependencies\JetBrains.Annotations.11.1.0\lib\net20\JetBrains.Annotations.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -49,78 +48,75 @@
     <Compile Include="AnalysisConfiguration.cs" />
     <Compile Include="AnalysisModelTraverser\CompactStateStorage.cs" />
     <Compile Include="AnalysisModelTraverser\SparseStateStorage.cs" />
+    <Compile Include="AnalysisModelTraverser\TemporaryStateStorage.cs" />
+    <Compile Include="AnalysisModelTraverser\TraversalModifiers\PlainlyIntegrateFormulaIntoStateModifier.cs" />
+    <Compile Include="AnalysisModelTraverser\TraversalModifiers\ObserveFormulasModifier.cs" />
     <Compile Include="AnalysisModel\AnalysisModel.cs" />
     <Compile Include="AnalysisModel\CounterExample.cs" />
     <Compile Include="AnalysisModel\TransitionFlags.cs" />
     <Compile Include="DiscreteTimeMarkovChain\BuiltinLtmcModelChecker.cs" />
     <Compile Include="DiscreteTimeMarkovChain\BuiltinDtmcModelCheckerWithoutDictionaries.cs" />
+    <Compile Include="DiscreteTimeMarkovChain\ConfigurationDependentLtmcModelChecker.cs" />
+    <Compile Include="DiscreteTimeMarkovChain\ConsolidateTransitionsModifier.cs" />
     <Compile Include="DiscreteTimeMarkovChain\LtmcModelChecker.cs" />
     <Compile Include="DiscreteTimeMarkovChain\LtmcRetraverseModel.cs" />
     <Compile Include="DiscreteTimeMarkovChain\LtmcToGv.cs" />
+    <Compile Include="DiscreteTimeMarkovChain\MarkovChainFromMarkovChainGenerator.cs" />
+    <Compile Include="DiscreteTimeMarkovChain\ProbabilisticSimulator.cs" />
+    <Compile Include="DiscreteTimeMarkovChain\ProbabilisticSimulatorChoiceResolver.cs" />
     <Compile Include="DiscreteTimeMarkovChain\QuantitativeParametricAnalysis.cs" />
     <Compile Include="ExecutableModel\ModelAware.cs" />
     <Compile Include="ExecutableModel\ExecutableModelCreator.cs" />
     <Compile Include="AnalysisModel\AnalysisModelCreator.cs" />
+    <Compile Include="ExecutedModel\FaultHelper.cs" />
     <Compile Include="FaultMinimalKripkeStructure\InvariantAnalysisResult.cs" />
     <Compile Include="Formula\FaultFormula.cs" />
     <Compile Include="Formula\BoundedBinaryFormula.cs" />
     <Compile Include="Formula\BoundedUnaryFormula.cs" />
     <Compile Include="ExecutableModel\ModelException.cs" />
     <Compile Include="Formula\FormulaExtensions.cs" />
-    <Compile Include="Formula\FormulaVisitors\CollectDeepestOnceFormulasWithCompilableOperandVisitor.cs" />
-    <Compile Include="Formula\FormulaVisitors\CollectMaximalNormalizableFormulasVisitor.cs" />
-    <Compile Include="Formula\FormulaVisitors\CollectStateFormulasVisitor.cs" />
-    <Compile Include="Formula\FormulaVisitors\CollectMaximalCompilableFormulasVisitor.cs" />
-    <Compile Include="Formula\FormulaVisitors\IsFormulasStructurallyEquivalentVisitor.cs" />
-    <Compile Include="Formula\FormulaVisitors\StateFormulaSetEvaluatorCompilationVisitor2.cs" />
-    <Compile Include="Formula\FormulaVisitors\TransferFormulaToNewExecutedModelInstanceVisitor .cs" />
-    <Compile Include="Formula\FormulaVisitors\CollectAtomarPropositionFormulasVisitor.cs" />
+    <Compile Include="AnalysisModelTraverser\FormulaManager.cs" />
+    <Compile Include="FormulaManager\CollectDeepestOnceFormulasWithCompilableOperandVisitor.cs" />
+    <Compile Include="FormulaManager\CollectMaximalNormalizableFormulasVisitor.cs" />
+    <Compile Include="FormulaManager\CollectStateFormulasVisitor.cs" />
+    <Compile Include="FormulaManager\CollectMaximalCompilableFormulasVisitor.cs" />
+    <Compile Include="FormulaManager\IsFormulasStructurallyEquivalentVisitor.cs" />
+    <Compile Include="FormulaManager\TransferFormulaToNewExecutedModelInstanceVisitor .cs" />
+    <Compile Include="FormulaManager\CollectAtomarPropositionFormulasVisitor.cs" />
     <Compile Include="AnalysisModelTraverser\AnalysisException.cs" />
     <Compile Include="InvariantChecker\InvariantAnalysisResult.cs" />
     <Compile Include="GenericDataStructures\AutoResizeBigVector.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\BuiltinNmdpModelChecker.cs" />
+    <Compile Include="MarkovDecisionProcess\Unoptimized\BuiltinLtmdpModelChecker.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\BuiltinNmdpModelChecker.cs" />
+    <Compile Include="MarkovDecisionProcess\Unoptimized\ConfigurationDependentLtmdpModelChecker.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\LabeledTransitionMarkovDecisionProcess.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\LtmdpBuilderDuringTraversal.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\LtmdpCachedLabeledStates.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\LtmdpChoiceResolver.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\LtmdpExecutedModel.cs" />
-    <Compile Include="MarkovDecisionProcess\Unoptimized\LtmdpGenerator.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\LtmdpStepGraph.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\LtmdpToNmdp.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\LtmdpTransition.cs" />
+    <Compile Include="MarkovDecisionProcess\Unoptimized\MarkovDecisionProcessGenerator.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\NestedMarkovDecisionProcess.cs" />
-    <Compile Include="MarkovDecisionProcess\Unoptimized\NmdpFromExecutableModelGenerator.cs" />
-    <Compile Include="MarkovDecisionProcess\Unoptimized\NmdpModelChecker.cs" />
+    <Compile Include="MarkovDecisionProcess\Unoptimized\MarkovDecisionProcessFromExecutableModelGenerator.cs" />
+    <Compile Include="MarkovDecisionProcess\Unoptimized\LtmdpModelChecker.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\LtmdpToGv.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\NmdpToGv.cs" />
-    <Compile Include="MarkovDecisionProcess\ExternalMdpModelCheckerPrism.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\LabeledTransitionMarkovDecisionProcess.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\LtmdpBuilderDuringTraversal.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\LtmdpCachedLabeledStates.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\LtmdpChoiceResolver.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\LtmdpChosenValueStack.cs" />
+    <Compile Include="ExternalToolSupport\ExternalMdpModelCheckerPrism.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\LtmdpContinuationDistributionMapper.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\LtmdpExecutedModel.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\LtmdpGenerator.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\LtmdpStepGraph.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\LtmdpToNmdp.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\LtmdpTransition.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\NestedMarkovDecisionProcess.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\NmdpFromExecutableModelGenerator.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\NmdpModelChecker.cs" />
-    <Compile Include="MarkovDecisionProcess\Optimized\NmdpToGv.cs" />
+    <Compile Include="MarkovDecisionProcess\Unoptimized\NmdpToMdpByFlattening.cs" />
+    <Compile Include="MarkovDecisionProcess\Unoptimized\NmdpToMdpByNewStates.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\NmdpToMdp.cs" />
     <Compile Include="MarkovDecisionProcess\LtmdpChoiceType.cs" />
     <Compile Include="MinimalCriticalSetAnalysis\FaultActivationBehavior.cs" />
-    <Compile Include="Formula\FormulaVisitors\IsFormulaReturningBoolValueVisitor.cs" />
-    <Compile Include="Formula\FormulaVisitors\IsFormulaReturningRewardResultVisitor.cs" />
-    <Compile Include="Formula\FormulaVisitors\IsLtlFormulaVisitor.cs" />
-    <Compile Include="Formula\FormulaVisitors\IsStateFormulaVisitor.cs" />
-    <Compile Include="Formula\FormulaVisitors\LabelingVectorFormulaEvaluatorCompilationVisitor.cs" />
-    <Compile Include="Formula\FormulaVisitors\LtsMinLtlTransformer.cs" />
-    <Compile Include="Formula\FormulaVisitors\PrismTransformer.cs" />
-    <Compile Include="Formula\FormulaVisitors\FormulaCompilationVisitor.cs" />
+    <Compile Include="FormulaManager\IsFormulaReturningBoolValueVisitor.cs" />
+    <Compile Include="FormulaManager\IsFormulaReturningRewardResultVisitor.cs" />
+    <Compile Include="FormulaManager\IsLtlFormulaVisitor.cs" />
+    <Compile Include="FormulaManager\IsStateFormulaVisitor.cs" />
+    <Compile Include="ExternalToolSupport\LtsMinLtlTransformer.cs" />
+    <Compile Include="ExternalToolSupport\PrismTransformer.cs" />
+    <Compile Include="FormulaManager\FormulaCompilationVisitor.cs" />
     <Compile Include="ExecutedModel\ModelCapacity.cs" />
     <Compile Include="FaultMinimalKripkeStructure\ActivationMinimalExecutedModel.cs" />
     <Compile Include="InvariantChecker\InvariantChecker.cs" />
@@ -149,30 +145,29 @@
     <Compile Include="DiscreteTimeMarkovChain\DtmcModelChecker.cs" />
     <Compile Include="DiscreteTimeMarkovChain\DtmcToGv.cs" />
     <Compile Include="DiscreteTimeMarkovChain\DtmcToMrmc.cs" />
-    <Compile Include="DiscreteTimeMarkovChain\ExternalDtmcModelCheckerMrmc.cs" />
+    <Compile Include="ExternalToolSupport\ExternalDtmcModelCheckerMrmc.cs" />
     <Compile Include="DiscreteTimeMarkovChain\LabeledTransitionMarkovChain.cs" />
     <Compile Include="DiscreteTimeMarkovChain\LabeledTransitionMarkovChain2.cs" />
     <Compile Include="DiscreteTimeMarkovChain\TraversalModifiers\LtmcBuilder.cs" />
     <Compile Include="DiscreteTimeMarkovChain\LtmcChoiceResolver.cs" />
     <Compile Include="DiscreteTimeMarkovChain\LtmcExecutedModel.cs" />
-    <Compile Include="DiscreteTimeMarkovChain\LtmcGenerator.cs" />
+    <Compile Include="DiscreteTimeMarkovChain\MarkovChainGenerator.cs" />
     <Compile Include="DiscreteTimeMarkovChain\LtmcChosenValueStack.cs" />
     <Compile Include="DiscreteTimeMarkovChain\LtmcToDtmc.cs" />
     <Compile Include="DiscreteTimeMarkovChain\LtmcTransition.cs" />
     <Compile Include="DiscreteTimeMarkovChain\LtmcTransitionSetBuilder.cs" />
-    <Compile Include="DiscreteTimeMarkovChain\MrmcTransformer.cs" />
+    <Compile Include="ExternalToolSupport\MrmcTransformer.cs" />
     <Compile Include="AnalysisModelTraverser\TraversalModifiers\EarlyTerminationModifier.cs" />
-    <Compile Include="AnalysisModelTraverser\IModelWithStateLabelingInLabelingVector.cs" />
     <Compile Include="MarkovDecisionProcess\BuiltinMdpModelChecker.cs" />
     <Compile Include="MarkovDecisionProcess\Unoptimized\LtmdpChosenValueStack.cs" />
     <Compile Include="MarkovDecisionProcess\Traditional\MarkovDecisionProcess.cs" />
     <Compile Include="MarkovDecisionProcess\Traditional\MdpModelChecker.cs" />
     <Compile Include="MarkovDecisionProcess\Traditional\MdpToGv.cs" />
     <Compile Include="MarkovDecisionProcess\Traditional\MdpToPrism.cs" />
-    <Compile Include="MarkovDecisionProcess\Traditional\PrismProcess.cs" />
+    <Compile Include="ExternalToolSupport\PrismProcess.cs" />
     <Compile Include="DiscreteTimeMarkovChain\RewardRetrieverCollector.cs" />
     <Compile Include="GenericDataStructures\SparseDoubleMatrix.cs" />
-    <Compile Include="Formula\FormulaVisitors\StateFormulaSetEvaluatorCompilationVisitor.cs" />
+    <Compile Include="FormulaManager\StateFormulaSetEvaluatorCompilationVisitor.cs" />
     <Compile Include="FaultMinimalKripkeStructure\QualitativeChecker.cs" />
     <Compile Include="MinimalCriticalSetAnalysis\SafetyAnalysis.cs" />
     <Compile Include="MinimalCriticalSetAnalysis\SafetyAnalysisBackend.cs" />
@@ -257,10 +252,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ModelNormalizer\" />
-    <Folder Include="QualitativeChecker\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Properties\InternalsVisibleTo.tt">

@@ -34,6 +34,7 @@ namespace SafetySharp.CaseStudies.HemodialysisMachine.Modeling.DialyzingFluidDel
 			MainFlow = new DialyzingFluidFlowInToOut();
 			MainFlow.UpdateBackward = SetMainFlowSuction;
 			MainFlow.UpdateForward = SetMainFlow;
+			PumpDefect.HasCustomDemand = () => PumpSpeed != 0;
 		}
 
 		[Range(0, 8, OverflowBehavior.Error)]
@@ -55,7 +56,7 @@ namespace SafetySharp.CaseStudies.HemodialysisMachine.Modeling.DialyzingFluidDel
 			return toPredecessor;
 		}
 		
-		public readonly Fault PumpDefect = new PermanentFault();
+		public readonly Fault PumpDefect = new PermanentFault { DemandType = Fault.DemandTypes.OnStartOfStep };
 
 		[FaultEffect(Fault = nameof(PumpDefect))]
 		public class PumpDefectEffect : Pump

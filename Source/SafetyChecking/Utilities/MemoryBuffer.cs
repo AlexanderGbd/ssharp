@@ -300,6 +300,23 @@ namespace ISSE.SafetyChecking.Utilities
 				Delegate = (Action<IntPtr, int>)method.CreateDelegate(typeof(Action<IntPtr, int>));
 			}
 
+			public static void ClearWithZero(byte* memoryStart, long elements)
+			{
+				var bytesToErase = elements;
+				if (bytesToErase <= Int32.MaxValue)
+				{
+					Delegate(new IntPtr(memoryStart), (int)bytesToErase);
+				}
+				else
+				{
+					Console.WriteLine($"{nameof(MemoryBuffer)}: Using slow memory clearing");
+					for (var i = 0; i < elements; i++)
+					{
+						memoryStart[i] = 0;
+					}
+				}
+			}
+
 			public static void ClearWithZero(int* memoryStart, long elements)
 			{
 				var bytesToErase = elements * sizeof(int);
@@ -312,7 +329,7 @@ namespace ISSE.SafetyChecking.Utilities
 					Console.WriteLine($"{nameof(MemoryBuffer)}: Using slow memory clearing");
 					for (var i = 0; i < elements; i++)
 					{
-						memoryStart[i] = -1;
+						memoryStart[i] = 0;
 					}
 				}
 			}
@@ -348,6 +365,23 @@ namespace ISSE.SafetyChecking.Utilities
 				Delegate = (Action<IntPtr, uint>)method.CreateDelegate(typeof(Action<IntPtr, uint>));
 			}
 
+			public static void ClearWithMinus1(byte* memoryStart, long elements)
+			{
+				var bytesToErase = elements * sizeof(byte);
+				if (bytesToErase <= uint.MaxValue)
+				{
+					Delegate(new IntPtr(memoryStart), (uint)bytesToErase);
+				}
+				else
+				{
+					Console.WriteLine($"{nameof(MemoryBuffer)}: Using slow memory clearing");
+					for (var i = 0; i < elements; i++)
+					{
+						memoryStart[i] = 255; //byte goes from 0-255.
+					}
+				}
+			}
+
 			public static void ClearWithMinus1(int* memoryStart, long elements)
 			{
 				var bytesToErase = elements * sizeof(int);
@@ -377,7 +411,7 @@ namespace ISSE.SafetyChecking.Utilities
 					Console.WriteLine($"{nameof(MemoryBuffer)}: Using slow memory clearing");
 					for (var i = 0; i < elements; i++)
 					{
-						memoryStart[i] = -1;
+						memoryStart[i] = -1L;
 					}
 				}
 			}

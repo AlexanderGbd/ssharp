@@ -36,11 +36,11 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 	{
 		private MarkovDecisionProcess.UnderlyingDigraph _underlyingDigraph;
 
-		private double[] CreateDerivedVector(Dictionary<int, bool> exactlyOneStates)
+		private double[] CreateDerivedVector(Dictionary<long, bool> exactlyOneStates)
 		{
 			var derivedVector = new double[MarkovDecisionProcess.States];
 
-			for (var i = 0; i < MarkovDecisionProcess.States; i++)
+			for (var i = 0L; i < MarkovDecisionProcess.States; i++)
 			{
 				if (exactlyOneStates.ContainsKey(i))
 					derivedVector[i] = 1.0;
@@ -50,10 +50,10 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 			return derivedVector;
 		}
 
-		public Dictionary<int, bool> CreateComplement(Dictionary<int, bool> states)
+		public Dictionary<long, bool> CreateComplement(Dictionary<long, bool> states)
 		{
-			var complement = new Dictionary<int, bool>();
-			for (var i = 0; i < MarkovDecisionProcess.States; i++)
+			var complement = new Dictionary<long, bool>();
+			for (var i = 0L; i < MarkovDecisionProcess.States; i++)
 			{
 				if (!states.ContainsKey(i))
 					complement.Add(i, true);
@@ -68,10 +68,10 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 			_underlyingDigraph = MarkovDecisionProcess.CreateUnderlyingDigraph();
 		}
 
-		internal Dictionary<int, bool> CalculateSatisfiedStates(Func<int, bool> formulaEvaluator)
+		internal Dictionary<long, bool> CalculateSatisfiedStates(Func<long, bool> formulaEvaluator)
 		{
-			var satisfiedStates = new Dictionary<int, bool>();
-			for (var i = 0; i < MarkovDecisionProcess.States; i++)
+			var satisfiedStates = new Dictionary<long, bool>();
+			for (var i = 0L; i < MarkovDecisionProcess.States; i++)
 			{
 				if (formulaEvaluator(i))
 					satisfiedStates.Add(i, true);
@@ -137,7 +137,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 			return finalProbability;
 		}
 
-		internal double[] MinimumIterator(Dictionary<int, bool> exactlyOneStates, Dictionary<int, bool> exactlyZeroStates, int steps)
+		internal double[] MinimumIterator(Dictionary<long, bool> exactlyOneStates, Dictionary<long, bool> exactlyZeroStates, int steps)
 		{
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
@@ -208,7 +208,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 		}
 
 
-		internal double[] MaximumIterator(Dictionary<int, bool> exactlyOneStates, Dictionary<int, bool> exactlyZeroStates, int steps)
+		internal double[] MaximumIterator(Dictionary<long, bool> exactlyOneStates, Dictionary<long, bool> exactlyZeroStates, int steps)
 		{
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
@@ -281,12 +281,14 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 
 		internal double CalculateMinimumProbabilityToReachStateFormulaInBoundedSteps(Formula psi, int steps)
 		{
+			var adjustedSteps = AdjustNumberOfStepsForFactor(steps);
+
 			var psiEvaluator = MarkovDecisionProcess.CreateFormulaEvaluator(psi);
 
 			var directlySatisfiedStates = CalculateSatisfiedStates(psiEvaluator);
-			var excludedStates = new Dictionary<int, bool>(); // change for \phi Until \psi
+			var excludedStates = new Dictionary<long, bool>(); // change for \phi Until \psi
 
-			var xnew = MinimumIterator(directlySatisfiedStates, excludedStates, steps);
+			var xnew = MinimumIterator(directlySatisfiedStates, excludedStates, adjustedSteps);
 
 			var finalProbability = CalculateMinimumFinalProbability(xnew);
 
@@ -295,21 +297,22 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 
 		internal double CalculateMaximumProbabilityToReachStateFormulaInBoundedSteps(Formula psi, int steps)
 		{
+			var adjustedSteps = AdjustNumberOfStepsForFactor(steps);
+
 			var psiEvaluator = MarkovDecisionProcess.CreateFormulaEvaluator(psi);
 
 			var directlySatisfiedStates = CalculateSatisfiedStates(psiEvaluator);
-			var excludedStates = new Dictionary<int, bool>(); // change for \phi Until \psi
-
-
-			var xnew = MaximumIterator(directlySatisfiedStates, excludedStates, steps);
+			var excludedStates = new Dictionary<long, bool>(); // change for \phi Until \psi
+			
+			var xnew = MaximumIterator(directlySatisfiedStates, excludedStates, adjustedSteps);
 
 			var finalProbability = CalculateMaximumFinalProbability(xnew);
 
 			return finalProbability;
 		}
 
-		public Dictionary<int, bool> StatesReachableWithProbabilityExactlyZeroWithAllSchedulers(Dictionary<int, bool> directlySatisfiedStates,
-																								Dictionary<int, bool> excludedStates)
+		public Dictionary<long, bool> StatesReachableWithProbabilityExactlyZeroWithAllSchedulers(Dictionary<long, bool> directlySatisfiedStates,
+																								Dictionary<long, bool> excludedStates)
 		{
 			// calculate probabilityExactlyZero (prob0a). No matter which scheduler is selected, the probability
 			// of the resulting states is zero.
@@ -321,12 +324,12 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 			//     This is simply the set of all ancestors of directlySatisfiedStates.
 			// The complement of probabilityGreaterThanZero is the set of states where _all_ adversaries have a probability
 			// to reach a directlySatisfiedState is exactly 0.
-			Func<int, bool> nodesToIgnore =
+			Func<long, bool> nodesToIgnore =
 				excludedStates.ContainsKey;
 
 			// based on DFS https://en.wikipedia.org/wiki/Depth-first_search
-			var ancestors = new Dictionary<int, bool>();
-			var nodesToTraverse = new Stack<int>();
+			var ancestors = new Dictionary<long, bool>();
+			var nodesToTraverse = new Stack<long>();
 			foreach (var node in directlySatisfiedStates)
 			{
 				nodesToTraverse.Push(node.Key);
@@ -355,14 +358,14 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 		}
 
 
-		public Dictionary<int, bool> StatesReachableWithProbabilityExactlyZeroForAtLeastOneScheduler(
-			Dictionary<int, bool> directlySatisfiedStates, Dictionary<int, bool> excludedStates)
+		public Dictionary<long, bool> StatesReachableWithProbabilityExactlyZeroForAtLeastOneScheduler(
+			Dictionary<long, bool> directlySatisfiedStates, Dictionary<long, bool> excludedStates)
 		{
 			// calculate probabilityExactlyZero (prob0e). There exists a scheduler, for which the probability of
 			// the resulting states is zero. The result may be different for another scheduler, but at least there exists one.
 			// This is exact
 
-			Dictionary<int, bool> ancestorsFound = null;
+			Dictionary<long, bool> ancestorsFound = null;
 			var probabilityGreaterThanZero = directlySatisfiedStates; //we know initially this is satisfied
 
 			var mdpEnumerator = MarkovDecisionProcess.GetEnumerator();
@@ -371,7 +374,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 			//     no matter which scheduler is selected (valid for _all_ adversaries).
 			// The complement of probabilityGreaterThanZero is the set of states where a scheduler _exists_ for
 			//     which the probability to reach a directlySatisfiedState is exactly 0.
-			Func<int, bool> nodesToIgnore = source =>
+			Func<long, bool> nodesToIgnore = source =>
 			{
 				//nodes found by UpdateAncestors are always SourceNodes of a edge to an ancestor in ancestorsFound
 				if (excludedStates.ContainsKey(source))
@@ -402,7 +405,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 			while (!fixpointReached)
 			{
 				// Calculate fix point of probabilityGreaterThanZero
-				// Should be finished in one iteration, but I do have not proved it yet, so repeat it until fixpoint is reached for sure.
+				// Should be finished in one iteration, but I have not proved it yet, so repeat it until fixpoint is reached for sure.
 				// (The proof relies on details of the algorithm GetAncestors. Intuition: When a state s was not added to the set of
 				//  ancestors it is because one distribution d' has no target state in the ancestors found yet. If the state is in the
 				//  final set of ancestors, the reason is that the state s' of the distribution d', which was responsible for declining
@@ -410,10 +413,10 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 				// Note:
 				//   UpdateAncestors must be used, because nodesToIgnore requires access to the current information about the ancestors
 				//   (ancestorsFound), if it should work in one iteration.
-				ancestorsFound = new Dictionary<int, bool>();
+				ancestorsFound = new Dictionary<long, bool>();
 					//Note: We reuse ancestorsFound, which is also known and used by nodesToIgnore. The side effects are on purpose.
 				// based on DFS https://en.wikipedia.org/wiki/Depth-first_search
-				var nodesToTraverse = new Stack<int>();
+				var nodesToTraverse = new Stack<long>();
 				foreach (var node in probabilityGreaterThanZero)
 				{
 					nodesToTraverse.Push(node.Key);
@@ -443,8 +446,8 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 			return probabilityExactlyZero;
 		}
 
-		public Dictionary<int, bool> StatesReachableWithProbabilityExactlyOneForAtLeastOneScheduler(Dictionary<int, bool> directlySatisfiedStates,
-																									Dictionary<int, bool> excludedStates)
+		public Dictionary<long, bool> StatesReachableWithProbabilityExactlyOneForAtLeastOneScheduler(Dictionary<long, bool> directlySatisfiedStates,
+																									Dictionary<long, bool> excludedStates)
 		{
 			// calculate probabilityExactlyOne (prob1e). There exists a scheduler, for which the probability of
 			// the resulting states is exactly 1. The result may be different for another scheduler, but at least there exists one.
@@ -458,10 +461,10 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 			// state in probabilityMightBeExactlyOne (Reason: It is possible from there to go to a state where probability < 1).
 			// The fixpoint is the result.
 
-			Func<int, bool> nodesToIgnore = excludedStates.ContainsKey;
-			var probabilityMightBeExactlyOne = CreateComplement(new Dictionary<int, bool>()); //all states
+			Func<long, bool> nodesToIgnore = excludedStates.ContainsKey;
+			var probabilityMightBeExactlyOne = CreateComplement(new Dictionary<long, bool>()); //all states
 
-			var _isDistributionIncludedCache = new Dictionary<int, bool>();
+			var _isDistributionIncludedCache = new Dictionary<long, bool>();
 			var mdpEnumerator = MarkovDecisionProcess.GetEnumerator();
 			Action resetDistributionIncludedCacheForNewIteration = () =>
 			{
@@ -470,7 +473,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 				// On the other hand: Clearing the whole data structure makes the dictionary smaller and access faster.
 				_isDistributionIncludedCache.Clear();
 			};
-			Func<int, bool> isDistributionIncluded = rowOfDistribution =>
+			Func<long, bool> isDistributionIncluded = rowOfDistribution =>
 			{
 				if (_isDistributionIncludedCache.ContainsKey(rowOfDistribution))
 					return _isDistributionIncludedCache[rowOfDistribution];
@@ -491,10 +494,10 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 			while (!fixpointReached)
 			{
 				resetDistributionIncludedCacheForNewIteration();
-				var ancestorsFound = new Dictionary<int, bool>(); //Note: ancestorsFound must not be reused
+				var ancestorsFound = new Dictionary<long, bool>(); //Note: ancestorsFound must not be reused
 
 				// based on DFS https://en.wikipedia.org/wiki/Depth-first_search
-				var nodesToTraverse = new Stack<int>();
+				var nodesToTraverse = new Stack<long>();
 				foreach (var node in directlySatisfiedStates)
 				{
 					nodesToTraverse.Push(node.Key);
@@ -525,7 +528,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 			return probabilityMightBeExactlyOne;
 		}
 
-		public Dictionary<int, bool> SubsetOfStatesReachableWithProbabilityExactlyOneWithAllSchedulers(Dictionary<int, bool> directlySatisfiedStates, Dictionary<int, bool> excludedStates)
+		public Dictionary<long, bool> SubsetOfStatesReachableWithProbabilityExactlyOneWithAllSchedulers(Dictionary<long, bool> directlySatisfiedStates, Dictionary<long, bool> excludedStates)
 		{
 			// calculate probabilityExactlyOne (prob1a). No matter which scheduler is selected, the probability
 			// of the resulting states is exactly 1.
@@ -539,12 +542,12 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 		{
 			// same algorithm as CalculateMaximumProbabilityToReachStateFormulaInBoundedSteps with different
 			// directlySatisfiedStates and excludedStates
-			var maxSteps = 50;
+			var maxSteps = AdjustNumberOfStepsForFactor(50);
 
 			var psiEvaluator = MarkovDecisionProcess.CreateFormulaEvaluator(psi);
 
 			var directlySatisfiedStates = CalculateSatisfiedStates(psiEvaluator);
-			var excludedStates = new Dictionary<int, bool>();  // change for \phi Until \psi
+			var excludedStates = new Dictionary<long, bool>();  // change for \phi Until \psi
 
 			var exactlyZeroStates = StatesReachableWithProbabilityExactlyZeroWithAllSchedulers(directlySatisfiedStates,excludedStates);
 			var exactlyOneStates = StatesReachableWithProbabilityExactlyOneForAtLeastOneScheduler(directlySatisfiedStates, excludedStates); //cannot perform a better pre calculation
@@ -562,12 +565,12 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 		{
 			// same algorithm as CalculateMinimumProbabilityToReachStateFormulaInBoundedSteps with different
 			// directlySatisfiedStates and excludedStates
-			var maxSteps = 50;
+			var maxSteps = AdjustNumberOfStepsForFactor(50);
 
 			var psiEvaluator = MarkovDecisionProcess.CreateFormulaEvaluator(psi);
 
 			var directlySatisfiedStates = CalculateSatisfiedStates(psiEvaluator);
-			var excludedStates = new Dictionary<int, bool>();  // change for \phi Until \psi
+			var excludedStates = new Dictionary<long, bool>();  // change for \phi Until \psi
 
 			var exactlyZeroStates = StatesReachableWithProbabilityExactlyZeroForAtLeastOneScheduler(directlySatisfiedStates, excludedStates);
 			var exactlyOneStates = SubsetOfStatesReachableWithProbabilityExactlyOneWithAllSchedulers(directlySatisfiedStates, excludedStates); // this algorithm is only an approximation
@@ -577,6 +580,14 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess
 			var finalProbability = CalculateMinimumFinalProbability(xnew);
 
 			return finalProbability;
+		}
+
+		private int AdjustNumberOfStepsForFactor(int usualNoOfSteps)
+		{
+			var adjustmentForUsualSteps = usualNoOfSteps * MarkovDecisionProcess.FactorForBoundedAnalysis;
+			// The former initial step is now divided into the 1 initial mdp state and (FactorForBoundedAnalysis-1) normal mdp states
+			var adjustmentForInitialSteps = MarkovDecisionProcess.FactorForBoundedAnalysis -1;
+			return adjustmentForUsualSteps+adjustmentForInitialSteps;
 		}
 
 		/*

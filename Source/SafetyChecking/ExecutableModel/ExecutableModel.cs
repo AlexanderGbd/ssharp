@@ -82,7 +82,6 @@ namespace ISSE.SafetyChecking.ExecutableModel
 
 		protected void CheckConsistencyAfterInitialization()
 		{
-			FaultSet.CheckFaultCount(Faults.Length);
 			StateFormulaSet.CheckFormulaCount(AtomarPropositionFormulas.Length);
 		}
 
@@ -121,6 +120,21 @@ namespace ISSE.SafetyChecking.ExecutableModel
 		///   Gets the faults contained in the model that can be activated nondeterministically.
 		/// </summary>
 		public Fault[] NondeterministicFaults { get; private set; }
+		
+		/// <summary>
+		///   Gets the nondeterministic faults contained in the model that are activated on the start of a step.
+		/// </summary>
+		public Fault[] OnStartOfStepFaults { get; private set; }
+
+		/// <summary>
+		///   Gets the nondeterministic faults contained in the model that are activated on the call of a method in the fault effect.
+		/// </summary>
+		public Fault[] OnMethodCallFaults { get; private set; }
+
+		/// <summary>
+		///   Gets the nondeterministic faults contained in the model that are activated at the beginning of a step when custom fault method evaluates to true.
+		/// </summary>
+		public Fault[] OnCustomFaults { get; private set; }
 
 		/// <summary>
 		///   Gets the faults contained in the model that can be activated nondeterministically and that must be notified about their
@@ -152,6 +166,9 @@ namespace ISSE.SafetyChecking.ExecutableModel
 		{
 			NondeterministicFaults = Faults.Where(fault => fault.Activation == Activation.Nondeterministic).ToArray();
 			ActivationSensitiveFaults = NondeterministicFaults.Where(fault => fault.RequiresActivationNotification).ToArray();
+			OnStartOfStepFaults = NondeterministicFaults.Where(fault => fault.DemandType==Fault.DemandTypes.OnStartOfStep).ToArray();
+			OnMethodCallFaults = NondeterministicFaults.Where(fault => fault.DemandType == Fault.DemandTypes.OnMethodCall).ToArray();
+			OnCustomFaults = NondeterministicFaults.Where(fault => fault.DemandType == Fault.DemandTypes.OnCustom).ToArray();
 		}
 
 		/// <summary>
@@ -336,6 +353,8 @@ namespace ISSE.SafetyChecking.ExecutableModel
 
 			return notificationsSent;
 		}
+
+		public abstract void WriteOptimizedStateVectorLayout(System.IO.TextWriter textWriter);
 
 		public abstract CounterExampleSerialization<TExecutableModel> CounterExampleSerialization { get; }
 		

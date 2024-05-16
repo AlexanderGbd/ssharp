@@ -38,9 +38,15 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 
 	class BuiltinDtmcModelChecker : DtmcModelChecker
 	{
-		private DiscreteTimeMarkovChain.UnderlyingDigraph _underlyingDigraph;
+		private readonly DiscreteTimeMarkovChain.UnderlyingDigraph _underlyingDigraph;
 
-		private SparseDoubleMatrix CreateDerivedMatrix(Dictionary<int, bool> exactlyOneStates, Dictionary<int, bool> exactlyZeroStates)
+		// Note: Should be used with using(var modelchecker = new ...)
+		public BuiltinDtmcModelChecker(DiscreteTimeMarkovChain markovChain, TextWriter output = null) : base(markovChain, output)
+		{
+			_underlyingDigraph = MarkovChain.CreateUnderlyingDigraph();
+		}
+
+		private SparseDoubleMatrix CreateDerivedMatrix(Dictionary<long, bool> exactlyOneStates, Dictionary<long, bool> exactlyZeroStates)
 		{
 			//Derived matrix is 0-based. Row i is equivalent to the probability distribution of state i (this is not the case for the Markov Chain). 
 
@@ -87,11 +93,11 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 			return derivedMatrix;
 		}
 
-		private double[] CreateDerivedVector(Dictionary<int, bool> exactlyOneStates)
+		private double[] CreateDerivedVector(Dictionary<long, bool> exactlyOneStates)
 		{
 			var derivedVector = new double[MarkovChain.States];
 
-			for (var i = 0; i < MarkovChain.States; i++)
+			for (var i = 0L; i < MarkovChain.States; i++)
 			{
 				if (exactlyOneStates.ContainsKey(i))
 					derivedVector[i] = 1.0;
@@ -101,28 +107,22 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 			return derivedVector;
 		}
 
-		public Dictionary<int, bool> CreateComplement(Dictionary<int, bool> states)
+		public Dictionary<long, bool> CreateComplement(Dictionary<long, bool> states)
 		{
-			var complement = new Dictionary<int, bool>();
-			for (var i = 0; i < MarkovChain.States; i++)
+			var complement = new Dictionary<long, bool>();
+			for (var i = 0L; i < MarkovChain.States; i++)
 			{
 				if (!states.ContainsKey(i))
 					complement.Add(i, true);
 			}
 			return complement;
 		}
-
-		// Note: Should be used with using(var modelchecker = new ...)
-		public BuiltinDtmcModelChecker(DiscreteTimeMarkovChain markovChain, TextWriter output = null) : base(markovChain, output)
-		{
-			_underlyingDigraph = MarkovChain.CreateUnderlyingDigraph();
-		}
 		
 
-		internal Dictionary<int,bool> CalculateSatisfiedStates(Func<int,bool> formulaEvaluator)
+		internal Dictionary<long, bool> CalculateSatisfiedStates(Func<long, bool> formulaEvaluator)
 		{
-			var satisfiedStates = new Dictionary<int,bool>();
-			for (var i = 0; i < MarkovChain.States; i++)
+			var satisfiedStates = new Dictionary<long, bool>();
+			for (var i = 0L; i < MarkovChain.States; i++)
 			{
 				if (formulaEvaluator(i))
 					satisfiedStates.Add(i,true);
@@ -185,6 +185,104 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 			return resultVector;
 		}
 
+
+		private double CalculateUnboundUntil(Formula psi, Formula phi, int iterationsLeft)
+		{
+			// On algorithmic verification methods for probabilistic systems (1998) by Christel Baier
+			// Theorem 3.1.6 (page 36)
+			// http://wwwneu.inf.tu-dresden.de/content/institutes/thi/algi/publikationen/texte/15_98.pdf
+
+			// Pr[phi U psi]
+			// calculate P [true U<=steps psi]
+
+			var stopwatch = new Stopwatch();
+			stopwatch.Start();
+
+			var psiEvaluator = MarkovChain.CreateFormulaEvaluator(psi);
+			var stateCount = MarkovChain.States;
+
+			var fixPointReached = iterationsLeft <= 0;
+
+			var directlySatisfiedStates = CalculateSatisfiedStates(psiEvaluator);
+			Dictionary<long, bool> excludedStates;
+			if (phi == null)
+			{
+				excludedStates = new Dictionary<long, bool>();
+			}
+			else
+			{
+				// excludedStates = Sat(\phi) \Cup Sat(psi)
+				var phiEvaluator = MarkovChain.CreateFormulaEvaluator(phi);
+				var phiOrPsiStates = CalculateSatisfiedStates(phiEvaluator);
+				foreach (var directlySatisfiedState in directlySatisfiedStates)
+				{
+					phiOrPsiStates[directlySatisfiedState.Key] = true;
+				}
+				excludedStates = CreateComplement(phiOrPsiStates);
+			}
+			
+			// calculate probabilityExactlyZero (prob0)
+			var probabilityExactlyZero = ProbabilityExactlyZero(directlySatisfiedStates, excludedStates);
+
+			// calculate probabilityExactlyOne (prob1)
+			var probabilityExactlyOne = ProbabilityExactlyOne(directlySatisfiedStates, excludedStates, probabilityExactlyZero);
+
+
+			var enumerator = MarkovChain.GetEnumerator();
+
+			var xold = new double[stateCount];
+			var xnew = CreateDerivedVector(probabilityExactlyOne);
+			var loops = 0;
+			while (!fixPointReached)
+			{
+				// switch xold and xnew
+				var xtemp = xold;
+				xold = xnew;
+				xnew = xtemp;
+				iterationsLeft--;
+				loops++;
+				for (var i = 0; i < stateCount; i++)
+				{
+					if (probabilityExactlyOne.ContainsKey(i))
+					{
+						//we could remove this line, because already set by CreateDerivedVector and never changed when we initialize xold with CreateDerivedVector(directlySatisfiedStates)
+						xnew[i] = 1.0;
+					}
+					else if (probabilityExactlyZero.ContainsKey(i))
+					{
+						//we could remove this line, because already set by CreateDerivedVector and never changed when we initialize xold with CreateDerivedVector(directlySatisfiedStates)
+						xnew[i] = 0.0;
+					}
+					else
+					{
+						enumerator.SelectSourceState(i);
+						var sum = 0.0;
+						while (enumerator.MoveNextTransition())
+						{
+							var entry = enumerator.CurrentTransition;
+							sum += entry.Value * xold[entry.Column];
+						}
+						xnew[i] = sum;
+					}
+				}
+
+				if (loops % 10 == 0)
+				{
+					stopwatch.Stop();
+					var currentProbability = CalculateFinalProbability(xnew);
+					_output?.WriteLine($"{loops} Fixpoint Until iterations in {stopwatch.Elapsed}. Current probability={currentProbability.ToString(CultureInfo.InvariantCulture)}");
+					stopwatch.Start();
+				}
+				if (iterationsLeft <= 0)
+					fixPointReached = true;
+			}
+
+			var finalProbability = CalculateFinalProbability(xnew);
+
+			stopwatch.Stop();
+			return finalProbability;
+		}
+
 		private double CalculateFinalProbability(double[] initialStateProbabilities)
 		{
 			var finalProbability = 0.0;
@@ -211,10 +309,10 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 			var stateCount = MarkovChain.States;
 
 			var directlySatisfiedStates = CalculateSatisfiedStates(psiEvaluator);
-			Dictionary<int, bool> excludedStates;
+			Dictionary<long, bool> excludedStates;
 			if (phi == null)
 			{
-				 excludedStates = new Dictionary<int, bool>();
+				 excludedStates = new Dictionary<long, bool>();
 			}
 			else
 			{
@@ -278,25 +376,24 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 			
 			stopwatch.Stop();
 			return finalProbability;
-			
 		}
 
-		private Dictionary<int, bool> ProbabilityExactlyZero(Dictionary<int, bool> directlySatisfiedStates , Dictionary<int, bool> excludedStates)
+		private Dictionary<long, bool> ProbabilityExactlyZero(Dictionary<long, bool> directlySatisfiedStates , Dictionary<long, bool> excludedStates)
 		{
 			// calculate probabilityExactlyZero (prob0)
-			Func<int, bool> nodesToIgnore =
+			Func<long, bool> nodesToIgnore =
 				excludedStates.ContainsKey;
-			var probabilityGreaterThanZero = _underlyingDigraph.BaseGraph.GetAncestors(directlySatisfiedStates, nodesToIgnore);
+			var probabilityGreaterThanZero = _underlyingDigraph.BaseGraph.GetAncestors(directlySatisfiedStates.Keys, nodesToIgnore);
 			var probabilityExactlyZero = CreateComplement(probabilityGreaterThanZero);
 			return probabilityExactlyZero;
 		}
 
-		private Dictionary<int, bool> ProbabilityExactlyOne(Dictionary<int, bool> directlySatisfiedStates, Dictionary<int, bool> excludedStates, Dictionary<int, bool> probabilityExactlyZero)
+		private Dictionary<long, bool> ProbabilityExactlyOne(Dictionary<long, bool> directlySatisfiedStates, Dictionary<long, bool> excludedStates, Dictionary<long, bool> probabilityExactlyZero)
 		{
 			// calculate probabilityExactlyOne (prob1)
-			Func<int, bool> nodesToIgnore =
+			Func<long, bool> nodesToIgnore =
 				node => excludedStates.ContainsKey(node) || directlySatisfiedStates.ContainsKey(node);
-			var probabilitySmallerThanOne = _underlyingDigraph.BaseGraph.GetAncestors(probabilityExactlyZero, nodesToIgnore); ;
+			var probabilitySmallerThanOne = _underlyingDigraph.BaseGraph.GetAncestors(probabilityExactlyZero.Keys, nodesToIgnore); ;
 			var probabilityExactlyOne = CreateComplement(probabilitySmallerThanOne);
 			return probabilityExactlyOne;
 		}
@@ -306,7 +403,7 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 			// calculate P [true U psi]
 			var psiEvaluator = MarkovChain.CreateFormulaEvaluator(psi);
 			var directlySatisfiedStates = CalculateSatisfiedStates(psiEvaluator);
-			var excludedStates = new Dictionary<int,bool>();  // change for \phi Until \psi. For classical "Finally", no states are excluded
+			var excludedStates = new Dictionary<long,bool>();  // change for \phi Until \psi. For classical "Finally", no states are excluded
 
 			// calculate probabilityExactlyZero (prob0)
 			var probabilityExactlyZero = ProbabilityExactlyZero(directlySatisfiedStates, excludedStates );

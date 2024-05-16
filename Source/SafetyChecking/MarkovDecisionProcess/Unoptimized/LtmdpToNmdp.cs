@@ -137,9 +137,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 
 			if (choice.IsChoiceTypeUnsplitOrFinal)
 			{
-				Assert.That(choice.To<=int.MaxValue, "choice.To must be smaller than int.MaxValue");
-
-				var transitionTarget = _ltmdp.GetTransitionTarget( (int) choice.To);
+				var transitionTarget = _ltmdp.GetTransitionTarget( choice.To);
 				var targetEntry = new StateStorageEntry(transitionTarget.Formulas, transitionTarget.TargetState);
 				var targetState = _mapper[targetEntry];
 
@@ -199,7 +197,8 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 			Console.Out.WriteLine($"Ltmdp: States {ltmdp.SourceStates.Count}, TransitionTargets {ltmdp.TransitionTargets}, ContinuationGraphSize {ltmdp.ContinuationGraphSize}");
 			_ltmdp = ltmdp;
 			CreateStates();
-			var modelCapacity = new ModelCapacityByModelSize(MdpStates, ltmdp.ContinuationGraphSize * 8L);
+			Console.Out.WriteLine($"Nmdp will have {MdpStates} states. Starting to convert transitions.");
+			var modelCapacity = new ModelCapacityByModelSize(MdpStates, (long)(ltmdp.TransitionTargets*1.2));
 			NestedMarkovDecisionProcess = new NestedMarkovDecisionProcess(modelCapacity);
 			NestedMarkovDecisionProcess.StateFormulaLabels = ltmdp.StateFormulaLabels;
 			SetStateLabeling();

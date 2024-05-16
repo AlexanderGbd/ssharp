@@ -25,25 +25,22 @@ namespace ISSE.SafetyChecking
 	using System;
 	using ExecutedModel;
 	using Utilities;
-
-	public enum MomentOfIndependentFaultActivation
-	{
-		AtStepBeginning,
-		OnFirstMethodWithoutUndo,
-		OnFirstMethodWithUndo
-	}
-
-	public enum RetraversalNormalizations
-	{
-		None,
-		EmbedObserversIntoModel
-	}
+	
 
 	public enum LtmcModelChecker
 	{
 		BuiltInLtmc,
 		BuiltInDtmc,
 		ExternalMrmc
+	}
+
+	public enum LtmdpModelChecker
+	{
+		BuiltInLtmdp,
+		BuiltInNmdp,
+		BuildInMdpWithNewStates,
+		BuildInMdpWithNewStatesConstantDistance,
+		BuildInMdpWithFlattening
 	}
 
 	/// <summary>
@@ -59,6 +56,20 @@ namespace ISSE.SafetyChecking
 		private int _cpuCount;
 		private long _stackCapacity;
 		private long _successorStateCapacity;
+
+		/// <summary>
+		/// </summary>
+		public bool AllowFaultsOnInitialTransitions { get; set; }
+
+		/// <summary>
+		///   Simulation only: Use the probabilities of the options when selecting the result of a probabilistic choice.
+		///   Thus, more probable options get selected more probable. Otherwise, each option has the same chance to get selected.
+		/// </summary>
+		public bool UseOptionProbabilitiesInSimulation { get; set; }
+
+		/// <summary>
+		/// </summary>
+		public bool EnableEarlyTermination { get; set; }
 
 		/// <summary>
 		///   If set to true, the model checker uses a compact state storage, in which the found states are indexed by a continuous variable.
@@ -93,14 +104,23 @@ namespace ISSE.SafetyChecking
 		public bool WriteGraphvizModels { get; set; }
 
 		/// <summary>
+		///   Write the layout of the state vector.
+		/// </summary>
+		public bool WriteStateVectorLayout { get; set; }
+
+		/// <summary>
 		///   The default configuration.
 		/// </summary>
 		public static readonly AnalysisConfiguration Default = new AnalysisConfiguration
 		{
+			AllowFaultsOnInitialTransitions = false,
+			UseOptionProbabilitiesInSimulation = false,
+			EnableEarlyTermination = false,
 			CpuCount = Int32.MaxValue,
 			ProgressReportsOnly = false,
 			DefaultTraceOutput = Console.Out,
 			WriteGraphvizModels = false,
+			WriteStateVectorLayout = false,
 			ModelCapacity = _defaultModelCapacity,
 			StackCapacity = DefaultStackCapacity,
 			SuccessorCapacity = DefaultSuccessorStateCapacity,
@@ -109,10 +129,10 @@ namespace ISSE.SafetyChecking
 			CollectFaultSets = true,
 			StateDetected = null,
 			UseAtomarPropositionsAsStateLabels = true,
-			MomentOfIndependentFaultActivation = MomentOfIndependentFaultActivation.OnFirstMethodWithUndo,
+			EnableStaticPruningOptimization = true,
 			LimitOfActiveFaults = null,
-			RetraversalNormalizations = RetraversalNormalizations.None,
-			LtmcModelChecker = LtmcModelChecker.BuiltInDtmc
+			LtmcModelChecker = LtmcModelChecker.BuiltInLtmc,
+			LtmdpModelChecker = LtmdpModelChecker.BuiltInLtmdp
 		};
 
 		/// <summary>
@@ -173,7 +193,7 @@ namespace ISSE.SafetyChecking
 
 		/// <summary>
 		/// </summary>
-		public MomentOfIndependentFaultActivation MomentOfIndependentFaultActivation { get; set; }
+		public bool EnableStaticPruningOptimization { get; set; }
 		
 		/// <summary>
 		/// </summary>
@@ -181,10 +201,10 @@ namespace ISSE.SafetyChecking
 
 		/// <summary>
 		/// </summary>
-		public RetraversalNormalizations RetraversalNormalizations { get; set; }
+		public LtmcModelChecker LtmcModelChecker { get; set; }
 
 		/// <summary>
 		/// </summary>
-		public LtmcModelChecker LtmcModelChecker { get; set; }
+		public LtmdpModelChecker LtmdpModelChecker { get; set; }
 	}
 }

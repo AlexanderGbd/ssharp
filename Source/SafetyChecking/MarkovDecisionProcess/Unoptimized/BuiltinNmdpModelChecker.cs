@@ -34,9 +34,23 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 	using GenericDataStructures;
 	using Utilities;
 
-	class BuiltinNmdpModelChecker : NmdpModelChecker
+	class BuiltinNmdpModelChecker : IDisposable
 	{
+		public bool CacheCidValues { get; set; } = true;
+
+		protected TextWriter _output;
+
+		internal NestedMarkovDecisionProcess Nmdp { get; }
+
 		private NestedMarkovDecisionProcess.UnderlyingDigraph _underlyingDigraph;
+
+		// Note: Should be used with using(var modelchecker = new ...)
+		public BuiltinNmdpModelChecker(NestedMarkovDecisionProcess nmdp, TextWriter output = null)
+		{
+			Nmdp = nmdp;
+			_output = output;
+			_underlyingDigraph = Nmdp.CreateUnderlyingDigraph();
+		}
 
 		private double[] CreateDerivedVector(Dictionary<int, bool> exactlyOneStates)
 		{
@@ -62,14 +76,6 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 			}
 			return complement;
 		}
-
-		// Note: Should be used with using(var modelchecker = new ...)
-		public BuiltinNmdpModelChecker(NestedMarkovDecisionProcess nmdp, TextWriter output = null)
-			: base(nmdp, output)
-		{
-			_underlyingDigraph = Nmdp.CreateUnderlyingDigraph();
-		}
-
 		internal Dictionary<int, bool> CalculateSatisfiedStates(Func<int, bool> formulaEvaluator)
 		{
 			var satisfiedStates = new Dictionary<int, bool>();
@@ -89,7 +95,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 
 		private double CalculateMinimumProbabilityOfCid(AutoResizeBigVector<double> cache, double[] stateProbabilities, long currentCid)
 		{
-			if (HasCacheEntry(cache,currentCid))
+			if (cache!=null && HasCacheEntry(cache,currentCid))
 				return cache[(int)currentCid];
 			var result = double.NaN;
 			NestedMarkovDecisionProcess.ContinuationGraphElement cge = Nmdp.GetContinuationGraphElement(currentCid);
@@ -129,13 +135,14 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 					result = sum;
 				}
 			}
-			cache[(int)currentCid] = result;
+			if (cache!=null)
+				cache[(int)currentCid] = result;
 			return result;
 		}
 
 		private double CalculateMaximumProbabilityOfCid(AutoResizeBigVector<double> cache, double[] stateProbabilities, long currentCid)
 		{
-			if (HasCacheEntry(cache, currentCid))
+			if (cache!=null && HasCacheEntry(cache, currentCid))
 				return cache[(int)currentCid];
 			var result = double.NaN;
 			NestedMarkovDecisionProcess.ContinuationGraphElement cge = Nmdp.GetContinuationGraphElement(currentCid);
@@ -175,21 +182,22 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 					result = sum;
 				}
 			}
-			cache[(int)currentCid] = result;
+			if (cache!=null)
+				cache[(int)currentCid] = result;
 			return result;
 		}
 
 		public double CalculateMinimumFinalProbability(AutoResizeBigVector<double> cache, double[] initialStateProbabilities)
 		{
 			var cid = Nmdp.GetRootContinuationGraphLocationOfInitialState();
-			cache.Clear(cid); //use cid as offset, because it is the smallest element
+			cache?.Clear(cid); //use cid as offset, because it is the smallest element
 			return CalculateMinimumProbabilityOfCid(cache, initialStateProbabilities, cid);
 		}
 
 		internal double CalculateMaximumFinalProbability(AutoResizeBigVector<double> cache, double[] initialStateProbabilities)
 		{
 			var cid = Nmdp.GetRootContinuationGraphLocationOfInitialState();
-			cache.Clear(cid); //use cid as offset, because it is the smallest element
+			cache?.Clear(cid); //use cid as offset, because it is the smallest element
 			return CalculateMaximumProbabilityOfCid(cache, initialStateProbabilities, cid);
 		}
 
@@ -225,7 +233,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 					else
 					{
 						var cid = Nmdp.GetRootContinuationGraphLocationOfState(i);
-						cache.Clear(cid); //use cid as offset, because it is the smallest element
+						cache?.Clear(cid); //use cid as offset, because it is the smallest element
 						xnew[i] = CalculateMinimumProbabilityOfCid(cache, xold, cid);
 					}
 				}
@@ -275,7 +283,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 					else
 					{
 						var cid = Nmdp.GetRootContinuationGraphLocationOfState(i);
-						cache.Clear(cid); //use cid as offset, because it is the smallest element
+						cache?.Clear(cid); //use cid as offset, because it is the smallest element
 						xnew[i] = CalculateMaximumProbabilityOfCid(cache, xold, cid);
 					}
 				}
@@ -296,7 +304,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 
 		internal double CalculateMinimumProbabilityToReachStateFormulaInBoundedSteps(Formula psi, int steps)
 		{
-			var cache = new AutoResizeBigVector<double> {DefaultValue = double.NaN};
+			var cache = CacheCidValues ? new AutoResizeBigVector<double> { DefaultValue = double.NaN } : null;
 
 			var psiEvaluator = Nmdp.CreateFormulaEvaluator(psi);
 
@@ -312,7 +320,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 
 		internal double CalculateMaximumProbabilityToReachStateFormulaInBoundedSteps(Formula psi, int steps)
 		{
-			var cache = new AutoResizeBigVector<double> { DefaultValue = double.NaN };
+			var cache = CacheCidValues ? new AutoResizeBigVector<double> { DefaultValue = double.NaN } : null;
 
 			var psiEvaluator = Nmdp.CreateFormulaEvaluator(psi);
 
@@ -327,7 +335,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 		}
 
 
-		internal override ProbabilityRange CalculateProbabilityRange(Formula formulaToCheck)
+		internal ProbabilityRange CalculateProbabilityRange(Formula formulaToCheck)
 		{
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
@@ -360,7 +368,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 			return new ProbabilityRange(minResult, maxResult);
 		}
 		
-		internal override Probability CalculateMinimalProbability(Formula formulaToCheck)
+		internal Probability CalculateMinimalProbability(Formula formulaToCheck)
 		{
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
@@ -390,7 +398,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 			return new Probability(minResult);
 		}
 
-		internal override Probability CalculateMaximalProbability(Formula formulaToCheck)
+		internal Probability CalculateMaximalProbability(Formula formulaToCheck)
 		{
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
@@ -421,12 +429,12 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 		}
 
 
-		internal override bool CalculateFormula(Formula formulaToCheck)
+		internal bool CalculateFormula(Formula formulaToCheck)
 		{
 			throw new NotImplementedException();
 		}
 
-		internal override RewardResult CalculateReward(Formula formulaToCheck)
+		internal RewardResult CalculateReward(Formula formulaToCheck)
 		{
 			throw new NotImplementedException();
 		}
@@ -434,7 +442,7 @@ namespace ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized
 		/// <summary>
 		/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
 		/// </summary>
-		public override void Dispose()
+		public void Dispose()
 		{
 		}
 	}

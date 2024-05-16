@@ -36,6 +36,12 @@ namespace ISSE.SafetyChecking.AnalysisModelTraverser
 	{
 		private readonly Func<StateFormulaSet, bool> _terminateEarlyCondition;
 
+		public int ExtraBytesInStateVector { get; } = 0;
+
+		public int ExtraBytesOffset { get; set; }
+
+		public int RelevantStateVectorSize { get; set; }
+
 		/// <summary>
 		///   Initializes a new instance.
 		/// </summary>

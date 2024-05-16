@@ -25,29 +25,19 @@ namespace ISSE.SafetyChecking.ExecutedModel
 	using System;
 	using ExecutableModel;
 	using AnalysisModel;
+	using AnalysisModelTraverser;
 	using Modeling;
 	using Utilities;
+	using System.IO;
+	using System.Linq;
 
 	/// <summary>
 	///   Represents an <see cref="AnalysisModel" /> that computes its state by executing a <see cref="Runtime.RuntimeModel" />.
 	/// </summary>
 	internal abstract unsafe class ExecutedModel<TExecutableModel> : AnalysisModel where TExecutableModel : ExecutableModel<TExecutableModel>
 	{
-		/// <summary>
-		///   Initializes a new instance.
-		/// </summary>
-		/// <param name="createModel">A factory function that creates the model instance that should be executed.</param>
-		/// <param name="stateHeaderBytes">
-		///   The number of bytes that should be reserved at the beginning of each state vector for the model checker tool.
-		/// </param>
-		internal ExecutedModel(CoupledExecutableModelCreator<TExecutableModel> createModel, int stateHeaderBytes)
-		{
-			Requires.NotNull(createModel, nameof(createModel));
-
-			RuntimeModelCreator = createModel;
-			RuntimeModel = createModel.Create(stateHeaderBytes);
-		}
-
+		protected readonly TemporaryStateStorage TemporaryStateStorage;
+		
 		/// <summary>
 		///   Gets the runtime model that is directly or indirectly analyzed by this <see cref="AnalysisModel" />.
 		/// </summary>
@@ -67,8 +57,43 @@ namespace ISSE.SafetyChecking.ExecutedModel
 		/// <summary>
 		///   Gets the size of the model's state vector in bytes.
 		/// </summary>
-		public sealed override int StateVectorSize => RuntimeModel.StateVectorSize;
-		
+		public sealed override int ModelStateVectorSize => RuntimeModel.StateVectorSize;
+
+
+		/// <summary>
+		///   Gets the activations of each non deterministic fault in the current traversal
+		/// </summary>
+		protected Activation[] SavedActivations { get; private set; }
+
+		/// <summary>
+		///   Initializes a new instance.
+		/// </summary>
+		/// <param name="createModel">A factory function that creates the model instance that should be executed.</param>
+		/// <param name="configuration">The analysis configuration that should be used.</param>
+		/// <param name="stateHeaderBytes">
+		///   The number of bytes that should be reserved at the beginning of each state vector for the model checker tool.
+		/// </param>
+		internal ExecutedModel(CoupledExecutableModelCreator<TExecutableModel> createModel, int stateHeaderBytes, AnalysisConfiguration configuration)
+		{
+			Requires.NotNull(createModel, nameof(createModel));
+
+			RuntimeModelCreator = createModel;
+			var runtimeModel = createModel.Create(stateHeaderBytes);
+			RuntimeModel = runtimeModel;
+
+			TemporaryStateStorage = new TemporaryStateStorage(ModelStateVectorSize, configuration.SuccessorCapacity);
+			SavedActivations = runtimeModel.NondeterministicFaults.Select(fault => fault.Activation).ToArray();
+		}
+
+		internal override void WriteStateVectorLayout(TextWriter defaultTraceOutput)
+		{
+			defaultTraceOutput.WriteLine("Full StateVectorLayout");
+			RuntimeModelCreator.WriteFullStateVectorLayout(defaultTraceOutput);
+			defaultTraceOutput.WriteLine();
+			defaultTraceOutput.WriteLine("Optimized StateVectorLayout");
+			RuntimeModel.WriteOptimizedStateVectorLayout(defaultTraceOutput);
+		}
+
 		/// <summary>
 		///   Updates the activation states of the worker's faults.
 		/// </summary>
@@ -88,6 +113,7 @@ namespace ISSE.SafetyChecking.ExecutedModel
 				return;
 
 			ChoiceResolver.SafeDispose();
+			TemporaryStateStorage.SafeDispose();
 			RuntimeModel.SafeDispose();
 		}
 
@@ -175,14 +201,18 @@ namespace ISSE.SafetyChecking.ExecutedModel
 
 			return RuntimeModel.CreateCounterExample(RuntimeModelCreator, path, endsWithException);
 		}
-
+		
 		/// <summary>
 		///   Resets the model to its initial state.
 		/// </summary>
-		public sealed override void Reset()
+		/// <param name="traversalModifierStateVectorSize">Extra bytes in state vector for traversal parameters.</param>
+		public sealed override void Reset(int traversalModifierStateVectorSize)
 		{
 			ChoiceResolver.Clear();
 			RuntimeModel.Reset();
+			TemporaryStateStorage.Reset(traversalModifierStateVectorSize);
+
+			SavedActivations = RuntimeModel.NondeterministicFaults.Select(fault => fault.Activation).ToArray();
 		}
 	}
 }

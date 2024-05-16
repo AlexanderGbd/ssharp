@@ -138,6 +138,7 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 			Console.Out.WriteLine("Starting to convert labeled transition Markov chain to Markov chain");
 			Console.Out.WriteLine($"Ltmc: States {ltmc.SourceStates.Count}, Transitions {ltmc.Transitions}");
 			CreateStates(ltmc);
+			Console.Out.WriteLine($"Mc will have {States} states. Starting to convert transitions.");
 			var modelCapacity= new ModelCapacityByModelSize(States, ltmc.Transitions * 8L);
 			MarkovChain=new DiscreteTimeMarkovChain(modelCapacity);
 			MarkovChain.StateFormulaLabels = ltmc.StateFormulaLabels;
@@ -146,7 +147,7 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 			ConvertTransitions(ltmc);
 			stopwatch.Stop();
 			Console.Out.WriteLine($"Completed transformation in {stopwatch.Elapsed}");
-			Console.Out.WriteLine($"Mc: States {MarkovChain.States}, Transitions {MarkovChain.Transitions}");
+			Console.Out.WriteLine($"Mc: States {MarkovChain.States}, Transitions {MarkovChain.Transitions}, Initial Transitions {MarkovChain.InitialTransitions}");
 		}
 	}
 }

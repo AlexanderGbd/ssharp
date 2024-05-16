@@ -28,10 +28,15 @@ using System.Threading.Tasks;
 
 namespace SafetySharp.CaseStudies.HemodialysisMachine.Analysis
 {
+	using System.Collections;
+	using System.Globalization;
 	using System.IO;
 	using FluentAssertions;
+	using ISSE.SafetyChecking;
 	using ISSE.SafetyChecking.DiscreteTimeMarkovChain;
+	using ISSE.SafetyChecking.MinimalCriticalSetAnalysis;
 	using ISSE.SafetyChecking.Modeling;
+	using ModelChecking;
 	using Modeling;
 	using SafetySharp.Modeling;
 	using NUnit.Framework;
@@ -47,7 +52,6 @@ namespace SafetySharp.CaseStudies.HemodialysisMachine.Analysis
 
 		public static void SetProbabilities(Model model)
 		{
-
 			model.HdMachine.DialyzingFluidDeliverySystem.DialyzingFluidPreparation.DialyzingFluidPreparationPumpDefect.ProbabilityOfOccurrence = _prob1Eneg5;
 			model.HdMachine.DialyzingFluidDeliverySystem.PumpToBalanceChamber.PumpDefect.ProbabilityOfOccurrence = _prob1Eneg5;
 			model.HdMachine.DialyzingFluidDeliverySystem.DialyzingUltraFiltrationPump.PumpDefect.ProbabilityOfOccurrence = _prob1Eneg3;
@@ -61,30 +65,88 @@ namespace SafetySharp.CaseStudies.HemodialysisMachine.Analysis
 			model.HdMachine.Dialyzer.DialyzerMembraneRupturesFault.ProbabilityOfOccurrence = _prob1Eneg5;
 		}
 
-		[Test]
-		public void IncomingBloodIsContaminated()
+		public HazardProbabilityTests()
 		{
-			var model = new Model();
-			SetProbabilities(model);
+			var tc = SafetySharpModelChecker.TraversalConfiguration;
+			tc.AllowFaultsOnInitialTransitions = false;
+			SafetySharpModelChecker.TraversalConfiguration = tc;
+		}
 
+		[TestCaseSource(nameof(CreateModelVariants))]
+		[Category("IncomingBloodIsContaminated")]
+		public void IncomingBloodIsContaminated(Model model, string name)
+		{
+			SetProbabilities(model);
+			
 			var result = SafetySharpModelChecker.CalculateProbabilityToReachState(model, model.IncomingBloodWasNotOk);
 			Console.Write($"Probability of hazard: {result}");
 		}
 
-		[Test]
-		public void DialysisFinishedAndBloodNotCleaned()
+		[TestCaseSource(nameof(CreateModelVariants))]
+		[Category("IncomingBloodIsContaminated_FaultTree")]
+		public void IncomingBloodIsContaminated_FaultTree(Model model, string name)
 		{
-			var model = new Model();
+			SetProbabilities(model);
+			var analysis = new SafetySharpSafetyAnalysis { Heuristics = { new MaximalSafeSetHeuristic(model.Faults) } };
+
+			var result = analysis.ComputeMinimalCriticalSets(model, model.IncomingBloodWasNotOk);
+			var steps = 6;
+			var reaProbability = 0.0;
+			foreach (var mcs in result.MinimalCriticalSets)
+			{
+				var mcsProbability = 1.0;
+				foreach (var fault in mcs)
+				{
+					var pFaultInOneStep = fault.ProbabilityOfOccurrence.Value.Value;
+					var pFault = 1.0 - Math.Pow(1.0 - pFaultInOneStep, steps);
+					mcsProbability *= pFault;
+				}
+				reaProbability += mcsProbability;
+			}
+
+			Console.WriteLine($"Result with fault tree rare event approximation: {reaProbability.ToString(CultureInfo.InvariantCulture)}");
+		}
+
+		[TestCaseSource(nameof(CreateModelVariants))]
+		[Category("DialysisFinishedAndBloodNotCleaned")]
+		public void DialysisFinishedAndBloodNotCleaned(Model model, string name)
+		{
 			SetProbabilities(model);
 
 			var result = SafetySharpModelChecker.CalculateProbabilityToReachState(model, model.BloodNotCleanedAndDialyzingFinished);
 			Console.Write($"Probability of hazard: {result}");
 		}
 
-		[Test]
-		public void Parametric()
+
+		[TestCaseSource(nameof(CreateModelVariants))]
+		[Category("DialysisFinishedAndBloodNotCleaned_FaultTree")]
+		public void DialysisFinishedAndBloodNotCleaned_FaultTree(Model model, string name)
 		{
-			var model = new Model();
+			SetProbabilities(model);
+			var analysis = new SafetySharpSafetyAnalysis { Heuristics = { new MaximalSafeSetHeuristic(model.Faults) } };
+
+			var result = analysis.ComputeMinimalCriticalSets(model, model.BloodNotCleanedAndDialyzingFinished);
+			var steps = 6;
+			var reaProbability = 0.0;
+			foreach (var mcs in result.MinimalCriticalSets)
+			{
+				var mcsProbability = 1.0;
+				foreach (var fault in mcs)
+				{
+					var pFaultInOneStep = fault.ProbabilityOfOccurrence.Value.Value;
+					var pFault = 1.0 - Math.Pow(1.0 - pFaultInOneStep, steps);
+					mcsProbability *= pFault;
+				}
+				reaProbability += mcsProbability;
+			}
+
+			Console.WriteLine($"Result with fault tree rare event approximation: {reaProbability.ToString(CultureInfo.InvariantCulture)}");
+		}
+
+		[TestCaseSource(nameof(CreateModelVariants))]
+		[Category("Parametric")]
+		public void Parametric(Model model, string name)
+		{
 			SetProbabilities(model);
 			var parameter = new QuantitativeParametricAnalysisParameter
 			{
@@ -96,15 +158,58 @@ namespace SafetySharp.CaseStudies.HemodialysisMachine.Analysis
 				UpdateParameterInModel = value => { model.HdMachine.DialyzingFluidDeliverySystem.WaterPreparation.WaterHeaterDefect.ProbabilityOfOccurrence=new Probability(value); }
 			};
 			var result=SafetySharpModelChecker.ConductQuantitativeParametricAnalysis(model, parameter);
-			var fileWriterContamination = new StreamWriter("contamination.csv", append: false);
+			var fileWriterContamination = new StreamWriter($"{name}contamination.csv", append: false);
 			result.ToCsv(fileWriterContamination);
 			fileWriterContamination.Close();
 
 			parameter.StateFormula = model.BloodNotCleanedAndDialyzingFinished;
 			result=SafetySharpModelChecker.ConductQuantitativeParametricAnalysis(model, parameter);
-			var fileWriterUnsuccessful = new StreamWriter("unsuccessful.csv", append: false);
+			var fileWriterUnsuccessful = new StreamWriter($"{name}unsuccessful.csv", append: false);
 			result.ToCsv(fileWriterUnsuccessful);
 			fileWriterUnsuccessful.Close();
+		}
+
+		private static IEnumerable CreateModelVariants()
+		{
+			var demandKeep = 1;
+			var demandToOnCustom = 2;
+			var demandToOnStartOfStep = 3;
+			Func<int,string> demandToName = demand => {
+				if (demand==demandKeep)
+						return "Keep";
+				if (demand==demandToOnCustom)
+						return "OnCustom";
+				return "OnStartOfStep";
+			};
+			Func<bool, int, Model> createVariant = (waterHeaterFaultIsPermanent, demandType) =>
+			{
+				var previousValue = Modeling.DialyzingFluidDeliverySystem.WaterPreparation.WaterHeaterDefectIsPermanent;
+				Modeling.DialyzingFluidDeliverySystem.WaterPreparation.WaterHeaterDefectIsPermanent = waterHeaterFaultIsPermanent;
+				var model = new Model();
+				Modeling.DialyzingFluidDeliverySystem.WaterPreparation.WaterHeaterDefectIsPermanent = previousValue;
+				if (demandType == demandKeep)
+					return model;
+				foreach (var fault in model.Faults)
+				{
+					if (fault.HasCustomDemand!=null)
+						fault.DemandType = demandType== demandToOnCustom? Fault.DemandTypes.OnCustom : Fault.DemandTypes.OnStartOfStep;
+				}
+				return model;
+			};
+
+			return from config in new []
+						{
+							new Tuple<bool, int>(true, demandKeep),
+							new Tuple<bool, int>(false, demandKeep),
+							new Tuple<bool, int>(true, demandToOnCustom),
+							new Tuple<bool, int>(true, demandToOnStartOfStep)
+						}
+				   let waterHeaterFaultIsPermanent = config.Item1
+				   let demandType = config.Item2
+				   let name =
+						"WaterHeater"+ (waterHeaterFaultIsPermanent ? "Permanent":"Transient") +
+						"Demand"+ (demandToName(demandType))
+				   select new TestCaseData(createVariant(waterHeaterFaultIsPermanent, demandType), name).SetName(name);
 		}
 	}
 }

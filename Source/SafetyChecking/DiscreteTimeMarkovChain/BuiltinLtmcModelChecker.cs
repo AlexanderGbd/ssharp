@@ -36,77 +36,107 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 	using Formula;
 	using GenericDataStructures;
 
-	internal class BuiltinLtmcModelChecker : LtmcModelChecker
+	public class BuiltinLtmcModelChecker : LtmcModelChecker
 	{
+		[Flags]
 		internal enum PrecalculatedTransitionTarget : byte
 		{
 			Nothing = 0,
-			Satisfied = 1,
-			Excluded = 2,
+			SatisfiedDirect = 1,
+			ExcludedDirect = 2,
+			SatisfiedFinally = 4,
+			ExcludedFinally = 8,
+			Mark = 16,
 		}
 
+		private LabeledTransitionMarkovChain.UnderlyingDigraph _underlyingDigraph;
+
 		// Note: Should be used with using(var modelchecker = new ...)
-		public BuiltinLtmcModelChecker(LabeledTransitionMarkovChain markovChain, TextWriter output = null) : base(markovChain, output)
+		public BuiltinLtmcModelChecker(LabeledTransitionMarkovChain markovChain, TextWriter output = null)
+			: base(markovChain, output)
 		{
-			markovChain.AssertIsDense();
+			Requires.That(true, "Need CompactStateStorage to use this model checker");
+			LabeledMarkovChain.AssertIsDense();
+			output.WriteLine("Initializing Built-in Ltmc Model checker");
 		}
 
 		private PrecalculatedTransitionTarget[] CreateEmptyPrecalculatedTransitionTargetArray()
 		{
 			PrecalculatedTransitionTarget[] outputTargets = new PrecalculatedTransitionTarget[LabeledMarkovChain.Transitions];
-			for (var i = 0; i < LabeledMarkovChain.Transitions; i++)
+			for (var i = 0L; i < LabeledMarkovChain.Transitions; i++)
 			{
 				outputTargets[i] = PrecalculatedTransitionTarget.Nothing;
 			}
 			return outputTargets;
 		}
 
-		internal void CalculateSatisfiedTargets(PrecalculatedTransitionTarget[] precalculatedStates, Func<int, bool> formulaEvaluator)
+		private void CalculateSatisfiedTargets(PrecalculatedTransitionTarget[] precalculatedTransitionTargets, Func<long, bool> formulaEvaluator)
 		{
-			for (var i = 0; i < LabeledMarkovChain.Transitions; i++)
+			for (var i = 0L; i < LabeledMarkovChain.Transitions; i++)
 			{
 				if (formulaEvaluator(i))
-					precalculatedStates[i] |= PrecalculatedTransitionTarget.Satisfied;
+					precalculatedTransitionTargets[i] |= PrecalculatedTransitionTarget.SatisfiedDirect;
 			}
 		}
 
-		internal void CalculateExcludedTargets(PrecalculatedTransitionTarget[] precalculatedStates, Func<int, bool> formulaEvaluator)
+		private void CalculateExcludedTargets(PrecalculatedTransitionTarget[] precalculatedTransitionTargets, Func<long, bool> formulaEvaluator)
 		{
-			for (var i = 0; i < LabeledMarkovChain.Transitions; i++)
+			for (var i = 0L; i < LabeledMarkovChain.Transitions; i++)
 			{
 				if (formulaEvaluator(i))
-					precalculatedStates[i] |= PrecalculatedTransitionTarget.Excluded;
+					precalculatedTransitionTargets[i] |= PrecalculatedTransitionTarget.ExcludedDirect;
 			}
 		}
 
-		private double[] CreateDerivedVector(PrecalculatedTransitionTarget[] precalculatedStates, PrecalculatedTransitionTarget flagToLookFor)
+		private PrecalculatedTransitionTarget[] CreateSimplePrecalculatedTransitionTargets(Formula phi, Formula psi)
 		{
-			var derivedVector = new double[LabeledMarkovChain.Transitions];
+			var psiEvaluator = LabeledMarkovChain.CreateFormulaEvaluator(psi);
 
-			for (var i = 0; i < LabeledMarkovChain.Transitions; i++)
+			var precalculatedTransitionTargets = CreateEmptyPrecalculatedTransitionTargetArray();
+
+			CalculateSatisfiedTargets(precalculatedTransitionTargets, psiEvaluator);
+			if (phi != null)
 			{
-				if (precalculatedStates[i].HasFlag(flagToLookFor))
-					derivedVector[i] = 1.0;
-				else
-					derivedVector[i] = 0.0;
+				// excludedStates = Sat(\phi) \Cup Sat(psi)
+				var phiEvaluator = LabeledMarkovChain.CreateFormulaEvaluator(phi);
+				Func<long, bool> calculateExcludedStates = target =>
+				{
+					if (precalculatedTransitionTargets[target] == PrecalculatedTransitionTarget.SatisfiedDirect)
+						return false; //satisfied states are never excluded
+					if (!phiEvaluator(target))
+						return true; //exclude state if it does not satisfy phi
+					return false;
+				};
+				CalculateExcludedTargets(precalculatedTransitionTargets, calculateExcludedStates);
 			}
-			return derivedVector;
+			return precalculatedTransitionTargets;
 		}
 
-
-		private double CalculateFinalProbability(double[] initialStateProbabilities)
+		private double CalculateFinalBoundedProbability(double[] initialStateProbabilities, PrecalculatedTransitionTarget[] precalculatedTransitionTargets)
 		{
 			var finalProbability = 0.0;
 
 			var enumerator = LabeledMarkovChain.GetInitialDistributionEnumerator();
+
 			while (enumerator.MoveNext())
 			{
-				finalProbability += enumerator.CurrentProbability * initialStateProbabilities[enumerator.CurrentTargetState];
+				var transitionTarget = enumerator.CurrentIndex;
+				if (precalculatedTransitionTargets[transitionTarget].HasFlag(PrecalculatedTransitionTarget.SatisfiedDirect))
+				{
+					finalProbability += enumerator.CurrentProbability;
+				}
+				else if (precalculatedTransitionTargets[transitionTarget].HasFlag(PrecalculatedTransitionTarget.ExcludedDirect))
+				{
+				}
+				else
+				{
+					finalProbability += enumerator.CurrentProbability * initialStateProbabilities[enumerator.CurrentTargetState];
+				}
 			}
 			return finalProbability;
 		}
 
-		private double CalculateProbabilityToReachStateFormulaInBoundedSteps(Formula psi, Formula phi, int steps)
+		private double CalculateBoundedProbability(Formula phi, Formula psi, int steps)
 		{
 			// Pr[phi U psi]
 			// calculate P [true U<=steps psi]
@@ -114,26 +144,9 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 
-			var psiEvaluator = LabeledMarkovChain.CreateFormulaEvaluator(psi);
+			var precalculatedTransitionTargets = CreateSimplePrecalculatedTransitionTargets(phi, psi);
+
 			var stateCount = LabeledMarkovChain.SourceStates.Count;
-
-			var precalculatedStates = CreateEmptyPrecalculatedTransitionTargetArray();
-
-			CalculateSatisfiedTargets(precalculatedStates,psiEvaluator);
-			if (phi != null)
-			{
-				// excludedStates = Sat(\phi) \Cup Sat(psi)
-				var phiEvaluator = LabeledMarkovChain.CreateFormulaEvaluator(phi);
-				Func<int,bool> calculateExcludedStates = target =>
-				{
-					if (precalculatedStates[target] == PrecalculatedTransitionTarget.Satisfied)
-						return false; //satisfied states are never excluded
-					if (!phiEvaluator(target))
-						return true; //exclude state if it does not satisfy phi
-					return false;
-				};
-				CalculateExcludedTargets(precalculatedStates, calculateExcludedStates);
-			}
 			
 			var xold = new double[stateCount];
 			var xnew = new double[stateCount];
@@ -153,11 +166,11 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 					while (enumerator.MoveNext())
 					{
 						var transitionTarget = enumerator.CurrentIndex;
-						if (precalculatedStates[transitionTarget].HasFlag(PrecalculatedTransitionTarget.Satisfied))
+						if (precalculatedTransitionTargets[transitionTarget].HasFlag(PrecalculatedTransitionTarget.SatisfiedDirect))
 						{
 							sum += enumerator.CurrentProbability;
 						}
-						else if (precalculatedStates[transitionTarget].HasFlag(PrecalculatedTransitionTarget.Excluded))
+						else if (precalculatedTransitionTargets[transitionTarget].HasFlag(PrecalculatedTransitionTarget.ExcludedDirect))
 						{
 						}
 						else
@@ -171,51 +184,259 @@ namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 				if (loops % 10 == 0)
 				{
 					stopwatch.Stop();
-					var currentProbability = CalculateFinalProbability(xnew);
+					var currentProbability = CalculateFinalBoundedProbability(xnew,precalculatedTransitionTargets);
 					_output?.WriteLine($"{loops} Bounded Until iterations in {stopwatch.Elapsed}. Current probability={currentProbability.ToString(CultureInfo.InvariantCulture)}");
 					stopwatch.Start();
 				}
 			}
 
-			var finalProbability=CalculateFinalProbability(xnew);
+			var finalProbability=CalculateFinalBoundedProbability(xnew, precalculatedTransitionTargets);
 			
 			stopwatch.Stop();
 			return finalProbability;
 		}
+		
+		private void SetFlagInUnmarkedTransitionTargets(PrecalculatedTransitionTarget[] precalculatedTransitionTargets, PrecalculatedTransitionTarget flagToSet)
+		{
+			for (var i = 0L; i < LabeledMarkovChain.Transitions; i++)
+			{
+				if (precalculatedTransitionTargets[i].HasFlag(PrecalculatedTransitionTarget.Mark))
+				{
+					precalculatedTransitionTargets[i] = precalculatedTransitionTargets[i] & (~PrecalculatedTransitionTarget.Mark);
+				}
+				else
+				{
+					precalculatedTransitionTargets[i] = precalculatedTransitionTargets[i] | flagToSet;
+				}
+			}
+		}
 
-		internal override Probability CalculateProbability(Formula formulaToCheck)
+		private void CalculateUnderlyingDigraph()
+		{
+			// We use the underlying digraph to interfere the transitionTargets with the final probability
+			// of 0 or 1.
+			// I think, the data from the graph is also valid for the states. So, if a state-node
+			// is in Prob0 or Prob1, then we can also assume that the state has always probability 0 or 1,
+			// respectively. One further check can could be introduced. When we know that the probability
+			// of a state is 0 or 1, then we do not have to check the outgoing transitionTargets anymore.
+			if (_underlyingDigraph != null)
+				return;
+			_output.WriteLine("Creating underlying digraph");
+			_underlyingDigraph = LabeledMarkovChain.CreateUnderlyingDigraph();
+			_output.WriteLine("Finished creating underlying digraph");
+		}
+
+		private IEnumerable<long> GetAllTransitionTargetIndexesWithFlag(PrecalculatedTransitionTarget[] precalculatedTransitionTargets, PrecalculatedTransitionTarget flag)
+		{
+			for (var i = 0L; i < precalculatedTransitionTargets.Length; i++)
+			{
+				if (precalculatedTransitionTargets[i].HasFlag(flag))
+					yield return i;
+			}
+		}
+
+		private void CalculateProb0TransitionTargets(PrecalculatedTransitionTarget[] precalculatedTransitionTargets)
+		{
+			CalculateUnderlyingDigraph();
+
+			var targetTransitionTargets = GetAllTransitionTargetIndexesWithFlag(precalculatedTransitionTargets, PrecalculatedTransitionTarget.SatisfiedDirect);
+
+			Action<long> setFlagForTransitionTarget =
+				(index) => precalculatedTransitionTargets[index] |= PrecalculatedTransitionTarget.Mark;
+
+			Func<long, bool> transitionTargetsToIgnore =
+				(index) => precalculatedTransitionTargets[index].HasFlag(PrecalculatedTransitionTarget.ExcludedDirect);
+			
+			_underlyingDigraph.BackwardTraversal(targetTransitionTargets, setFlagForTransitionTarget, transitionTargetsToIgnore);
+
+			SetFlagInUnmarkedTransitionTargets(precalculatedTransitionTargets, PrecalculatedTransitionTarget.ExcludedFinally);
+		}
+
+		private void CalculateProb1TransitionTargets(PrecalculatedTransitionTarget[] precalculatedTransitionTargets)
+		{
+			// Need to know Prob0TransitionTargets first
+
+			var targetTransitionTargets = GetAllTransitionTargetIndexesWithFlag(precalculatedTransitionTargets, PrecalculatedTransitionTarget.ExcludedFinally);
+
+			Action<long> setFlagForTransitionTarget =
+				(index) => precalculatedTransitionTargets[index] |= PrecalculatedTransitionTarget.Mark;
+
+			Func<long, bool> transitionTargetsToIgnore =
+				(index) =>
+				precalculatedTransitionTargets[index].HasFlag(PrecalculatedTransitionTarget.ExcludedDirect) ||
+				precalculatedTransitionTargets[index].HasFlag(PrecalculatedTransitionTarget.SatisfiedDirect);
+
+			_underlyingDigraph.BackwardTraversal(targetTransitionTargets, setFlagForTransitionTarget, transitionTargetsToIgnore);
+
+			SetFlagInUnmarkedTransitionTargets(precalculatedTransitionTargets, PrecalculatedTransitionTarget.SatisfiedFinally);
+		}
+
+		private double CalculateFinalUnboundedProbability(double[] initialStateProbabilities, PrecalculatedTransitionTarget[] precalculatedTransitionTargets)
+		{
+			var finalProbability = 0.0;
+
+			var enumerator = LabeledMarkovChain.GetInitialDistributionEnumerator();
+
+			while (enumerator.MoveNext())
+			{
+				var transitionTarget = enumerator.CurrentIndex;
+				if (precalculatedTransitionTargets[transitionTarget].HasFlag(PrecalculatedTransitionTarget.SatisfiedFinally))
+				{
+					finalProbability += enumerator.CurrentProbability;
+				}
+				else if (precalculatedTransitionTargets[transitionTarget].HasFlag(PrecalculatedTransitionTarget.ExcludedFinally))
+				{
+				}
+				else
+				{
+					finalProbability += enumerator.CurrentProbability * initialStateProbabilities[enumerator.CurrentTargetState];
+				}
+			}
+			return finalProbability;
+		}
+
+
+		private double CalculateUnboundUntil(Formula phi, Formula psi, int iterationsLeft)
+		{
+			// Based on the iterative idea by:
+			// On algorithmic verification methods for probabilistic systems (1998) by Christel Baier
+			// Theorem 3.1.6 (page 36)
+			// http://wwwneu.inf.tu-dresden.de/content/institutes/thi/algi/publikationen/texte/15_98.pdf
+
+			// Pr[phi U psi]
+			// calculate P [true U<=steps psi]
+
+			var stopwatch = new Stopwatch();
+			stopwatch.Start();
+
+			var fixPointReached = iterationsLeft <= 0;
+
+			var precalculatedTransitionTargets = CreateSimplePrecalculatedTransitionTargets(phi, psi);
+			CalculateProb0TransitionTargets(precalculatedTransitionTargets);
+			CalculateProb1TransitionTargets(precalculatedTransitionTargets);
+
+			var stateCount = LabeledMarkovChain.SourceStates.Count;
+
+			var xold = new double[stateCount];
+			var xnew = new double[stateCount];
+			var loops = 0;
+			while (!fixPointReached)
+			{
+				// switch xold and xnew
+				var xtemp = xold;
+				xold = xnew;
+				xnew = xtemp;
+				iterationsLeft--;
+				loops++;
+				for (var i = 0; i < stateCount; i++)
+				{
+					var enumerator = LabeledMarkovChain.GetTransitionEnumerator(i);
+					var sum = 0.0;
+
+					while (enumerator.MoveNext())
+					{
+						var transitionTarget = enumerator.CurrentIndex;
+						if (precalculatedTransitionTargets[transitionTarget].HasFlag(PrecalculatedTransitionTarget.SatisfiedFinally))
+						{
+							sum += enumerator.CurrentProbability;
+						}
+						else if (precalculatedTransitionTargets[transitionTarget].HasFlag(PrecalculatedTransitionTarget.ExcludedFinally))
+						{
+						}
+						else
+						{
+							sum += enumerator.CurrentProbability * xold[enumerator.CurrentTargetState];
+						}
+					}
+					xnew[i] = sum;
+				}
+
+				if (loops % 10 == 0)
+				{
+					stopwatch.Stop();
+					var currentProbability = CalculateFinalUnboundedProbability(xnew,precalculatedTransitionTargets);
+					_output?.WriteLine($"{loops} Fixpoint Until iterations in {stopwatch.Elapsed}. Current probability={currentProbability.ToString(CultureInfo.InvariantCulture)}");
+					stopwatch.Start();
+				}
+				if (iterationsLeft <= 0)
+					fixPointReached = true;
+			}
+
+			var finalProbability = CalculateFinalUnboundedProbability(xnew,precalculatedTransitionTargets);
+
+			stopwatch.Stop();
+			return finalProbability;
+		}
+		
+
+		public override Probability CalculateProbability(Formula formulaToCheck)
 		{
 			_output.WriteLine($"Checking formula: {formulaToCheck}");
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 
-			var finallyUnboundUnaryFormula = formulaToCheck as UnaryFormula;
-			var finallyBoundedUnaryFormula = formulaToCheck as BoundedUnaryFormula;
-			var finallyBoundedBinaryFormula = formulaToCheck as BoundedBinaryFormula;
-
+			Formula phi;
+			Formula psi;
+			int? steps;
+			ExtractPsiPhiAndBoundedFromFormula(formulaToCheck, out phi, out psi, out steps);
+			
 			double result;
 
-			if (finallyUnboundUnaryFormula != null && finallyUnboundUnaryFormula.Operator == UnaryOperator.Finally)
+			if (steps.HasValue)
 			{
-				throw new NotImplementedException();
-			}
-			else if (finallyBoundedUnaryFormula != null && finallyBoundedUnaryFormula.Operator == UnaryOperator.Finally)
-			{
-				result = CalculateProbabilityToReachStateFormulaInBoundedSteps(finallyBoundedUnaryFormula.Operand, null, finallyBoundedUnaryFormula.Bound);
-			}
-			else if (finallyBoundedBinaryFormula != null && finallyBoundedBinaryFormula.Operator == BinaryOperator.Until)
-			{
-				result = CalculateProbabilityToReachStateFormulaInBoundedSteps(finallyBoundedBinaryFormula.RightOperand, finallyBoundedBinaryFormula.LeftOperand, finallyBoundedBinaryFormula.Bound);
+				result = CalculateBoundedProbability(phi, psi, steps.Value);
 			}
 			else
 			{
-				throw new NotImplementedException();
+				var maxIterations = 50;
+				result = CalculateUnboundUntil(phi, psi, maxIterations);
 			}
 			
 			stopwatch.Stop();
 
 			_output?.WriteLine($"Built-in probabilistic model checker model checking time: {stopwatch.Elapsed}");
 			return new Probability(result);
+		}
+
+		private void ExtractPsiPhiAndBoundedFromFormula(Formula formulaToCheck, out Formula phi, out Formula psi, out int? steps)
+		{
+			// [phi U<=steps psi]
+
+			var unboundUnaryFormula = formulaToCheck as UnaryFormula;
+			var boundedUnaryFormula = formulaToCheck as BoundedUnaryFormula;
+			var unboundBinaryFormula = formulaToCheck as BinaryFormula;
+			var boundedBinaryFormula = formulaToCheck as BoundedBinaryFormula;
+
+			if (unboundUnaryFormula != null && unboundUnaryFormula.Operator == UnaryOperator.Finally)
+			{
+				phi = null;
+				psi = unboundUnaryFormula.Operand;
+				steps = null;
+				return;
+			}
+			if (boundedUnaryFormula != null && boundedUnaryFormula.Operator == UnaryOperator.Finally)
+			{
+				phi = null;
+				psi = boundedUnaryFormula.Operand;
+				steps = boundedUnaryFormula.Bound;
+				return;
+			}
+			if (unboundBinaryFormula != null && unboundBinaryFormula.Operator == BinaryOperator.Until)
+			{
+				phi = unboundBinaryFormula.LeftOperand;
+				psi = unboundBinaryFormula.RightOperand;
+				steps = null;
+				return;
+			}
+			if (boundedBinaryFormula != null && boundedBinaryFormula.Operator == BinaryOperator.Until)
+			{
+				phi = boundedBinaryFormula.LeftOperand;
+				psi = boundedBinaryFormula.RightOperand;
+				steps = boundedBinaryFormula.Bound;
+				return;
+			}
+
+			throw new NotImplementedException();
 		}
 
 		private void ApproximateDelta(double target)

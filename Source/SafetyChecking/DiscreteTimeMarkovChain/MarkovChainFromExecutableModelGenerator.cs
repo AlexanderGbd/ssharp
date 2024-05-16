@@ -23,156 +23,47 @@
 namespace ISSE.SafetyChecking.DiscreteTimeMarkovChain
 {
 	using System;
-	using System.Collections.Generic;
-	using System.Threading;
 	using ExecutableModel;
 	using Utilities;
 	using AnalysisModel;
 	using Formula;
-	using AnalysisModelTraverser;
 	using System.Linq;
 	using ExecutedModel;
 
-	public class MarkovChainFromExecutableModelGenerator<TExecutableModel> where TExecutableModel : ExecutableModel<TExecutableModel>
+	public class MarkovChainFromExecutableModelGenerator<TExecutableModel> : MarkovChainGenerator where TExecutableModel : ExecutableModel<TExecutableModel>
 	{
 		private readonly ExecutableModelCreator<TExecutableModel> _runtimeModelCreator;
-		private readonly List<Formula> _formulasToCheck = new List<Formula>();
 
-		public IEnumerable<Formula> FormulasToCheck => _formulasToCheck;
-
-		/// <summary>
-		///   The model checker's configuration that determines certain model checker settings.
-		/// </summary>
-		public AnalysisConfiguration Configuration = AnalysisConfiguration.Default;
-
-		public bool ProbabilityMatrixCreationStarted { get; private set; } = false;
-
-		// Create Tasks which make the checks (workers)
-		// First formulas to check are collected (thus, the probability matrix only has to be calculated once)
 		public MarkovChainFromExecutableModelGenerator(ExecutableModelCreator<TExecutableModel> runtimeModelCreator)
 		{
 			Requires.NotNull(runtimeModelCreator, nameof(runtimeModelCreator));
 			_runtimeModelCreator = runtimeModelCreator;
 		}
-		
-		private void PrintStateFormulas(Formula[] stateFormulas)
-		{
-			if (!Configuration.WriteGraphvizModels)
-				return;
-			Configuration.DefaultTraceOutput?.WriteLine("Labels");
-			for (var i = 0; i < stateFormulas.Length; i++)
-			{
-				Configuration.DefaultTraceOutput?.WriteLine($"\t {i} {stateFormulas[i].Label}: {stateFormulas[i]}");
-			}
-		}
 
-		/// <summary>
-		///   Generates a <see cref="DiscreteTimeMarkovChain" /> for the model created by <paramref name="createModel" />.
-		/// </summary>
-		private LabeledTransitionMarkovChain GenerateLtmc(AnalysisModelCreator createModel, Formula terminateEarlyCondition, Formula[] executableStateFormulas)
-		{
-			using (var checker = new LtmcGenerator(createModel, terminateEarlyCondition, executableStateFormulas, Configuration))
-			{
-				PrintStateFormulas(executableStateFormulas);
-
-				var labeledTransitionMarkovChain = checker.GenerateStateGraph();
-				
-				if (Configuration.WriteGraphvizModels)
-				{
-					Configuration.DefaultTraceOutput.WriteLine("Ltmc Model");
-					labeledTransitionMarkovChain.ExportToGv(Configuration.DefaultTraceOutput);
-				}
-				return labeledTransitionMarkovChain;
-			}
-		}
-
-		private LabeledTransitionMarkovChain NormalizeLtmc(LabeledTransitionMarkovChain ltmc)
-		{
-			var retraverseModel = new LtmcRetraverseModel(ltmc, Configuration);
-			retraverseModel.AddFormulas(FormulasToCheck);
-
-			var createModel = new AnalysisModelCreator(() => retraverseModel);
-
-			using (var checker = new LtmcGenerator(createModel, null, retraverseModel.Formulas, Configuration))
-			{
-				PrintStateFormulas(retraverseModel.Formulas);
-
-				var labeledTransitionMarkovChain = checker.GenerateStateGraph();
-
-				if (Configuration.WriteGraphvizModels)
-				{
-					Configuration.DefaultTraceOutput.WriteLine("Ltmc Model normalized");
-					labeledTransitionMarkovChain.ExportToGv(Configuration.DefaultTraceOutput);
-				}
-				return labeledTransitionMarkovChain;
-			}
-		}
-
-		private DiscreteTimeMarkovChain ConvertToMarkovChain(LabeledTransitionMarkovChain labeledTransitionMarkovChain)
-		{
-			var ltmcToMc = new LtmcToDtmc(labeledTransitionMarkovChain);
-			var markovChain = ltmcToMc.MarkovChain;
-			if (Configuration.WriteGraphvizModels)
-			{
-				Configuration.DefaultTraceOutput.WriteLine("Dtmc Model");
-				markovChain.ExportToGv(Configuration.DefaultTraceOutput);
-			}
-			return markovChain;
-		}
-
-		public LabeledTransitionMarkovChain GenerateLabeledMarkovChain(Formula terminateEarlyCondition = null)
+		public LabeledTransitionMarkovChain GenerateLabeledMarkovChain()
 		{
 			Requires.That(IntPtr.Size == 8, "Model checking is only supported in 64bit processes.");
 
 			ProbabilityMatrixCreationStarted = true;
-
-			CollectStateFormulasVisitor stateFormulaCollector;
-			if (Configuration.UseAtomarPropositionsAsStateLabels)
-				stateFormulaCollector = new CollectAtomarPropositionFormulasVisitor();
-			else
-				stateFormulaCollector = new CollectMaximalCompilableFormulasVisitor();
-
-			foreach (var stateFormula in _formulasToCheck)
-			{
-				stateFormulaCollector.VisitNewTopLevelFormula(stateFormula);
-			}
-			if (terminateEarlyCondition)
-			{
-				stateFormulaCollector.VisitNewTopLevelFormula(terminateEarlyCondition);
-			}
-			var stateFormulas = stateFormulaCollector.CollectedStateFormulas.ToArray();
+			
+			FormulaManager.Calculate(Configuration);
+			var stateFormulasToCheckInBaseModel = FormulaManager.StateFormulasToCheckInBaseModel.ToArray();
 
 			ExecutedModel<TExecutableModel> model = null;
-			var modelCreator = _runtimeModelCreator.CreateCoupledModelCreator(stateFormulas);
+			var modelCreator = _runtimeModelCreator.CreateCoupledModelCreator(stateFormulasToCheckInBaseModel);
 			Func<AnalysisModel> createAnalysisModelFunc = () =>
-				model = new LtmcExecutedModel<TExecutableModel>(modelCreator, 0, Configuration);
+				model = new LtmcExecutedModel<TExecutableModel>(modelCreator, Configuration);
 			var createAnalysisModel = new AnalysisModelCreator(createAnalysisModelFunc);
-
-			var ltmc = GenerateLtmc(createAnalysisModel, terminateEarlyCondition, stateFormulas);
-
-			if (Configuration.RetraversalNormalizations != RetraversalNormalizations.None)
-				ltmc = NormalizeLtmc(ltmc);
+			
+			var ltmc = GenerateLtmc(createAnalysisModel);
 
 			return ltmc;
 		}
-		
-		public DiscreteTimeMarkovChain GenerateMarkovChain(Formula terminateEarlyCondition = null)
+
+		public DiscreteTimeMarkovChain GenerateMarkovChain()
 		{
-			var ltmc = GenerateLabeledMarkovChain(terminateEarlyCondition);
+			var ltmc = GenerateLabeledMarkovChain();
 			return ConvertToMarkovChain(ltmc);
-		}
-
-
-		public void AddFormulaToCheck(Formula formula)
-		{
-			Requires.NotNull(formula, nameof(formula));
-
-			Interlocked.MemoryBarrier();
-			if ((bool)ProbabilityMatrixCreationStarted)
-			{
-				throw new Exception(nameof(AddFormulaToCheck) + " must be called before " + nameof(GenerateMarkovChain));
-			}
-			_formulasToCheck.Add(formula);
 		}
 	}
 }

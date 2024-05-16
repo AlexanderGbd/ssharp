@@ -23,6 +23,7 @@
 namespace Tests.SimpleExecutableModel.Analysis.ProbabilisticNondeterministic
 {
 	using System;
+	using ISSE.SafetyChecking;
 	using ISSE.SafetyChecking.ExecutedModel;
 	using ISSE.SafetyChecking.Formula;
 	using ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized;
@@ -31,7 +32,7 @@ namespace Tests.SimpleExecutableModel.Analysis.ProbabilisticNondeterministic
 	using Utilities;
 	using Xunit;
 	using Xunit.Abstractions;
-	
+	using LtmdpModelChecker = ISSE.SafetyChecking.MarkovDecisionProcess.Unoptimized.LtmdpModelChecker;
 
 	public class SimpleExample2a : AnalysisTest
 	{
@@ -39,8 +40,7 @@ namespace Tests.SimpleExecutableModel.Analysis.ProbabilisticNondeterministic
 		{
 		}
 
-		[Fact]
-		public void Check()
+		private void CheckBounded(AnalysisConfiguration configuration)
 		{
 			var m = new SharedModels.SimpleExample2a();
 			Probability minProbabilityOfFinal0;
@@ -60,18 +60,14 @@ namespace Tests.SimpleExecutableModel.Analysis.ProbabilisticNondeterministic
 			var final1Formula = new BoundedUnaryFormula(SharedModels.SimpleExample2a.StateIs1, UnaryOperator.Finally, 4);
 			var final2Formula = new BoundedUnaryFormula(SharedModels.SimpleExample2a.StateIs2, UnaryOperator.Finally, 4);
 
-			var nmdpGenerator = new SimpleNmdpFromExecutableModelGenerator(m);
-			nmdpGenerator.Configuration.WriteGraphvizModels = true;
-			nmdpGenerator.Configuration.DefaultTraceOutput = Output.TextWriterAdapter();
-			nmdpGenerator.Configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
-			nmdpGenerator.Configuration.UseAtomarPropositionsAsStateLabels = false;
-			nmdpGenerator.AddFormulaToCheck(final0Formula);
-			nmdpGenerator.AddFormulaToCheck(final0LtFormula);
-			nmdpGenerator.AddFormulaToCheck(final1Formula);
-			nmdpGenerator.AddFormulaToCheck(final2Formula);
-			var nmdp = nmdpGenerator.GenerateMarkovDecisionProcess();
-			var typeOfModelChecker = typeof(BuiltinNmdpModelChecker);
-			var modelChecker = (NmdpModelChecker)Activator.CreateInstance(typeOfModelChecker, nmdp, Output.TextWriterAdapter());
+			var mdpGenerator = new SimpleMarkovDecisionProcessFromExecutableModelGenerator(m);
+			mdpGenerator.Configuration = configuration;
+			mdpGenerator.AddFormulaToCheck(final0Formula);
+			mdpGenerator.AddFormulaToCheck(final0LtFormula);
+			mdpGenerator.AddFormulaToCheck(final1Formula);
+			mdpGenerator.AddFormulaToCheck(final2Formula);
+			var mdp = mdpGenerator.GenerateLabeledTransitionMarkovDecisionProcess();
+			var modelChecker = new ConfigurationDependentLtmdpModelChecker(configuration, mdp, Output.TextWriterAdapter());
 			using (modelChecker)
 			{
 				minProbabilityOfFinal0 = modelChecker.CalculateMinimalProbability(final0Formula);
@@ -93,6 +89,130 @@ namespace Tests.SimpleExecutableModel.Analysis.ProbabilisticNondeterministic
 			var maxProbabilityOf1And2Calculated = 1.0 - Math.Pow(0.6, 4);
 			maxProbabilityOfFinal1.Is(maxProbabilityOf1And2Calculated, 0.000001).ShouldBe(true);
 			maxProbabilityOfFinal2.Is(maxProbabilityOf1And2Calculated, 0.000001).ShouldBe(true);
+		}
+
+		private void CheckUnbounded(AnalysisConfiguration configuration)
+		{
+			var m = new SharedModels.SimpleExample2a();
+			Probability minProbabilityOfFinal0;
+			Probability minProbabilityOfFinal0Lt;
+			Probability minProbabilityOfFinal1;
+			Probability minProbabilityOfFinal2;
+			Probability maxProbabilityOfFinal0;
+			Probability maxProbabilityOfFinal0Lt;
+			Probability maxProbabilityOfFinal1;
+			Probability maxProbabilityOfFinal2;
+
+			var final0Formula = new UnaryFormula(SharedModels.SimpleExample2a.StateIs0, UnaryOperator.Finally);
+			var final0LtFormula =
+				new BoundedUnaryFormula(
+					new BinaryFormula(SharedModels.SimpleExample2a.StateIs0, BinaryOperator.And, SharedModels.SimpleExample2a.LocalVarIsTrue),
+				UnaryOperator.Finally, 4);
+			var final1Formula = new UnaryFormula(SharedModels.SimpleExample2a.StateIs1, UnaryOperator.Finally);
+			var final2Formula = new UnaryFormula(SharedModels.SimpleExample2a.StateIs2, UnaryOperator.Finally);
+
+			var mdpGenerator = new SimpleMarkovDecisionProcessFromExecutableModelGenerator(m);
+			mdpGenerator.Configuration = configuration;
+			mdpGenerator.AddFormulaToCheck(final0Formula);
+			mdpGenerator.AddFormulaToCheck(final0LtFormula);
+			mdpGenerator.AddFormulaToCheck(final1Formula);
+			mdpGenerator.AddFormulaToCheck(final2Formula);
+			var mdp = mdpGenerator.GenerateLabeledTransitionMarkovDecisionProcess();
+			var modelChecker = new ConfigurationDependentLtmdpModelChecker(configuration, mdp, Output.TextWriterAdapter());
+			using (modelChecker)
+			{
+				minProbabilityOfFinal0 = modelChecker.CalculateMinimalProbability(final0Formula);
+				minProbabilityOfFinal0Lt = modelChecker.CalculateMinimalProbability(final0LtFormula);
+				minProbabilityOfFinal1 = modelChecker.CalculateMinimalProbability(final1Formula);
+				minProbabilityOfFinal2 = modelChecker.CalculateMinimalProbability(final2Formula);
+				maxProbabilityOfFinal0 = modelChecker.CalculateMaximalProbability(final0Formula);
+				maxProbabilityOfFinal0Lt = modelChecker.CalculateMaximalProbability(final0LtFormula);
+				maxProbabilityOfFinal1 = modelChecker.CalculateMaximalProbability(final1Formula);
+				maxProbabilityOfFinal2 = modelChecker.CalculateMaximalProbability(final2Formula);
+			}
+
+			minProbabilityOfFinal0.Is(1.0, 0.000001).ShouldBe(true);
+			minProbabilityOfFinal0Lt.Is(0.0, 0.000001).ShouldBe(true);
+			minProbabilityOfFinal1.Is(0.0, 0.000001).ShouldBe(true);
+			minProbabilityOfFinal2.Is(0.0, 0.000001).ShouldBe(true);
+			maxProbabilityOfFinal0.Is(1.0, 0.000001).ShouldBe(true);
+			maxProbabilityOfFinal0Lt.Is(1.0, 0.000001).ShouldBe(true);
+			maxProbabilityOfFinal1.Is(1.0, 0.000001).ShouldBe(true);
+			maxProbabilityOfFinal2.Is(1.0, 0.000001).ShouldBe(true);
+		}
+
+		[Fact]
+		public void CheckBoundedLtmdp()
+		{
+			var configuration = AnalysisConfiguration.Default;
+			configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			configuration.UseCompactStateStorage = true;
+			configuration.DefaultTraceOutput = Output.TextWriterAdapter();
+			configuration.WriteGraphvizModels = true;
+			configuration.LtmdpModelChecker = ISSE.SafetyChecking.LtmdpModelChecker.BuiltInLtmdp;
+
+			CheckBounded(configuration);
+		}
+
+		[Fact(Skip = "NotImplementedYet")]
+		public void CheckBoundedNmdp()
+		{
+			var configuration = AnalysisConfiguration.Default;
+			configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			configuration.DefaultTraceOutput = Output.TextWriterAdapter();
+			configuration.WriteGraphvizModels = true;
+			configuration.LtmdpModelChecker = ISSE.SafetyChecking.LtmdpModelChecker.BuiltInNmdp;
+
+			CheckBounded(configuration);
+		}
+
+		[Fact]
+		public void CheckBoundedMdpWithNewStates()
+		{
+			var configuration = AnalysisConfiguration.Default;
+			configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			configuration.DefaultTraceOutput = Output.TextWriterAdapter();
+			configuration.WriteGraphvizModels = true;
+			configuration.LtmdpModelChecker = ISSE.SafetyChecking.LtmdpModelChecker.BuildInMdpWithNewStatesConstantDistance;
+			configuration.UseAtomarPropositionsAsStateLabels = false;
+			CheckBounded(configuration);
+		}
+
+		[Fact]
+		public void CheckBoundedMdpWithFlattening()
+		{
+			var configuration = AnalysisConfiguration.Default;
+			configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			configuration.DefaultTraceOutput = Output.TextWriterAdapter();
+			configuration.WriteGraphvizModels = true;
+			configuration.LtmdpModelChecker = ISSE.SafetyChecking.LtmdpModelChecker.BuildInMdpWithFlattening;
+			configuration.UseAtomarPropositionsAsStateLabels = false;
+			CheckBounded(configuration);
+		}
+
+
+		[Fact]
+		public void CheckUnboundeMdpWithNewStates()
+		{
+			var configuration = AnalysisConfiguration.Default;
+			configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			configuration.DefaultTraceOutput = Output.TextWriterAdapter();
+			configuration.WriteGraphvizModels = true;
+			configuration.LtmdpModelChecker = ISSE.SafetyChecking.LtmdpModelChecker.BuildInMdpWithNewStates;
+			configuration.UseAtomarPropositionsAsStateLabels = false;
+			CheckUnbounded(configuration);
+		}
+
+		[Fact]
+		public void CheckUnboundeMdpWithFlattening()
+		{
+			var configuration = AnalysisConfiguration.Default;
+			configuration.ModelCapacity = ModelCapacityByMemorySize.Small;
+			configuration.DefaultTraceOutput = Output.TextWriterAdapter();
+			configuration.WriteGraphvizModels = true;
+			configuration.LtmdpModelChecker = ISSE.SafetyChecking.LtmdpModelChecker.BuildInMdpWithFlattening;
+			configuration.UseAtomarPropositionsAsStateLabels = false;
+			CheckUnbounded(configuration);
 		}
 	}
 }

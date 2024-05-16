@@ -22,7 +22,6 @@
 
 namespace SafetySharp.ModelChecking
 {
-	using ISSE.SafetyChecking.MarkovDecisionProcess.Optimized;
 	using System;
 	using ISSE.SafetyChecking;
 	using ISSE.SafetyChecking.AnalysisModel;
@@ -76,9 +75,9 @@ namespace SafetySharp.ModelChecking
 		}
 	}
 
-	public sealed class SafetySharpNmdpFromExecutableModelGenerator : NmdpFromExecutableModelGenerator<SafetySharpRuntimeModel>
+	public sealed class SafetySharpMarkovDecisionProcessFromExecutableModelGenerator : MarkovChainFromExecutableModelGenerator<SafetySharpRuntimeModel>
 	{
-		public SafetySharpNmdpFromExecutableModelGenerator(ModelBase model) : base(SafetySharpRuntimeModel.CreateExecutedModelFromFormulasCreator(model))
+		public SafetySharpMarkovDecisionProcessFromExecutableModelGenerator(ModelBase model) : base(SafetySharpRuntimeModel.CreateExecutedModelFromFormulasCreator(model))
 		{
 		}
 	}
